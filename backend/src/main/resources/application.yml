@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: coreflow-backend
+
+server:
+  port: 8080
+
+coreflow:
+  api:
+    base-path: /api
