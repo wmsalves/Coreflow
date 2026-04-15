@@ -1,9 +1,8 @@
-﻿"use client";
+"use client";
 
 import { MoonStar, SunMedium } from "lucide-react";
+import type { LandingTheme } from "@/features/landing/types";
 import { cn } from "@/lib/utils";
-
-export type LandingTheme = "dark" | "light";
 
 type ThemeToggleProps = {
   labels: {
@@ -21,15 +20,16 @@ export function ThemeToggle({
   theme,
 }: ThemeToggleProps) {
   const nextTheme = theme === "dark" ? "light" : "dark";
-  const icon = theme === "dark" ? <SunMedium className="size-4" /> : <MoonStar className="size-4" />;
+  const icon =
+    theme === "dark" ? <SunMedium className="size-4" /> : <MoonStar className="size-4" />;
   const label = theme === "dark" ? labels.light : labels.dark;
 
   return (
     <button
       aria-label={`${labels.label}: ${label}`}
       className={cn(
-        "inline-flex size-9 items-center justify-center rounded-full text-[color:var(--landing-text-faint)] transition",
-        "hover:bg-[color:var(--landing-surface)] hover:text-[color:var(--landing-text)]",
+        "inline-flex size-9 items-center justify-center rounded-full text-(--landing-text-faint) transition",
+        "hover:bg-(--landing-surface) hover:text-(--landing-text)",
       )}
       onClick={() => onThemeChange(nextTheme)}
       type="button"

@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import type { LandingLocale } from "@/components/marketing/landing-copy";
+import type { LandingLocale } from "@/features/landing/types";
 import { cn } from "@/lib/utils";
 
 type LanguageSwitcherProps = {
@@ -20,13 +20,17 @@ export function LanguageSwitcher({
   onLocaleChange,
 }: LanguageSwitcherProps) {
   return (
-    <div aria-label={localeLabel} className="inline-flex items-center gap-1 text-xs" role="group">
+    <div
+      aria-label={localeLabel}
+      className="inline-flex items-center gap-1 text-xs"
+      role="group"
+    >
       <LocaleButton
         active={locale === "en"}
         label={labels.en}
         onClick={() => onLocaleChange("en")}
       />
-      <span aria-hidden className="text-[color:var(--landing-text-faint)]">
+      <span aria-hidden className="text-(--landing-text-faint)">
         /
       </span>
       <LocaleButton
@@ -53,8 +57,8 @@ function LocaleButton({
       className={cn(
         "inline-flex items-center justify-center text-[11px] font-medium tracking-[0.22em] uppercase",
         active
-          ? "text-[color:var(--landing-text)]"
-          : "text-[color:var(--landing-text-faint)] hover:text-[color:var(--landing-text-muted)]",
+          ? "text-(--landing-text)"
+          : "text-(--landing-text-faint) hover:text-(--landing-text-muted)",
       )}
       onClick={onClick}
       type="button"

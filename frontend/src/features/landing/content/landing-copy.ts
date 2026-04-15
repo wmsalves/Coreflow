@@ -1,4 +1,4 @@
-﻿export type LandingLocale = "en" | "pt-BR";
+import type { LandingLocale } from "@/features/landing/types";
 
 export type LandingCopy = {
   controls: {
@@ -686,4 +686,5 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
     },
   },
 };
+
 
