@@ -51,3 +51,90 @@ select {
   background: rgba(31, 122, 99, 0.18);
   color: var(--foreground);
 }
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+.landing-reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+}
+
+.landing-preview {
+  perspective: 1600px;
+  --preview-rotate-x: 0deg;
+  --preview-rotate-y: 0deg;
+  --preview-shift-y: 0px;
+}
+
+.landing-preview-shell {
+  isolation: isolate;
+  transform: perspective(1600px) rotateX(var(--preview-rotate-x)) rotateY(var(--preview-rotate-y)) translate3d(0, var(--preview-shift-y), 0);
+  transform-style: preserve-3d;
+  transition:
+    border-color 220ms ease,
+    box-shadow 260ms ease,
+    filter 260ms ease,
+    transform 220ms ease;
+  will-change: transform;
+}
+
+.landing-preview-glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04) 24%, rgba(255, 255, 255, 0.015));
+  backdrop-filter: blur(24px) saturate(125%);
+  -webkit-backdrop-filter: blur(24px) saturate(125%);
+  opacity: 0.92;
+}
+
+.landing-preview-reactive {
+  background:
+    radial-gradient(240px circle at 50% 0%, rgba(255, 255, 255, 0.08), transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 24%, rgba(255, 255, 255, 0.02));
+  mix-blend-mode: screen;
+  opacity: 0.42;
+  transition: opacity 220ms ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-reveal {
+    transition:
+      opacity 780ms cubic-bezier(0.18, 1, 0.32, 1),
+      transform 780ms cubic-bezier(0.18, 1, 0.32, 1);
+  }
+
+  .landing-reveal.is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .landing-float {
+    animation: landing-float 9s ease-in-out infinite;
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .landing-preview-shell {
+    transform: none;
+    transition: box-shadow 220ms ease, filter 220ms ease;
+  }
+
+  .landing-preview-reactive {
+    opacity: 0.34;
+    transition: none;
+  }
+}
