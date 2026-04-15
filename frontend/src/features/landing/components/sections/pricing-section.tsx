@@ -92,7 +92,7 @@ function PricingCard({
           className={cn(
             "relative mt-8 inline-flex h-11 items-center justify-center rounded-full px-4 text-sm font-medium transition duration-300",
             highlight
-              ? "bg-(--landing-button-primary) text-(--landing-button-primary-text) shadow-[0_12px_28px_var(--landing-accent-soft)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_var(--landing-accent-strong)]"
+              ? "bg-(--landing-button-primary) text-(--landing-button-primary-text) shadow-[var(--landing-button-accent-shadow)] hover:-translate-y-0.5 hover:shadow-[var(--landing-button-accent-shadow-hover)]"
               : "border border-(--landing-border) bg-(--landing-button-secondary) text-(--landing-text-soft) hover:-translate-y-0.5 hover:bg-(--landing-button-secondary-hover) hover:text-(--landing-text)",
           )}
           href="/signup"

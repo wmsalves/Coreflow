@@ -33,11 +33,11 @@ export function LandingHeader({
         className={cn(
           "relative mx-auto max-w-7xl overflow-hidden rounded-[1.55rem] border px-4 py-3 backdrop-blur-2xl transition duration-300 sm:px-5 lg:px-6",
           scrolled
-            ? "border-(--landing-border-strong) bg-(--landing-header) shadow-[0_20px_70px_rgba(0,0,0,0.22)]"
-            : "border-(--landing-border) bg-(--landing-header) shadow-[0_12px_40px_rgba(0,0,0,0.14)]",
+            ? "border-(--landing-border-strong) bg-(--landing-header) shadow-[var(--landing-header-shadow-scrolled)]"
+            : "border-(--landing-border) bg-(--landing-header) shadow-[var(--landing-header-shadow)]",
         )}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),transparent_60%)] opacity-70" />
+        <div className="pointer-events-none absolute inset-0 bg-[var(--landing-header-gloss)] opacity-90" />
 
         <div className="relative flex flex-wrap items-center justify-between gap-3 lg:hidden">
           <CoreflowLogo
@@ -101,7 +101,7 @@ export function LandingHeader({
               theme={theme}
             />
             <Link
-              className="inline-flex h-9 items-center justify-center rounded-full bg-(--landing-button-primary) px-4 text-[13px] font-medium text-(--landing-button-primary-text) shadow-[0_10px_28px_rgba(0,0,0,0.14)] transition hover:-translate-y-px hover:shadow-[0_14px_34px_rgba(0,0,0,0.18)]"
+              className="inline-flex h-9 items-center justify-center rounded-full bg-(--landing-button-primary) px-4 text-[13px] font-medium text-(--landing-button-primary-text) shadow-[var(--landing-button-shadow)] transition hover:-translate-y-px hover:shadow-[var(--landing-button-shadow-hover)]"
               href="/signup"
             >
               {copy.cta}

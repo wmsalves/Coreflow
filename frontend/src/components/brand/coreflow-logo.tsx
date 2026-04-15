@@ -23,10 +23,13 @@ export function CoreflowLogo({
   taglineClassName,
 }: CoreflowLogoProps) {
   return (
-    <Link href={href} className={cn("inline-flex items-center gap-3", className)}>
+    <Link
+      href={href}
+      className={cn("inline-flex items-center gap-3", className)}
+    >
       <span
         className={cn(
-          "relative flex size-10 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]",
+          "relative flex size-10 items-center justify-center overflow-hidden rounded-xl border border-(--landing-border) bg-(--landing-surface)",
           frameClassName,
         )}
       >
@@ -39,20 +42,28 @@ export function CoreflowLogo({
           width={40}
         />
       </span>
+
       <span className="min-w-0">
         <span
           className={cn(
-            "block text-sm font-semibold tracking-[0.18em] text-white uppercase",
+            "block text-sm font-semibold tracking-[0.18em] uppercase text-(--landing-text)",
             nameClassName,
           )}
         >
           {BRAND.name}
         </span>
+
         {showTagline ? (
-          <span className={cn("block text-xs text-white/45", taglineClassName)}>{tagline}</span>
+          <span
+            className={cn(
+              "block text-xs text-(--landing-text-faint)",
+              taglineClassName,
+            )}
+          >
+            {tagline}
+          </span>
         ) : null}
       </span>
     </Link>
   );
 }
-

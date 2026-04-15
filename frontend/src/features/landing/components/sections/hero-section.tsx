@@ -48,7 +48,7 @@ export function HeroSection({
             style={revealStyle(200)}
           >
             <Link
-              className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-(--landing-button-primary) px-5 text-sm font-medium text-(--landing-button-primary-text) shadow-[0_12px_30px_var(--landing-accent-soft)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_var(--landing-accent-strong)]"
+              className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-(--landing-button-primary) px-5 text-sm font-medium text-(--landing-button-primary-text) shadow-[var(--landing-button-accent-shadow)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[var(--landing-button-accent-shadow-hover)]"
               href="/signup"
             >
               {copy.hero.ctaPrimary}
@@ -88,13 +88,13 @@ export function HeroSection({
           className="landing-preview landing-reveal relative mx-auto max-w-[43rem]"
           style={revealStyle(140)}
         >
-          <div className="absolute left-1/2 top-[46%] -z-20 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,var(--landing-glow),transparent_62%)] blur-[150px] opacity-55" />
+          <div className="absolute left-1/2 top-[46%] -z-20 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--landing-preview-aura)] blur-[150px] opacity-65" />
 
-          <div className="landing-preview-shell relative rounded-[2.85rem] border border-(--landing-preview-frame) p-[1px] shadow-[0_42px_130px_rgba(0,0,0,0.38)]">
+          <div className="landing-preview-shell relative rounded-[2.85rem] border border-(--landing-preview-frame) p-[1px] shadow-[var(--landing-preview-shell-shadow)]">
             <div className="landing-preview-glass absolute inset-0 rounded-[inherit]" />
             <div className="landing-preview-reactive absolute inset-0 rounded-[inherit]" />
             <div className="relative overflow-hidden rounded-[calc(2.85rem-1px)] bg-[var(--landing-panel)] p-4 sm:p-5">
-              <div className="relative rounded-[2.15rem] border border-(--landing-border) bg-[linear-gradient(180deg,rgba(255,255,255,0.065),rgba(255,255,255,0.02))] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.16)] sm:p-6">
+              <div className="relative rounded-[2.15rem] border border-(--landing-border) bg-[var(--landing-preview-inner-surface)] p-5 shadow-[var(--landing-preview-inner-shadow)] sm:p-6">
                 <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--landing-accent-ember),transparent)] opacity-70" />
                 <div className="pointer-events-none absolute right-5 top-5 hidden items-center gap-3 rounded-full border border-(--landing-border) bg-(--landing-bg-elevated) px-3 py-2 text-xs shadow-[var(--landing-shadow-soft)] sm:flex">
                   <span className="h-2 w-2 rounded-full bg-(--landing-accent) shadow-[0_0_14px_var(--landing-glow)]" />

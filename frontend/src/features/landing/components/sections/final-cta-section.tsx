@@ -17,7 +17,7 @@ export function FinalCtaSection({ copy }: FinalCtaSectionProps) {
           data-card-motion="panel"
           className="landing-card-strong overflow-hidden rounded-[2.5rem] border border-(--landing-border) bg-[var(--landing-panel)] px-6 py-10 shadow-[var(--landing-shadow)] sm:px-10 sm:py-12"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,var(--landing-glow),transparent_34%),radial-gradient(circle_at_86%_20%,rgba(255,255,255,0.06),transparent_22%)] opacity-70" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,var(--landing-glow),transparent_34%),radial-gradient(circle_at_86%_20%,var(--landing-cta-veil),transparent_22%)] opacity-70" />
           <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl space-y-4">
               <SectionLabel>{copy.eyebrow}</SectionLabel>
@@ -31,7 +31,7 @@ export function FinalCtaSection({ copy }: FinalCtaSectionProps) {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-(--landing-button-primary) px-5 text-sm font-medium text-(--landing-button-primary-text) shadow-[0_12px_30px_var(--landing-accent-soft)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_var(--landing-accent-strong)]"
+                className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-(--landing-button-primary) px-5 text-sm font-medium text-(--landing-button-primary-text) shadow-[var(--landing-button-accent-shadow)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[var(--landing-button-accent-shadow-hover)]"
                 href="/signup"
               >
                 {copy.primaryCta}

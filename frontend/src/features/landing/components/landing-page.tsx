@@ -41,6 +41,7 @@ export function LandingPage() {
     <main
       ref={mainRef}
       className="relative min-h-screen overflow-x-hidden bg-(--landing-bg) text-(--landing-text)"
+      data-theme={theme}
       style={landingThemeStyles[theme] as CSSProperties}
     >
       <LandingBackdrop theme={theme} />

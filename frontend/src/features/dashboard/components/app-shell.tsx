@@ -17,9 +17,12 @@ export function AppShell({ children, userEmail }: AppShellProps) {
             <div className="space-y-3">
               <Badge className="bg-white/10 text-white">Coreflow</Badge>
               <div className="space-y-1">
-                <h1 className="text-2xl font-semibold tracking-tight">Growth dashboard</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">
+                  Growth dashboard
+                </h1>
                 <p className="text-sm leading-6 text-white/70">
-                  Minimal app shell ready for modules, metrics, and subscriptions.
+                  Minimal app shell ready for modules, metrics, and
+                  subscriptions.
                 </p>
               </div>
             </div>

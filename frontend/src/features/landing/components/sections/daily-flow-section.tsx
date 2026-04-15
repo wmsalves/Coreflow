@@ -27,7 +27,7 @@ export function DailyFlowSection({ copy }: DailyFlowSectionProps) {
                 className="landing-card-soft landing-reveal flex gap-4 rounded-[1.8rem] border border-(--landing-border) bg-(--landing-surface) p-5 shadow-[var(--landing-shadow-soft)]"
                 style={revealStyle(80 + index * 80)}
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-(--landing-border) bg-(--landing-surface-strong) text-sm text-(--landing-text-soft) shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-(--landing-border) bg-(--landing-surface-strong) text-sm text-(--landing-text-soft) shadow-[var(--landing-chip-inset-shadow)]">
                   0{index + 1}
                 </div>
                 <div className="space-y-2">

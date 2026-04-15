@@ -36,9 +36,9 @@
 .landing-preview-glass {
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0.04) 24%,
-    rgba(255, 255, 255, 0.015)
+    color-mix(in srgb, var(--landing-preview-glass) 78%, white 20%),
+    var(--landing-preview-glass) 24%,
+    transparent
   );
   backdrop-filter: blur(24px) saturate(125%);
   -webkit-backdrop-filter: blur(24px) saturate(125%);
@@ -61,6 +61,33 @@
   mix-blend-mode: screen;
   opacity: 0.42;
   transition: opacity 220ms ease;
+}
+
+[data-theme="light"] .landing-preview-glass {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.74),
+    rgba(255, 249, 242, 0.3) 22%,
+    rgba(255, 255, 255, 0.08)
+  );
+  opacity: 0.96;
+}
+
+[data-theme="light"] .landing-preview-reactive {
+  background:
+    radial-gradient(
+      220px circle at 50% 0%,
+      rgba(255, 255, 255, 0.34),
+      transparent 58%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.2),
+      transparent 26%,
+      rgba(244, 188, 146, 0.045)
+    );
+  mix-blend-mode: normal;
+  opacity: 0.48;
 }
 
 .landing-card-soft,
@@ -116,6 +143,22 @@
   z-index: 0;
 }
 
+[data-theme="light"] .landing-card-soft::before,
+[data-theme="light"] .landing-card-strong::before {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.34),
+      transparent 26%,
+      rgba(255, 255, 255, 0.05)
+    ),
+    radial-gradient(
+      120% 95% at 14% 0%,
+      color-mix(in srgb, var(--landing-accent-warm-soft) 66%, white 34%),
+      transparent 62%
+    );
+}
+
 .landing-card-soft::after,
 .landing-card-strong::after {
   inset-inline: 1rem;
@@ -142,13 +185,13 @@
   .landing-card-soft:hover,
   .landing-card-soft:focus-within {
     border-color: color-mix(in srgb, var(--landing-border-strong) 82%, transparent);
-    box-shadow: 0 20px 56px rgba(0, 0, 0, 0.18);
+    box-shadow: var(--landing-hover-shadow-soft);
   }
 
   .landing-card-strong:hover,
   .landing-card-strong:focus-within {
     border-color: var(--landing-border-strong);
-    box-shadow: 0 28px 84px rgba(0, 0, 0, 0.26);
+    box-shadow: var(--landing-hover-shadow-strong);
   }
 
   .landing-card-soft:hover::before,
@@ -219,4 +262,3 @@
     transition: none;
   }
 }
-
