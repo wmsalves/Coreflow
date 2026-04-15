@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import type { CSSProperties, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 
 const THEME_STORAGE_KEY = "coreflow:landing-theme";
 const LOCALE_STORAGE_KEY = "coreflow:landing-locale";
+const LANDING_PREFERENCES_EVENT = "coreflow:landing-preferences";
 
 const landingThemeStyles = {
   dark: {
@@ -44,10 +45,13 @@ const landingThemeStyles = {
     "--landing-glow": "rgba(114,124,255,0.14)",
     "--landing-header": "rgba(8,10,15,0.56)",
     "--landing-logo-frame": "rgba(255,255,255,0.04)",
-    "--landing-panel": "linear-gradient(180deg, rgba(18,16,20,0.9), rgba(9,10,14,0.94))",
+    "--landing-panel":
+      "linear-gradient(180deg, rgba(18,16,20,0.9), rgba(9,10,14,0.94))",
     "--landing-panel-muted": "rgba(255,255,255,0.03)",
     "--landing-preview-frame": "rgba(255,255,255,0.08)",
     "--landing-preview-glass": "rgba(255,255,255,0.04)",
+    "--landing-hover-shadow-soft": "0 22px 72px rgba(0,0,0,0.24)",
+    "--landing-hover-shadow-strong": "0 34px 110px rgba(0,0,0,0.34)",
     "--landing-progress-end": "#8e9bff",
     "--landing-progress-start": "#ffffff",
     "--landing-shadow": "0 30px 100px rgba(0,0,0,0.42)",
@@ -87,10 +91,13 @@ const landingThemeStyles = {
     "--landing-glow": "rgba(88,108,255,0.12)",
     "--landing-header": "rgba(255,255,255,0.68)",
     "--landing-logo-frame": "rgba(255,255,255,0.96)",
-    "--landing-panel": "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,247,252,0.9))",
+    "--landing-panel":
+      "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,247,252,0.9))",
     "--landing-panel-muted": "rgba(255,255,255,0.7)",
     "--landing-preview-frame": "rgba(255,255,255,0.78)",
     "--landing-preview-glass": "rgba(255,255,255,0.48)",
+    "--landing-hover-shadow-soft": "0 20px 60px rgba(15,23,42,0.12)",
+    "--landing-hover-shadow-strong": "0 28px 82px rgba(15,23,42,0.16)",
     "--landing-progress-end": "#6d80ff",
     "--landing-progress-start": "#111827",
     "--landing-shadow": "0 30px 90px rgba(15,23,42,0.12)",
@@ -118,7 +125,21 @@ const pillarIcons: Record<"habits" | "focus" | "fitness", LucideIcon> = {
   habits: Flame,
 };
 
-function getInitialTheme(): LandingTheme {
+function subscribeLandingPreferences(callback: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  window.addEventListener("storage", callback);
+  window.addEventListener(LANDING_PREFERENCES_EVENT, callback);
+
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(LANDING_PREFERENCES_EVENT, callback);
+  };
+}
+
+function resolveThemePreference(): LandingTheme {
   if (typeof window === "undefined") {
     return "dark";
   }
@@ -127,7 +148,7 @@ function getInitialTheme(): LandingTheme {
   return savedTheme === "light" ? "light" : "dark";
 }
 
-function getInitialLocale(): LandingLocale {
+function resolveLocalePreference(): LandingLocale {
   if (typeof window === "undefined") {
     return "en";
   }
@@ -138,7 +159,19 @@ function getInitialLocale(): LandingLocale {
     return savedLocale;
   }
 
-  return window.navigator.language.toLowerCase().startsWith("pt") ? "pt-BR" : "en";
+  return window.navigator.language.toLowerCase().startsWith("pt")
+    ? "pt-BR"
+    : "en";
+}
+
+function updateThemePreference(theme: LandingTheme) {
+  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  window.dispatchEvent(new Event(LANDING_PREFERENCES_EVENT));
+}
+
+function updateLocalePreference(locale: LandingLocale) {
+  window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  window.dispatchEvent(new Event(LANDING_PREFERENCES_EVENT));
 }
 
 function revealStyle(delay: number): CSSProperties {
@@ -146,20 +179,23 @@ function revealStyle(delay: number): CSSProperties {
 }
 
 export function LandingPage() {
-  const [theme, setTheme] = useState<LandingTheme>(getInitialTheme);
-  const [locale, setLocale] = useState<LandingLocale>(getInitialLocale);
+  const theme = useSyncExternalStore<LandingTheme>(
+    subscribeLandingPreferences,
+    resolveThemePreference,
+    () => "dark",
+  );
+  const locale = useSyncExternalStore<LandingLocale>(
+    subscribeLandingPreferences,
+    resolveLocalePreference,
+    () => "en",
+  );
   const [isScrolled, setIsScrolled] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
     document.documentElement.style.colorScheme = theme;
   }, [theme]);
-
-  useEffect(() => {
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-  }, [locale]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -173,7 +209,9 @@ export function LandingPage() {
   }, []);
 
   useEffect(() => {
-    const elements = Array.from(document.querySelectorAll<HTMLElement>(".landing-reveal"));
+    const elements = Array.from(
+      document.querySelectorAll<HTMLElement>(".landing-reveal"),
+    );
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       elements.forEach((element) => element.classList.add("is-visible"));
@@ -203,13 +241,208 @@ export function LandingPage() {
   }, [locale, theme]);
 
   useEffect(() => {
+    const main = mainRef.current;
+
+    if (!main) {
+      return;
+    }
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const finePointer = window.matchMedia("(pointer: fine)").matches;
+
+    const setCursor = (x: number, y: number) => {
+      main.style.setProperty("--cursor-x", `${x}px`);
+      main.style.setProperty("--cursor-y", `${y}px`);
+    };
+
+    const restingX = window.innerWidth * 0.5;
+    const restingY = window.innerHeight * 0.18;
+
+    if (reduceMotion || !finePointer) {
+      setCursor(restingX, restingY);
+      return;
+    }
+
+    const state = {
+      currentX: restingX,
+      currentY: restingY,
+      frame: 0,
+      targetX: restingX,
+      targetY: restingY,
+    };
+
+    const tick = () => {
+      state.currentX += (state.targetX - state.currentX) * 0.12;
+      state.currentY += (state.targetY - state.currentY) * 0.12;
+      setCursor(state.currentX, state.currentY);
+
+      if (
+        Math.abs(state.targetX - state.currentX) < 0.6 &&
+        Math.abs(state.targetY - state.currentY) < 0.6
+      ) {
+        state.frame = 0;
+        return;
+      }
+
+      state.frame = window.requestAnimationFrame(tick);
+    };
+
+    const schedule = () => {
+      if (!state.frame) {
+        state.frame = window.requestAnimationFrame(tick);
+      }
+    };
+
+    const handleMove = (event: PointerEvent) => {
+      state.targetX = event.clientX;
+      state.targetY = event.clientY;
+      schedule();
+    };
+
+    const handleLeave = () => {
+      state.targetX = restingX;
+      state.targetY = restingY;
+      schedule();
+    };
+
+    setCursor(restingX, restingY);
+    window.addEventListener("pointermove", handleMove, { passive: true });
+    window.addEventListener("pointerleave", handleLeave);
+
+    return () => {
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerleave", handleLeave);
+
+      if (state.frame) {
+        window.cancelAnimationFrame(state.frame);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const cards = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-card-motion]"),
+    ).filter((card) => !card.closest(".landing-preview"));
+
+    if (!cards.length) {
+      return;
+    }
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const finePointer = window.matchMedia("(pointer: fine)").matches;
+
+    const resetCard = (card: HTMLElement) => {
+      card.style.removeProperty("transform");
+    };
+
+    if (reduceMotion || !finePointer) {
+      cards.forEach(resetCard);
+      return;
+    }
+
+    const cleanups = cards.map((card) => {
+      const motion = card.dataset.cardMotion === "panel" ? "panel" : "follow";
+      const strength =
+        motion === "panel"
+          ? { rotateX: 0.82, rotateY: 1.08, shiftY: -4.2 }
+          : { rotateX: 0.24, rotateY: 0.34, shiftY: -1.65 };
+
+      const state = {
+        currentRotateX: 0,
+        currentRotateY: 0,
+        currentShiftY: 0,
+        frame: 0,
+        targetRotateX: 0,
+        targetRotateY: 0,
+        targetShiftY: 0,
+      };
+
+      const apply = () => {
+        card.style.transform = `perspective(1400px) translate3d(0, ${state.currentShiftY}px, 0) rotateX(${state.currentRotateX}deg) rotateY(${state.currentRotateY}deg)`;
+      };
+
+      const tick = () => {
+        state.currentRotateX +=
+          (state.targetRotateX - state.currentRotateX) * 0.14;
+        state.currentRotateY +=
+          (state.targetRotateY - state.currentRotateY) * 0.14;
+        state.currentShiftY +=
+          (state.targetShiftY - state.currentShiftY) * 0.14;
+
+        apply();
+
+        if (
+          Math.abs(state.targetRotateX - state.currentRotateX) < 0.03 &&
+          Math.abs(state.targetRotateY - state.currentRotateY) < 0.03 &&
+          Math.abs(state.targetShiftY - state.currentShiftY) < 0.03
+        ) {
+          state.frame = 0;
+          return;
+        }
+
+        state.frame = window.requestAnimationFrame(tick);
+      };
+
+      const schedule = () => {
+        if (!state.frame) {
+          state.frame = window.requestAnimationFrame(tick);
+        }
+      };
+
+      const handleMove = (event: PointerEvent) => {
+        const rect = card.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+        const easedX = Math.sign(x) * Math.pow(Math.abs(x), 1.35);
+        const easedY = Math.sign(y) * Math.pow(Math.abs(y), 1.15);
+
+        state.targetRotateX = easedY * -strength.rotateX;
+        state.targetRotateY = easedX * strength.rotateY;
+        state.targetShiftY = easedY * strength.shiftY;
+        schedule();
+      };
+
+      const reset = () => {
+        state.targetRotateX = 0;
+        state.targetRotateY = 0;
+        state.targetShiftY = 0;
+        schedule();
+      };
+
+      resetCard(card);
+      card.addEventListener("pointermove", handleMove);
+      card.addEventListener("pointerleave", reset);
+
+      return () => {
+        card.removeEventListener("pointermove", handleMove);
+        card.removeEventListener("pointerleave", reset);
+        resetCard(card);
+
+        if (state.frame) {
+          window.cancelAnimationFrame(state.frame);
+        }
+      };
+    });
+
+    return () => {
+      cleanups.forEach((cleanup) => cleanup());
+    };
+  }, []);
+
+  useEffect(() => {
     const preview = previewRef.current;
 
     if (!preview) {
       return;
     }
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     const finePointer = window.matchMedia("(pointer: fine)").matches;
 
     if (reduceMotion || !finePointer) {
@@ -230,14 +463,25 @@ export function LandingPage() {
     };
 
     const apply = () => {
-      preview.style.setProperty("--preview-rotate-x", `${state.currentRotateX}deg`);
-      preview.style.setProperty("--preview-rotate-y", `${state.currentRotateY}deg`);
-      preview.style.setProperty("--preview-shift-y", `${state.currentShiftY}px`);
+      preview.style.setProperty(
+        "--preview-rotate-x",
+        `${state.currentRotateX}deg`,
+      );
+      preview.style.setProperty(
+        "--preview-rotate-y",
+        `${state.currentRotateY}deg`,
+      );
+      preview.style.setProperty(
+        "--preview-shift-y",
+        `${state.currentShiftY}px`,
+      );
     };
 
     const tick = () => {
-      state.currentRotateX += (state.targetRotateX - state.currentRotateX) * 0.14;
-      state.currentRotateY += (state.targetRotateY - state.currentRotateY) * 0.14;
+      state.currentRotateX +=
+        (state.targetRotateX - state.currentRotateX) * 0.14;
+      state.currentRotateY +=
+        (state.targetRotateY - state.currentRotateY) * 0.14;
       state.currentShiftY += (state.targetShiftY - state.currentShiftY) * 0.14;
       apply();
 
@@ -310,14 +554,13 @@ export function LandingPage() {
           controls={copy.controls}
           copy={copy.header}
           locale={locale}
-          onLocaleChange={setLocale}
+          onLocaleChange={updateLocalePreference}
           scrolled={isScrolled}
-          onThemeChange={setTheme}
+          onThemeChange={updateThemePreference}
           theme={theme}
         />
 
         <section className="relative grid flex-1 items-center gap-14 pb-20 pt-12 lg:grid-cols-[minmax(0,0.98fr)_minmax(480px,1.02fr)] lg:gap-14 lg:pt-16">
-
           <div className="relative max-w-[35rem] space-y-10">
             <div
               className="landing-reveal inline-flex items-center gap-2 rounded-full border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--landing-text-muted)] shadow-[var(--landing-shadow-soft)]"
@@ -328,7 +571,10 @@ export function LandingPage() {
             </div>
 
             <div className="space-y-7">
-              <div className="landing-reveal space-y-6" style={revealStyle(120)}>
+              <div
+                className="landing-reveal space-y-6"
+                style={revealStyle(120)}
+              >
                 <h1
                   className="text-[clamp(3.4rem,8vw,6.9rem)] leading-[0.9] font-semibold tracking-[-0.068em] text-[color:var(--landing-text)]"
                   style={heroHeadlineStyle}
@@ -340,7 +586,10 @@ export function LandingPage() {
                 </p>
               </div>
 
-              <div className="landing-reveal flex flex-col gap-3 sm:flex-row" style={revealStyle(200)}>
+              <div
+                className="landing-reveal flex flex-col gap-3 sm:flex-row"
+                style={revealStyle(200)}
+              >
                 <Link
                   className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[color:var(--landing-button-primary)] px-5 text-sm font-medium text-[color:var(--landing-button-primary-text)] shadow-[0_12px_30px_var(--landing-accent-soft)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_var(--landing-accent-strong)]"
                   href="/signup"
@@ -356,27 +605,34 @@ export function LandingPage() {
                 </Link>
               </div>
             </div>
-            <div className="landing-reveal grid gap-3 sm:max-w-[34rem] sm:grid-cols-3" style={revealStyle(280)}>
+            <div
+              className="landing-reveal grid gap-3 sm:max-w-[34rem] sm:grid-cols-3"
+              style={revealStyle(280)}
+            >
               {copy.hero.principles.map((principle, index) => (
                 <div
                   key={principle}
-                  className="group rounded-[1.4rem] border border-[color:var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface),transparent)] px-4 py-4 shadow-[var(--landing-shadow-soft)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--landing-border-strong)]"
+                  className="landing-card-soft group rounded-[1.4rem] border border-[color:var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface),transparent)] px-4 py-4 shadow-[var(--landing-shadow-soft)]"
                 >
                   <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--landing-text-faint)]">
                     0{index + 1}
                   </p>
                   <div className="mt-3 h-px w-8 bg-[linear-gradient(90deg,var(--landing-accent),transparent)] opacity-80" />
-                  <p className="mt-3 text-sm text-[color:var(--landing-text-soft)]">{principle}</p>
+                  <p className="mt-3 text-sm text-[color:var(--landing-text-soft)]">
+                    {principle}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="relative lg:pl-2">
-            <div ref={previewRef} className="landing-preview landing-reveal relative mx-auto max-w-[43rem]" style={revealStyle(140)}>
-              <div className="absolute left-1/2 top-[46%] -z-20 h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,var(--landing-glow),transparent_58%)] blur-[140px] opacity-95" />
-              <div className="absolute left-[58%] top-[44%] -z-10 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,var(--landing-accent-warm-soft),transparent_56%)] blur-[132px] opacity-85" />
-              <div className="absolute inset-x-3 -top-10 bottom-[-2.75rem] rounded-[3.3rem] border border-[color:var(--landing-preview-frame)] bg-[color:var(--landing-preview-glass)] opacity-90 backdrop-blur-[22px]" />
+            <div
+              ref={previewRef}
+              className="landing-preview landing-reveal relative mx-auto max-w-[43rem]"
+              style={revealStyle(140)}
+            >
+              <div className="absolute left-1/2 top-[46%] -z-20 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,var(--landing-glow),transparent_62%)] blur-[150px] opacity-55" />
 
               <div className="landing-preview-shell relative rounded-[2.85rem] border border-[color:var(--landing-preview-frame)] p-[1px] shadow-[0_42px_130px_rgba(0,0,0,0.38)]">
                 <div className="landing-preview-glass absolute inset-0 rounded-[inherit]" />
@@ -386,7 +642,9 @@ export function LandingPage() {
                     <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--landing-accent-ember),transparent)] opacity-70" />
                     <div className="pointer-events-none absolute right-5 top-5 hidden items-center gap-3 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-bg-elevated)] px-3 py-2 text-xs shadow-[var(--landing-shadow-soft)] sm:flex">
                       <span className="h-2 w-2 rounded-full bg-[color:var(--landing-accent)] shadow-[0_0_14px_var(--landing-glow)]" />
-                      <span className="text-[color:var(--landing-text-soft)]">{copy.hero.preview.aligned}</span>
+                      <span className="text-[color:var(--landing-text-soft)]">
+                        {copy.hero.preview.aligned}
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-3 border-b border-[color:var(--landing-border)] pb-4">
@@ -411,7 +669,7 @@ export function LandingPage() {
                           <PreviewMetric key={metric.label} {...metric} />
                         ))}
 
-                        <div className="rounded-[1.6rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-5 shadow-[var(--landing-shadow-soft)]">
+                        <div className="landing-card-soft rounded-[1.6rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-5 shadow-[var(--landing-shadow-soft)]">
                           <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-[color:var(--landing-text-faint)]">
                             <span>{copy.hero.preview.consistencyLabel}</span>
                             <span>{copy.hero.preview.consistencyPeriod}</span>
@@ -423,7 +681,7 @@ export function LandingPage() {
                         </div>
                       </div>
                       <div className="space-y-4">
-                        <div className="rounded-[1.7rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-alt)] p-5 shadow-[var(--landing-shadow-soft)]">
+                        <div className="landing-card-soft rounded-[1.7rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-alt)] p-5 shadow-[var(--landing-shadow-soft)]">
                           <div className="flex items-center justify-between">
                             <p className="text-sm font-medium text-[color:var(--landing-text)]">
                               {copy.hero.preview.dailyFlow}
@@ -440,7 +698,7 @@ export function LandingPage() {
                           </div>
                         </div>
 
-                        <div className="rounded-[1.7rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-5 shadow-[var(--landing-shadow-soft)]">
+                        <div className="landing-card-soft rounded-[1.7rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-5 shadow-[var(--landing-shadow-soft)]">
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--landing-text-faint)]">
@@ -463,13 +721,10 @@ export function LandingPage() {
                     </div>
 
                     <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                      {heroStats.map((stat, index) => (
+                      {heroStats.map((stat) => (
                         <div
                           key={stat.label}
-                          className={cn(
-                            "rounded-[1.4rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-4 shadow-[var(--landing-shadow-soft)]",
-                            index === 1 ? "sm:translate-y-2" : "",
-                          )}
+                          className="landing-card-soft rounded-[1.4rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-4 shadow-[var(--landing-shadow-soft)]"
                         >
                           <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--landing-text-faint)]">
                             {stat.label}
@@ -503,7 +758,11 @@ export function LandingPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               {copy.problem.panels.map((panel, index) => (
-                <ProblemPanel key={panel.title} style={revealStyle(60 + index * 80)} {...panel} />
+                <ProblemPanel
+                  key={panel.title}
+                  style={revealStyle(60 + index * 80)}
+                  {...panel}
+                />
               ))}
             </div>
           </div>
@@ -512,21 +771,30 @@ export function LandingPage() {
         <section className="relative py-22">
           <SectionDivider />
           <div className="grid gap-6 lg:grid-cols-[1.12fr_0.88fr]">
-            <div className="landing-reveal overflow-hidden rounded-[2.4rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] px-7 py-8 shadow-[var(--landing-shadow-soft)]" style={revealStyle(60)}>
-              <div className="max-w-2xl space-y-5">
-                <SectionLabel>{copy.solution.eyebrow}</SectionLabel>
-                <h2 className="text-3xl font-semibold tracking-[-0.05em] text-[color:var(--landing-text)] sm:text-[2.6rem]">
-                  {copy.solution.title}
-                </h2>
-                <p className="max-w-xl text-base leading-7 text-[color:var(--landing-text-muted)]">
-                  {copy.solution.description}
-                </p>
+            <div className="landing-reveal" style={revealStyle(60)}>
+              <div
+                data-card-motion="panel"
+                className="landing-card-strong overflow-hidden rounded-[2.4rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] px-7 py-8 shadow-[var(--landing-shadow-soft)]"
+              >
+                <div className="max-w-2xl space-y-5">
+                  <SectionLabel>{copy.solution.eyebrow}</SectionLabel>
+                  <h2 className="text-3xl font-semibold tracking-[-0.05em] text-[color:var(--landing-text)] sm:text-[2.6rem]">
+                    {copy.solution.title}
+                  </h2>
+                  <p className="max-w-xl text-base leading-7 text-[color:var(--landing-text-muted)]">
+                    {copy.solution.description}
+                  </p>
+                </div>
               </div>
             </div>
 
             <div className="grid gap-4">
               {copy.solution.points.map((point, index) => (
-                <SignalPanel key={point.title} style={revealStyle(120 + index * 70)} {...point} />
+                <SignalPanel
+                  key={point.title}
+                  style={revealStyle(120 + index * 70)}
+                  {...point}
+                />
               ))}
             </div>
           </div>
@@ -571,15 +839,19 @@ export function LandingPage() {
                 {copy.workflow.rows.map((item, index) => (
                   <div
                     key={item.step}
-                    className="landing-reveal flex gap-4 rounded-[1.8rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-5 shadow-[var(--landing-shadow-soft)]"
+                    className="landing-card-soft landing-reveal flex gap-4 rounded-[1.8rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-5 shadow-[var(--landing-shadow-soft)]"
                     style={revealStyle(80 + index * 80)}
                   >
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-strong)] text-sm text-[color:var(--landing-text-soft)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
                       0{index + 1}
                     </div>
                     <div className="space-y-2">
-                      <p className="text-lg font-medium text-[color:var(--landing-text)]">{item.step}</p>
-                      <p className="text-sm leading-7 text-[color:var(--landing-text-muted)]">{item.body}</p>
+                      <p className="text-lg font-medium text-[color:var(--landing-text)]">
+                        {item.step}
+                      </p>
+                      <p className="text-sm leading-7 text-[color:var(--landing-text-muted)]">
+                        {item.body}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -587,37 +859,46 @@ export function LandingPage() {
             </div>
 
             <div className="grid gap-4">
-              <div className="landing-reveal overflow-hidden rounded-[2.3rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] p-6 shadow-[var(--landing-shadow)]" style={revealStyle(90)}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--landing-text-faint)]">
-                      {copy.workflow.todayView.label}
-                    </p>
-                    <p className="mt-2 text-2xl font-medium text-[color:var(--landing-text)]">
-                      {copy.workflow.todayView.title}
-                    </p>
-                  </div>
-                  <LayoutDashboard className="size-5 text-[color:var(--landing-text-faint)]" />
-                </div>
-
-                <div className="mt-8 grid gap-4 md:grid-cols-[0.82fr_1.18fr]">
-                  <div className="space-y-3 rounded-[1.6rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-4">
-                    {copy.workflow.todayView.stats.map((stat) => (
-                      <MiniStat key={stat.label} {...stat} />
-                    ))}
+              <div className="landing-reveal" style={revealStyle(90)}>
+                <div
+                  data-card-motion="panel"
+                  className="landing-card-strong overflow-hidden rounded-[2.3rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] p-6 shadow-[var(--landing-shadow)]"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--landing-text-faint)]">
+                        {copy.workflow.todayView.label}
+                      </p>
+                      <p className="mt-2 text-2xl font-medium text-[color:var(--landing-text)]">
+                        {copy.workflow.todayView.title}
+                      </p>
+                    </div>
+                    <LayoutDashboard className="size-5 text-[color:var(--landing-text-faint)]" />
                   </div>
 
-                  <div className="space-y-3">
-                    {copy.workflow.todayView.unifiedRows.map((row) => (
-                      <UnifiedRow key={row.label} {...row} />
-                    ))}
+                  <div className="mt-8 grid gap-4 md:grid-cols-[0.82fr_1.18fr]">
+                    <div className="space-y-3 rounded-[1.6rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-4">
+                      {copy.workflow.todayView.stats.map((stat) => (
+                        <MiniStat key={stat.label} {...stat} />
+                      ))}
+                    </div>
+
+                    <div className="space-y-3">
+                      {copy.workflow.todayView.unifiedRows.map((row) => (
+                        <UnifiedRow key={row.label} {...row} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 {copy.workflow.highlights.map((highlight, index) => (
-                  <SignalPanel key={highlight.title} style={revealStyle(140 + index * 60)} {...highlight} />
+                  <SignalPanel
+                    key={highlight.title}
+                    style={revealStyle(140 + index * 60)}
+                    {...highlight}
+                  />
                 ))}
               </div>
             </div>
@@ -633,37 +914,42 @@ export function LandingPage() {
           />
 
           <div className="mt-12 grid gap-4 lg:grid-cols-[1.24fr_0.76fr]">
-            <div className="landing-reveal overflow-hidden rounded-[2.4rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] p-6 shadow-[var(--landing-shadow)]" style={revealStyle(80)}>
-              <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-                <div className="rounded-[1.7rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-5 shadow-[var(--landing-shadow-soft)]">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--landing-text-faint)]">
-                    {copy.showcase.weeklySummary}
-                  </p>
-                  <div className="mt-7 space-y-6">
-                    {copy.showcase.stats.map((stat) => (
-                      <MetricBlock key={stat.label} {...stat} />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-[1.8rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-alt)] p-5 shadow-[var(--landing-shadow-soft)]">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-[color:var(--landing-text)]">
-                      {copy.showcase.systemHealth.title}
+            <div className="landing-reveal" style={revealStyle(80)}>
+              <div
+                data-card-motion="panel"
+                className="landing-card-strong overflow-hidden rounded-[2.4rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] p-6 shadow-[var(--landing-shadow)]"
+              >
+                <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+                  <div className="rounded-[1.7rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-5 shadow-[var(--landing-shadow-soft)]">
+                    <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--landing-text-faint)]">
+                      {copy.showcase.weeklySummary}
                     </p>
-                    <ChartColumnIncreasing className="size-5 text-[color:var(--landing-text-faint)]" />
+                    <div className="mt-7 space-y-6">
+                      {copy.showcase.stats.map((stat) => (
+                        <MetricBlock key={stat.label} {...stat} />
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="mt-8 space-y-6">
-                    {copy.showcase.systemHealth.rows.map((row) => (
-                      <ChartRow key={row.label} {...row} />
-                    ))}
-                  </div>
+                  <div className="rounded-[1.8rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-alt)] p-5 shadow-[var(--landing-shadow-soft)]">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-[color:var(--landing-text)]">
+                        {copy.showcase.systemHealth.title}
+                      </p>
+                      <ChartColumnIncreasing className="size-5 text-[color:var(--landing-text-faint)]" />
+                    </div>
 
-                  <div className="mt-8 grid gap-3 md:grid-cols-3">
-                    {copy.showcase.summaryChips.map((chip) => (
-                      <ShowcaseChip key={chip.label} {...chip} />
-                    ))}
+                    <div className="mt-8 space-y-6">
+                      {copy.showcase.systemHealth.rows.map((row) => (
+                        <ChartRow key={row.label} {...row} />
+                      ))}
+                    </div>
+
+                    <div className="mt-8 grid gap-3 md:grid-cols-3">
+                      {copy.showcase.summaryChips.map((chip) => (
+                        <ShowcaseChip key={chip.label} {...chip} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -671,7 +957,11 @@ export function LandingPage() {
 
             <div className="grid gap-4">
               {copy.showcase.highlightCards.map((card, index) => (
-                <SignalPanel key={card.title} style={revealStyle(120 + index * 70)} {...card} />
+                <SignalPanel
+                  key={card.title}
+                  style={revealStyle(120 + index * 70)}
+                  {...card}
+                />
               ))}
             </div>
           </div>
@@ -688,40 +978,50 @@ export function LandingPage() {
 
           <div className="mt-12 grid gap-4 lg:grid-cols-2">
             {copy.pricing.plans.map((plan, index) => (
-              <PricingCard key={plan.name} highlight={plan.name === "Pro"} style={revealStyle(90 + index * 80)} {...plan} />
+              <PricingCard
+                key={plan.name}
+                highlight={plan.name === "Pro"}
+                style={revealStyle(90 + index * 80)}
+                {...plan}
+              />
             ))}
           </div>
         </section>
 
         <section className="relative py-22">
           <SectionDivider />
-          <div className="landing-reveal overflow-hidden rounded-[2.5rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] px-6 py-10 shadow-[var(--landing-shadow)] sm:px-10 sm:py-12" style={revealStyle(80)}>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,var(--landing-glow),transparent_34%),radial-gradient(circle_at_86%_20%,rgba(255,255,255,0.06),transparent_22%)] opacity-70" />
-            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-2xl space-y-4">
-                <SectionLabel>{copy.finalCta.eyebrow}</SectionLabel>
-                <h2 className="text-3xl font-semibold tracking-[-0.05em] text-[color:var(--landing-text)] sm:text-[2.7rem]">
-                  {copy.finalCta.title}
-                </h2>
-                <p className="text-base leading-7 text-[color:var(--landing-text-muted)]">
-                  {copy.finalCta.body}
-                </p>
-              </div>
+          <div className="landing-reveal" style={revealStyle(80)}>
+            <div
+              data-card-motion="panel"
+              className="landing-card-strong overflow-hidden rounded-[2.5rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] px-6 py-10 shadow-[var(--landing-shadow)] sm:px-10 sm:py-12"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,var(--landing-glow),transparent_34%),radial-gradient(circle_at_86%_20%,rgba(255,255,255,0.06),transparent_22%)] opacity-70" />
+              <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-2xl space-y-4">
+                  <SectionLabel>{copy.finalCta.eyebrow}</SectionLabel>
+                  <h2 className="text-3xl font-semibold tracking-[-0.05em] text-[color:var(--landing-text)] sm:text-[2.7rem]">
+                    {copy.finalCta.title}
+                  </h2>
+                  <p className="text-base leading-7 text-[color:var(--landing-text-muted)]">
+                    {copy.finalCta.body}
+                  </p>
+                </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Link
-                  className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[color:var(--landing-button-primary)] px-5 text-sm font-medium text-[color:var(--landing-button-primary-text)] shadow-[0_12px_30px_var(--landing-accent-soft)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_var(--landing-accent-strong)]"
-                  href="/signup"
-                >
-                  {copy.finalCta.primaryCta}
-                  <ArrowRight className="size-4 transition duration-300 group-hover:translate-x-0.5" />
-                </Link>
-                <Link
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-button-secondary)] px-5 text-sm font-medium text-[color:var(--landing-text-soft)] transition duration-300 hover:-translate-y-0.5 hover:bg-[color:var(--landing-button-secondary-hover)] hover:text-[color:var(--landing-text)]"
-                  href="/login"
-                >
-                  {copy.finalCta.secondaryCta}
-                </Link>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Link
+                    className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[color:var(--landing-button-primary)] px-5 text-sm font-medium text-[color:var(--landing-button-primary-text)] shadow-[0_12px_30px_var(--landing-accent-soft)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_var(--landing-accent-strong)]"
+                    href="/signup"
+                  >
+                    {copy.finalCta.primaryCta}
+                    <ArrowRight className="size-4 transition duration-300 group-hover:translate-x-0.5" />
+                  </Link>
+                  <Link
+                    className="inline-flex h-12 items-center justify-center rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-button-secondary)] px-5 text-sm font-medium text-[color:var(--landing-text-soft)] transition duration-300 hover:-translate-y-0.5 hover:bg-[color:var(--landing-button-secondary-hover)] hover:text-[color:var(--landing-text)]"
+                    href="/login"
+                  >
+                    {copy.finalCta.secondaryCta}
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -734,7 +1034,7 @@ export function LandingPage() {
 function LandingBackdrop({ theme }: { theme: LandingTheme }) {
   const cursorLayer = {
     background:
-      "radial-gradient(420px circle at var(--cursor-x, 50%) var(--cursor-y, 18%), rgba(255,168,104,0.07), transparent 58%), radial-gradient(320px circle at calc(var(--cursor-x, 50%) - 8%) calc(var(--cursor-y, 18%) - 6%), rgba(114,124,255,0.06), transparent 60%), radial-gradient(180px circle at calc(var(--cursor-x, 50%) + 10%) calc(var(--cursor-y, 18%) - 8%), rgba(255,214,186,0.05), transparent 66%)",
+      "radial-gradient(360px circle at var(--cursor-x, 50%) var(--cursor-y, 18%), rgba(255,168,104,0.05), transparent 62%)",
   } satisfies CSSProperties;
 
   return (
@@ -763,7 +1063,9 @@ function LandingBackdrop({ theme }: { theme: LandingTheme }) {
 }
 
 function SectionDivider() {
-  return <div className="mb-8 h-px w-full bg-[linear-gradient(90deg,transparent,var(--landing-border-strong),transparent)]" />;
+  return (
+    <div className="mb-8 h-px w-full bg-[linear-gradient(90deg,transparent,var(--landing-border-strong),transparent)]" />
+  );
 }
 
 function SectionLabel({ children }: { children: ReactNode }) {
@@ -786,7 +1088,12 @@ function SectionIntro({
   title: string;
 }) {
   return (
-    <div className={cn("landing-reveal", centered ? "mx-auto max-w-3xl text-center" : "max-w-2xl")}>
+    <div
+      className={cn(
+        "landing-reveal",
+        centered ? "mx-auto max-w-3xl text-center" : "max-w-2xl",
+      )}
+    >
       <SectionLabel>{eyebrow}</SectionLabel>
       <h2 className="mt-5 text-3xl font-semibold tracking-[-0.05em] text-[color:var(--landing-text)] sm:text-[2.7rem]">
         {title}
@@ -807,13 +1114,19 @@ function PreviewMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-[1.45rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-4 shadow-[var(--landing-shadow-soft)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--landing-border-strong)]">
+    <div className="landing-card-strong rounded-[1.45rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-4 shadow-[var(--landing-shadow-soft)]">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-[color:var(--landing-text)]">{label}</p>
-          <p className="mt-1 text-sm text-[color:var(--landing-text-faint)]">{detail}</p>
+          <p className="text-sm font-medium text-[color:var(--landing-text)]">
+            {label}
+          </p>
+          <p className="mt-1 text-sm text-[color:var(--landing-text-faint)]">
+            {detail}
+          </p>
         </div>
-        <p className="text-3xl font-semibold tracking-[-0.05em] text-[color:var(--landing-text)]">{value}</p>
+        <p className="text-3xl font-semibold tracking-[-0.05em] text-[color:var(--landing-text)]">
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -837,10 +1150,14 @@ function FlowRow({
   };
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[1.3rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-3 shadow-[var(--landing-shadow-soft)]">
+    <div className="landing-card-soft flex items-center justify-between gap-4 rounded-[1.3rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-3 shadow-[var(--landing-shadow-soft)]">
       <div>
-        <p className="text-sm font-medium text-[color:var(--landing-text)]">{title}</p>
-        <p className="mt-1 text-sm text-[color:var(--landing-text-faint)]">{detail}</p>
+        <p className="text-sm font-medium text-[color:var(--landing-text)]">
+          {title}
+        </p>
+        <p className="mt-1 text-sm text-[color:var(--landing-text-faint)]">
+          {detail}
+        </p>
       </div>
       <span
         className={cn(
@@ -864,12 +1181,18 @@ function ProblemPanel({
   title: string;
 }) {
   return (
-    <div
-      className="landing-reveal rounded-[2rem] border border-[color:var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-6 shadow-[var(--landing-shadow-soft)] transition duration-300 hover:-translate-y-1 hover:border-[color:var(--landing-border-strong)]"
-      style={style}
-    >
-      <p className="text-xl font-medium tracking-[-0.04em] text-[color:var(--landing-text)]">{title}</p>
-      <p className="mt-4 text-sm leading-7 text-[color:var(--landing-text-muted)]">{body}</p>
+    <div className="landing-reveal h-full" style={style}>
+      <div
+        data-card-motion="follow"
+        className="landing-card-strong h-full rounded-[2rem] border border-[color:var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-6 shadow-[var(--landing-shadow-soft)]"
+      >
+        <p className="text-xl font-medium tracking-[-0.04em] text-[color:var(--landing-text)]">
+          {title}
+        </p>
+        <p className="mt-4 text-sm leading-7 text-[color:var(--landing-text-muted)]">
+          {body}
+        </p>
+      </div>
     </div>
   );
 }
@@ -887,14 +1210,18 @@ function SignalPanel({
 }) {
   return (
     <div
-      className="landing-reveal group rounded-[1.8rem] border border-[color:var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-5 shadow-[var(--landing-shadow-soft)] transition duration-300 hover:-translate-y-1 hover:border-[color:var(--landing-border-strong)]"
+      className="landing-card-soft landing-reveal group rounded-[1.8rem] border border-[color:var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-5 shadow-[var(--landing-shadow-soft)]"
       style={style}
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--landing-text-faint)]">
         {kicker}
       </p>
-      <p className="mt-3 text-lg font-medium text-[color:var(--landing-text)]">{title}</p>
-      <p className="mt-3 text-sm leading-6 text-[color:var(--landing-text-muted)]">{body}</p>
+      <p className="mt-3 text-lg font-medium text-[color:var(--landing-text)]">
+        {title}
+      </p>
+      <p className="mt-3 text-sm leading-6 text-[color:var(--landing-text-muted)]">
+        {body}
+      </p>
     </div>
   );
 }
@@ -917,22 +1244,33 @@ function PillarCard({
   value: string;
 }) {
   return (
-    <div
-      className="landing-reveal group relative overflow-hidden rounded-[2.1rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] p-6 shadow-[var(--landing-shadow-soft)] transition duration-300 hover:-translate-y-1 hover:border-[color:var(--landing-border-strong)]"
-      style={style}
-    >
-      <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,var(--landing-glow),transparent_70%)] opacity-60" />
-      <div className="relative flex items-center justify-between">
-        <div className="rounded-[1.25rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-3 shadow-[var(--landing-shadow-soft)]">
-          <Icon className="size-5 text-[color:var(--landing-text-soft)]" />
+    <div className="landing-reveal h-full" style={style}>
+      <div
+        data-card-motion="follow"
+        className="landing-card-strong group relative h-full overflow-hidden rounded-[2.1rem] border border-[color:var(--landing-border)] bg-[var(--landing-panel)] p-6 shadow-[var(--landing-shadow-soft)]"
+      >
+        <div className="relative flex items-center justify-between">
+          <div className="rounded-[1.25rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-3 shadow-[var(--landing-shadow-soft)]">
+            <Icon className="size-5 text-[color:var(--landing-text-soft)]" />
+          </div>
+          <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--landing-text-faint)]">
+            {stat}
+          </p>
         </div>
-        <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--landing-text-faint)]">{stat}</p>
-      </div>
-      <p className="relative mt-8 text-2xl font-medium tracking-[-0.04em] text-[color:var(--landing-text)]">{kicker}</p>
-      <p className="relative mt-4 text-sm leading-7 text-[color:var(--landing-text-muted)]">{description}</p>
-      <div className="relative mt-8 border-t border-[color:var(--landing-border)] pt-4">
-        <p className="text-sm text-[color:var(--landing-text-faint)]">{footerLabel}</p>
-        <p className="mt-2 text-base font-medium text-[color:var(--landing-text)]">{value}</p>
+        <p className="relative mt-8 text-2xl font-medium tracking-[-0.04em] text-[color:var(--landing-text)]">
+          {kicker}
+        </p>
+        <p className="relative mt-4 text-sm leading-7 text-[color:var(--landing-text-muted)]">
+          {description}
+        </p>
+        <div className="relative mt-8 border-t border-[color:var(--landing-border)] pt-4">
+          <p className="text-sm text-[color:var(--landing-text-faint)]">
+            {footerLabel}
+          </p>
+          <p className="mt-2 text-base font-medium text-[color:var(--landing-text)]">
+            {value}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -940,9 +1278,13 @@ function PillarCard({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.25rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-alt)] px-4 py-4 shadow-[var(--landing-shadow-soft)]">
-      <p className="text-xs uppercase tracking-[0.22em] text-[color:var(--landing-text-faint)]">{label}</p>
-      <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[color:var(--landing-text)]">{value}</p>
+    <div className="landing-card-soft rounded-[1.25rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-alt)] px-4 py-4 shadow-[var(--landing-shadow-soft)]">
+      <p className="text-xs uppercase tracking-[0.22em] text-[color:var(--landing-text-faint)]">
+        {label}
+      </p>
+      <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[color:var(--landing-text)]">
+        {value}
+      </p>
     </div>
   );
 }
@@ -957,12 +1299,18 @@ function UnifiedRow({
   progress: string;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-4 shadow-[var(--landing-shadow-soft)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--landing-border-strong)]">
+    <div className="landing-card-soft rounded-[1.4rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-4 shadow-[var(--landing-shadow-soft)]">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-[color:var(--landing-text)]">{label}</p>
-        <p className="text-sm text-[color:var(--landing-text-faint)]">{progress}</p>
+        <p className="text-sm font-medium text-[color:var(--landing-text)]">
+          {label}
+        </p>
+        <p className="text-sm text-[color:var(--landing-text-faint)]">
+          {progress}
+        </p>
       </div>
-      <p className="mt-2 text-sm text-[color:var(--landing-text-muted)]">{note}</p>
+      <p className="mt-2 text-sm text-[color:var(--landing-text-muted)]">
+        {note}
+      </p>
       <ProgressBar className="mt-4" value={progress} />
     </div>
   );
@@ -970,8 +1318,12 @@ function UnifiedRow({
 function MetricBlock({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--landing-text-faint)]">{label}</p>
-      <p className="mt-2 text-4xl font-semibold tracking-[-0.06em] text-[color:var(--landing-text)]">{value}</p>
+      <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--landing-text-faint)]">
+        {label}
+      </p>
+      <p className="mt-2 text-4xl font-semibold tracking-[-0.06em] text-[color:var(--landing-text)]">
+        {value}
+      </p>
     </div>
   );
 }
@@ -998,9 +1350,13 @@ function ChartRow({
 
 function ShowcaseChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.25rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-4 shadow-[var(--landing-shadow-soft)]">
-      <p className="text-xs uppercase tracking-[0.22em] text-[color:var(--landing-text-faint)]">{label}</p>
-      <p className="mt-2 text-base font-medium text-[color:var(--landing-text)]">{value}</p>
+    <div className="landing-card-soft rounded-[1.25rem] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-4 shadow-[var(--landing-shadow-soft)]">
+      <p className="text-xs uppercase tracking-[0.22em] text-[color:var(--landing-text-faint)]">
+        {label}
+      </p>
+      <p className="mt-2 text-base font-medium text-[color:var(--landing-text)]">
+        {value}
+      </p>
     </div>
   );
 }
@@ -1023,48 +1379,56 @@ function PricingCard({
   style?: CSSProperties;
 }) {
   return (
-    <div
-      className={cn(
-        "landing-reveal relative overflow-hidden rounded-[2.2rem] border p-6 shadow-[var(--landing-shadow-soft)] transition duration-300 hover:-translate-y-1 hover:border-[color:var(--landing-border-strong)]",
-        highlight
-          ? "border-[color:var(--landing-border-strong)] bg-[var(--landing-panel)]"
-          : "border-[color:var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))]",
-      )}
-      style={style}
-    >
-      {highlight ? (
-        <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,var(--landing-glow),transparent_68%)] opacity-70" />
-      ) : null}
-      <div className="relative flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-[color:var(--landing-text)]">{name}</p>
-          <p className="mt-3 max-w-sm text-sm leading-6 text-[color:var(--landing-text-muted)]">{detail}</p>
-        </div>
-        <p className="text-4xl font-semibold tracking-[-0.06em] text-[color:var(--landing-text)]">{price}</p>
-      </div>
-
-      <div className="relative mt-8 space-y-3">
-        {features.map((feature) => (
-          <div key={feature} className="flex items-center gap-3 text-sm text-[color:var(--landing-text-soft)]">
-            <span className="flex size-5 items-center justify-center rounded-full bg-[color:var(--landing-surface-strong)]">
-              <span className="size-1.5 rounded-full bg-[color:var(--landing-accent)] shadow-[0_0_12px_var(--landing-glow)]" />
-            </span>
-            {feature}
-          </div>
-        ))}
-      </div>
-
-      <Link
+    <div className="landing-reveal h-full" style={style}>
+      <div
+        data-card-motion="follow"
         className={cn(
-          "relative mt-8 inline-flex h-11 items-center justify-center rounded-full px-4 text-sm font-medium transition duration-300",
+          "landing-card-strong relative h-full overflow-hidden rounded-[2.2rem] border p-6 shadow-[var(--landing-shadow-soft)]",
           highlight
-            ? "bg-[color:var(--landing-button-primary)] text-[color:var(--landing-button-primary-text)] shadow-[0_12px_28px_var(--landing-accent-soft)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_var(--landing-accent-strong)]"
-            : "border border-[color:var(--landing-border)] bg-[color:var(--landing-button-secondary)] text-[color:var(--landing-text-soft)] hover:-translate-y-0.5 hover:bg-[color:var(--landing-button-secondary-hover)] hover:text-[color:var(--landing-text)]",
+            ? "border-[color:var(--landing-border-strong)] bg-[var(--landing-panel)]"
+            : "border-[color:var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))]",
         )}
-        href="/signup"
       >
-        {cta}
-      </Link>
+        <div className="relative flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-[color:var(--landing-text)]">
+              {name}
+            </p>
+            <p className="mt-3 max-w-sm text-sm leading-6 text-[color:var(--landing-text-muted)]">
+              {detail}
+            </p>
+          </div>
+          <p className="text-4xl font-semibold tracking-[-0.06em] text-[color:var(--landing-text)]">
+            {price}
+          </p>
+        </div>
+
+        <div className="relative mt-8 space-y-3">
+          {features.map((feature) => (
+            <div
+              key={feature}
+              className="flex items-center gap-3 text-sm text-[color:var(--landing-text-soft)]"
+            >
+              <span className="flex size-5 items-center justify-center rounded-full bg-[color:var(--landing-surface-strong)]">
+                <span className="size-1.5 rounded-full bg-[color:var(--landing-accent)] shadow-[0_0_12px_var(--landing-glow)]" />
+              </span>
+              {feature}
+            </div>
+          ))}
+        </div>
+
+        <Link
+          className={cn(
+            "relative mt-8 inline-flex h-11 items-center justify-center rounded-full px-4 text-sm font-medium transition duration-300",
+            highlight
+              ? "bg-[color:var(--landing-button-primary)] text-[color:var(--landing-button-primary-text)] shadow-[0_12px_28px_var(--landing-accent-soft)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_var(--landing-accent-strong)]"
+              : "border border-[color:var(--landing-border)] bg-[color:var(--landing-button-secondary)] text-[color:var(--landing-text-soft)] hover:-translate-y-0.5 hover:bg-[color:var(--landing-button-secondary-hover)] hover:text-[color:var(--landing-text)]",
+          )}
+          href="/signup"
+        >
+          {cta}
+        </Link>
+      </div>
     </div>
   );
 }
@@ -1077,7 +1441,9 @@ function ProgressBar({
   value: string;
 }) {
   return (
-    <div className={cn("h-2 rounded-full bg-[color:var(--track-bg)]", className)}>
+    <div
+      className={cn("h-2 rounded-full bg-[color:var(--track-bg)]", className)}
+    >
       <div
         className="h-2 rounded-full"
         style={{
@@ -1090,16 +1456,3 @@ function ProgressBar({
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
