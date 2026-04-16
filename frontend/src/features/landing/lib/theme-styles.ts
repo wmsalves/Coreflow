@@ -14,6 +14,7 @@ export const landingThemeStyles = {
     "--landing-bg-elevated": "rgba(10,13,20,0.88)",
     "--landing-border": "rgba(255,255,255,0.09)",
     "--landing-border-strong": "rgba(255,255,255,0.16)",
+    "--landing-brand-text": "#f7f8fb",
     "--landing-header-gloss": "linear-gradient(180deg, rgba(255,255,255,0.06), transparent 60%)",
     "--landing-header-shadow": "0 12px 40px rgba(0,0,0,0.14)",
     "--landing-header-shadow-scrolled": "0 20px 70px rgba(0,0,0,0.22)",
@@ -76,6 +77,7 @@ export const landingThemeStyles = {
     "--landing-bg-elevated": "rgba(252,249,244,0.78)",
     "--landing-border": "rgba(66,51,36,0.08)",
     "--landing-border-strong": "rgba(66,51,36,0.14)",
+    "--landing-brand-text": "rgba(20,28,42,0.72)",
     "--landing-header-gloss": "linear-gradient(180deg, rgba(255,255,255,0.58), rgba(255,255,255,0.12) 58%, transparent)",
     "--landing-header-shadow":
       "0 20px 48px rgba(93,72,48,0.08), 0 8px 20px rgba(31,41,55,0.04)",

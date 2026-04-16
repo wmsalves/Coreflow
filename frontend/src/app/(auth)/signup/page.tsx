@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/features/auth/components/auth-form";
+import { AuthShell } from "@/features/auth/components/auth-shell";
 import { getCurrentUser } from "@/lib/auth";
 import { getQueryParam } from "@/lib/utils";
 
@@ -18,32 +18,18 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
   const params = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center px-4 py-10 sm:px-6 lg:px-8">
-      <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="space-y-5">
-          <Link
-            href="/"
-            className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--muted)]"
-          >
-            Coreflow
-          </Link>
-          <div className="space-y-3">
-            <h1 className="text-4xl font-semibold tracking-tight">Build your growth system.</h1>
-            <p className="max-w-xl text-base leading-7 text-[var(--muted)]">
-              Create an account to start with habits now, then expand into study and workout
-              tracking as the product grows.
-            </p>
-          </div>
-        </div>
-
-        <AuthForm
-          mode="signup"
-          feedback={{
-            error: getQueryParam(params.error),
-            message: getQueryParam(params.message),
-          }}
-        />
-      </div>
-    </main>
+    <AuthShell
+      description="Create the account that will hold your habits first, then your focus and training history as Coreflow expands."
+      eyebrow="Start free"
+      title="Build one place for daily execution."
+    >
+      <AuthForm
+        mode="signup"
+        feedback={{
+          error: getQueryParam(params.error),
+          message: getQueryParam(params.message),
+        }}
+      />
+    </AuthShell>
   );
 }

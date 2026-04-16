@@ -46,7 +46,7 @@ export function CoreflowLogo({
       <span className="min-w-0">
         <span
           className={cn(
-            "block text-sm font-semibold tracking-[0.18em] uppercase text-(--landing-text)",
+            "block text-sm font-semibold tracking-[0.18em] uppercase text-(--landing-brand-text)",
             nameClassName,
           )}
         >

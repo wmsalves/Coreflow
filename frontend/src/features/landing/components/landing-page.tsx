@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import type { CSSProperties } from "react";
 import { useRef } from "react";
 import { landingCopy } from "@/features/landing/content/landing-copy";
 import { LandingBackdrop } from "@/features/landing/components/landing-backdrop";
+import { LandingFooter } from "@/features/landing/components/landing-footer";
 import { LandingHeader } from "@/features/landing/components/landing-header";
 import { DailyFlowSection } from "@/features/landing/components/sections/daily-flow-section";
 import { FinalCtaSection } from "@/features/landing/components/sections/final-cta-section";
@@ -69,7 +70,9 @@ export function LandingPage() {
         <ShowcaseSection copy={copy.showcase} />
         <PricingSection copy={copy.pricing} />
         <FinalCtaSection copy={copy.finalCta} />
+        <LandingFooter copy={copy.footer} />
       </div>
     </main>
   );
 }
+

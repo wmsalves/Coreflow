@@ -20,8 +20,8 @@ export function HeroSection({
   const heroStats = [copy.showcase.stats[0], copy.showcase.stats[1]];
 
   return (
-    <section className="relative grid flex-1 items-center gap-14 pb-20 pt-12 lg:grid-cols-[minmax(0,0.98fr)_minmax(480px,1.02fr)] lg:gap-14 lg:pt-16">
-      <div className="relative max-w-[35rem] space-y-10">
+    <section className="relative grid flex-1 items-center gap-16 pb-20 pt-12 lg:grid-cols-[minmax(0,0.98fr)_minmax(480px,1.02fr)] lg:gap-1 lg:pt-6">
+      <div className="relative max-w-[35rem] space-y-10 lg:self-start">
         <div
           className="landing-reveal inline-flex items-center gap-2 rounded-full border border-(--landing-border-strong) bg-(--landing-surface) px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-(--landing-text-muted) shadow-[var(--landing-shadow-soft)]"
           style={revealStyle(40)}
@@ -76,7 +76,9 @@ export function HeroSection({
                 0{index + 1}
               </p>
               <div className="mt-3 h-px w-8 bg-[linear-gradient(90deg,var(--landing-accent),transparent)] opacity-80" />
-              <p className="mt-3 text-sm text-(--landing-text-soft)">{principle}</p>
+              <p className="mt-3 text-sm text-(--landing-text-soft)">
+                {principle}
+              </p>
             </div>
           ))}
         </div>
@@ -283,4 +285,3 @@ function ChartRow({
     </div>
   );
 }
-

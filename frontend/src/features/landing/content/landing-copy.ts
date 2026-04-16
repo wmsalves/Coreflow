@@ -20,6 +20,25 @@ export type LandingCopy = {
     secondaryCta: string;
     title: string;
   };
+  footer: {
+    copyright: string;
+    groups: Array<{
+      links: Array<{
+        href: string;
+        label: string;
+      }>;
+      title: string;
+    }>;
+    newsletter: {
+      button: string;
+      description: string;
+      disclaimer: string;
+      placeholder: string;
+      title: string;
+    };
+    principle: string;
+    statement: string;
+  };
   header: {
     cta: string;
     nav: Array<{
@@ -178,6 +197,56 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
       primaryCta: "Start with Coreflow",
       secondaryCta: "Sign in",
       title: "Bring your habits, focus, and training into one flow.",
+    },
+    footer: {
+      copyright: "Copyright 2026 Coreflow. All rights reserved.",
+      groups: [
+        {
+          title: "Product",
+          links: [
+            { href: "#showcase", label: "Dashboard" },
+            { href: "#problem", label: "Why Coreflow" },
+            { href: "#daily-flow", label: "Daily flow" },
+            { href: "#pricing", label: "Pricing" },
+          ],
+        },
+        {
+          title: "Core modules",
+          links: [
+            { href: "#pillars", label: "Habit tracking" },
+            { href: "#pillars", label: "Deep work sessions" },
+            { href: "#pillars", label: "Workout logging" },
+            { href: "#showcase", label: "Progress tracking" },
+          ],
+        },
+        {
+          title: "Company",
+          links: [
+            { href: "/signup", label: "Start free" },
+            { href: "/login", label: "Sign in" },
+            { href: "#", label: "Roadmap" },
+            { href: "#", label: "Contact" },
+          ],
+        },
+        {
+          title: "Resources",
+          links: [
+            { href: "#", label: "Documentation" },
+            { href: "#", label: "API" },
+            { href: "#", label: "Changelog" },
+            { href: "#", label: "Privacy & terms" },
+          ],
+        },
+      ],
+      newsletter: {
+        button: "Subscribe",
+        description: "Product updates, roadmap notes, and disciplined execution ideas. No noise.",
+        disclaimer: "Occasional updates. Unsubscribe anytime.",
+        placeholder: "you@example.com",
+        title: "Stay updated",
+      },
+      principle: "Consistency > intensity. Clarity > complexity.",
+      statement: "A personal operating system for habits, focus, and training momentum.",
     },
     header: {
       cta: "Start free",
@@ -441,6 +510,56 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
       primaryCta: "Começar com Coreflow",
       secondaryCta: "Entrar",
       title: "Traga hábitos, foco e treino para um único fluxo.",
+    },
+    footer: {
+      copyright: "Copyright 2026 Coreflow. Todos os direitos reservados.",
+      groups: [
+        {
+          title: "Produto",
+          links: [
+            { href: "#showcase", label: "Dashboard" },
+            { href: "#problem", label: "Por que Coreflow" },
+            { href: "#daily-flow", label: "Fluxo diario" },
+            { href: "#pricing", label: "Planos" },
+          ],
+        },
+        {
+          title: "Modulos",
+          links: [
+            { href: "#pillars", label: "Habitos" },
+            { href: "#pillars", label: "Sessoes de foco" },
+            { href: "#pillars", label: "Registro de treino" },
+            { href: "#showcase", label: "Progresso diario" },
+          ],
+        },
+        {
+          title: "Empresa",
+          links: [
+            { href: "/signup", label: "Comecar gratis" },
+            { href: "/login", label: "Entrar" },
+            { href: "#", label: "Roadmap" },
+            { href: "#", label: "Contato" },
+          ],
+        },
+        {
+          title: "Recursos",
+          links: [
+            { href: "#", label: "Documentacao" },
+            { href: "#", label: "API" },
+            { href: "#", label: "Changelog" },
+            { href: "#", label: "Privacidade e termos" },
+          ],
+        },
+      ],
+      newsletter: {
+        button: "Inscrever",
+        description: "Atualizacoes do produto, notas de roadmap e ideias sobre execucao consistente. Sem ruido.",
+        disclaimer: "Atualizacoes ocasionais. Cancele quando quiser.",
+        placeholder: "voce@exemplo.com",
+        title: "Receba novidades",
+      },
+      principle: "Consistencia > intensidade. Clareza > complexidade.",
+      statement: "Um sistema operacional pessoal para habitos, foco e ritmo de treino.",
     },
     header: {
       cta: "Começar grátis",
