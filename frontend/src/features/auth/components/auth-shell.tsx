@@ -1,34 +1,43 @@
-"use client";
+﻿"use client";
 
 import type { CSSProperties, ReactNode } from "react";
-import Link from "next/link";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
-import { CoreflowLogo } from "@/components/brand/coreflow-logo";
-import { ThemeToggle } from "@/features/landing/components/controls/theme-toggle";
+import { CheckCircle2 } from "lucide-react";
+import { authCopy, type AuthMode } from "@/features/auth/content/auth-copy";
+import { landingCopy } from "@/features/landing/content/landing-copy";
 import { LandingBackdrop } from "@/features/landing/components/landing-backdrop";
+import { LandingHeader } from "@/features/landing/components/landing-header";
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
 import { landingThemeStyles } from "@/features/landing/lib/theme-styles";
 
 type AuthShellProps = {
   children: ReactNode;
-  description: string;
-  eyebrow: string;
-  title: string;
+  mode: AuthMode;
 };
 
-const proofPoints = [
-  "Habits, focus, and training in one operating rhythm.",
-  "A calmer dashboard for daily execution and review.",
-  "Protected access with Supabase auth underneath.",
-];
+const proofPoints = {
+  en: [
+    "Habits, focus, and training in one operating rhythm.",
+    "A calmer dashboard for daily execution and review.",
+    "Protected access with Supabase auth underneath.",
+  ],
+  "pt-BR": [
+    "Habitos, foco e treino em um unico ritmo operacional.",
+    "Um dashboard mais calmo para execucao e revisao diaria.",
+    "Acesso protegido com Supabase Auth por baixo.",
+  ],
+} as const;
 
-export function AuthShell({
-  children,
-  description,
-  eyebrow,
-  title,
-}: AuthShellProps) {
-  const { setTheme, theme } = useLandingPreferences();
+export function AuthShell({ children, mode }: AuthShellProps) {
+  const { locale, setLocale, setTheme, theme } = useLandingPreferences();
+  const pageCopy = authCopy[locale][mode];
+  const marketingCopy = landingCopy[locale];
+  const headerCopy = {
+    ...marketingCopy.header,
+    nav: marketingCopy.header.nav.map((item) => ({
+      ...item,
+      href: item.href.startsWith("#") ? `/${item.href}` : item.href,
+    })),
+  };
 
   return (
     <main
@@ -37,85 +46,64 @@ export function AuthShell({
       style={landingThemeStyles[theme] as CSSProperties}
     >
       <LandingBackdrop theme={theme} />
+      <LandingHeader
+        controls={marketingCopy.controls}
+        copy={headerCopy}
+        locale={locale}
+        onLocaleChange={setLocale}
+        onThemeChange={setTheme}
+        scrolled={false}
+        theme={theme}
+      />
 
-      <div className="relative mx-auto min-h-screen w-full max-w-7xl px-5 pb-8 pt-5 sm:px-6 sm:pb-10 lg:px-8 lg:pb-12">
-        <div className="flex items-center justify-between gap-4">
-          <CoreflowLogo
-            frameClassName="border-(--landing-border) bg-(--landing-logo-frame)"
-            nameClassName="text-(--landing-brand-text)"
-            showTagline={false}
-          />
-
-          <ThemeToggle
-            labels={{ dark: "Dark", label: "Theme", light: "Light" }}
-            onThemeChange={setTheme}
-            theme={theme}
-          />
-        </div>
-
-        <div className="grid items-start gap-9 pt-10 sm:pt-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 lg:pt-14 xl:pt-16">
-          <section className="hidden lg:block">
-            <Link
-              className="inline-flex items-center gap-2 text-sm text-(--landing-text-muted) transition hover:text-(--landing-text)"
-              href="/"
-            >
-              <ArrowLeft className="size-4" />
-              Back to Coreflow
-            </Link>
-
-            <div className="mt-10 max-w-[34rem] space-y-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-(--landing-text-faint)">
-                {eyebrow}
+      <div className="relative mx-auto grid min-h-screen w-full max-w-7xl items-start gap-9 px-5 pb-8 pt-32 sm:px-6 sm:pb-10 sm:pt-36 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 lg:px-8 lg:pb-12 lg:pt-36 xl:pt-40">
+        <section className="hidden lg:block">
+          <div className="max-w-[34rem] space-y-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-(--landing-text-faint)">
+              {pageCopy.eyebrow}
+            </p>
+            <div className="space-y-5">
+              <h1 className="text-[clamp(3.1rem,5.5vw,5.45rem)] leading-[0.92] font-semibold tracking-[-0.065em] text-(--landing-text)">
+                {pageCopy.title}
+              </h1>
+              <p className="max-w-xl text-base leading-8 text-(--landing-text-muted)">
+                {pageCopy.description}
               </p>
-              <div className="space-y-5">
-                <h1 className="text-[clamp(3.1rem,5.5vw,5.45rem)] leading-[0.92] font-semibold tracking-[-0.065em] text-(--landing-text)">
-                  {title}
-                </h1>
-                <p className="max-w-xl text-base leading-8 text-(--landing-text-muted)">
-                  {description}
-                </p>
-              </div>
             </div>
+          </div>
 
-            <div className="mt-9 grid max-w-xl gap-3">
-              {proofPoints.map((point) => (
-                <div
-                  className="landing-card-soft flex items-center gap-3 rounded-[1.35rem] border border-(--landing-border) bg-(--landing-surface) px-4 py-3 text-sm text-(--landing-text-soft) shadow-[var(--landing-shadow-soft)]"
-                  key={point}
-                >
-                  <CheckCircle2 className="size-4 shrink-0 text-(--landing-accent)" />
-                  {point}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="mx-auto flex w-full max-w-[31rem] flex-col justify-start lg:mx-0 lg:justify-self-end">
-            <div className="mb-6 lg:hidden">
-              <Link
-                className="inline-flex items-center gap-2 text-sm text-(--landing-text-muted) transition hover:text-(--landing-text)"
-                href="/"
+          <div className="mt-9 grid max-w-xl gap-3">
+            {proofPoints[locale].map((point) => (
+              <div
+                className="landing-card-soft flex items-center gap-3 rounded-[1.35rem] border border-(--landing-border) bg-(--landing-surface) px-4 py-3 text-sm text-(--landing-text-soft) shadow-[var(--landing-shadow-soft)]"
+                key={point}
               >
-                <ArrowLeft className="size-4" />
-                Back to Coreflow
-              </Link>
-              <div className="mt-6 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.26em] text-(--landing-text-faint)">
-                  {eyebrow}
-                </p>
-                <h1 className="text-4xl font-semibold tracking-[-0.055em] text-(--landing-text)">
-                  {title}
-                </h1>
-                <p className="text-sm leading-7 text-(--landing-text-muted)">
-                  {description}
-                </p>
+                <CheckCircle2 className="size-4 shrink-0 text-(--landing-accent)" />
+                {point}
               </div>
-            </div>
+            ))}
+          </div>
+        </section>
 
-            {children}
-          </section>
-        </div>
+        <section className="mx-auto flex w-full max-w-[31rem] flex-col justify-start lg:mx-0 lg:justify-self-end">
+          <div className="mb-6 lg:hidden">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.26em] text-(--landing-text-faint)">
+                {pageCopy.eyebrow}
+              </p>
+              <h1 className="text-4xl font-semibold tracking-[-0.055em] text-(--landing-text)">
+                {pageCopy.title}
+              </h1>
+              <p className="text-sm leading-7 text-(--landing-text-muted)">
+                {pageCopy.description}
+              </p>
+            </div>
+          </div>
+
+          {children}
+        </section>
       </div>
     </main>
   );
 }
+

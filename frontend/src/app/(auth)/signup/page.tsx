@@ -18,11 +18,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
   const params = await searchParams;
 
   return (
-    <AuthShell
-      description="Create the account that will hold your habits first, then your focus and training history as Coreflow expands."
-      eyebrow="Start free"
-      title="Build one place for daily execution."
-    >
+    <AuthShell mode="signup">
       <AuthForm
         mode="signup"
         feedback={{

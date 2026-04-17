@@ -1,8 +1,12 @@
-﻿import type { InputHTMLAttributes } from "react";
+﻿"use client";
+
+import type { InputHTMLAttributes } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { signInAction, signUpAction } from "@/features/auth/actions";
+import { authCopy, type AuthMode } from "@/features/auth/content/auth-copy";
+import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
 import { cn } from "@/lib/utils";
 
 type AuthFormProps = {
@@ -10,34 +14,13 @@ type AuthFormProps = {
     error?: string;
     message?: string;
   };
-  mode: "login" | "signup";
-};
-
-const authCopy = {
-  login: {
-    alternateCta: "Create account",
-    alternateHref: "/signup",
-    alternateLabel: "New to Coreflow?",
-    description: "Use your email and password to return to your execution system.",
-    forgotPassword: "Forgot password?",
-    pending: "Signing in...",
-    submit: "Sign in",
-    title: "Sign in to Coreflow",
-  },
-  signup: {
-    alternateCta: "Sign in",
-    alternateHref: "/login",
-    alternateLabel: "Already have an account?",
-    description: "Start with habits today, then keep your focus and training history in the same system.",
-    pending: "Creating account...",
-    submit: "Create account",
-    title: "Create your account",
-  },
+  mode: AuthMode;
 };
 
 export function AuthForm({ feedback, mode }: AuthFormProps) {
+  const { locale } = useLandingPreferences();
   const isSignup = mode === "signup";
-  const copy = authCopy[mode];
+  const copy = authCopy[locale][mode];
 
   return (
     <div className="landing-card-strong rounded-[2.1rem] border border-(--landing-border) bg-[var(--landing-panel)] p-1 shadow-[var(--landing-shadow)]">
@@ -46,14 +29,14 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
 
         <div className="space-y-2.5">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-(--landing-text-faint)">
-            Secure access
+            {copy.formEyebrow}
           </p>
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold tracking-[-0.045em] text-(--landing-text)">
-              {copy.title}
+              {copy.formTitle}
             </h2>
             <p className="text-sm leading-6 text-(--landing-text-muted)">
-              {copy.description}
+              {copy.formDescription}
             </p>
           </div>
         </div>
@@ -80,18 +63,18 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
           {isSignup ? (
             <AuthField
               autoComplete="name"
-              label="Full name"
+              label={copy.fullNameLabel}
               name="fullName"
-              placeholder="Alex Johnson"
+              placeholder={copy.fullNamePlaceholder}
               required
             />
           ) : null}
 
           <AuthField
             autoComplete="email"
-            label="Email"
+            label={copy.emailLabel}
             name="email"
-            placeholder="you@example.com"
+            placeholder={copy.emailPlaceholder}
             required
             type="email"
           />
@@ -102,14 +85,14 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
                 className="text-sm font-medium text-(--landing-text-soft)"
                 htmlFor="password"
               >
-                Password
+                {copy.passwordLabel}
               </label>
-              {!isSignup ? (
+              {!isSignup && copy.forgotPassword ? (
                 <Link
                   className="text-xs font-medium text-(--landing-text-faint) transition hover:text-(--landing-text)"
-                  href="/login#forgot-password"
+                  href="/signin#forgot-password"
                 >
-                  {authCopy.login.forgotPassword}
+                  {copy.forgotPassword}
                 </Link>
               ) : null}
             </div>
@@ -118,7 +101,11 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
               id="password"
               minLength={6}
               name="password"
-              placeholder={isSignup ? "At least 6 characters" : "Your password"}
+              placeholder={
+                isSignup
+                  ? copy.newPasswordPlaceholder
+                  : copy.currentPasswordPlaceholder
+              }
               required
               type="password"
             />
@@ -127,10 +114,10 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
           {isSignup ? (
             <AuthField
               autoComplete="new-password"
-              label="Confirm password"
+              label={copy.confirmPasswordLabel}
               minLength={6}
               name="confirmPassword"
-              placeholder="Repeat your password"
+              placeholder={copy.confirmPasswordPlaceholder}
               required
               type="password"
             />
@@ -192,3 +179,4 @@ function AuthInput({ className, ...props }: InputHTMLAttributes<HTMLInputElement
     />
   );
 }
+

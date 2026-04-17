@@ -18,11 +18,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
 
   return (
-    <AuthShell
-      description="Return to a single operating layer for habits, focus, and training momentum."
-      eyebrow="Welcome back"
-      title="Continue the system you are building."
-    >
+    <AuthShell mode="login">
       <AuthForm
         mode="login"
         feedback={{

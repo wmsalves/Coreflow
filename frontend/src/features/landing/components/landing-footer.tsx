@@ -1,6 +1,5 @@
 ﻿import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { CoreflowLogo } from "@/components/brand/coreflow-logo";
 import type { LandingCopy } from "@/features/landing/content/landing-copy";
 
 type LandingFooterProps = {
@@ -82,3 +81,4 @@ export function LandingFooter({ copy }: LandingFooterProps) {
     </footer>
   );
 }
+
