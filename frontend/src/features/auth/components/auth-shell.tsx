@@ -7,6 +7,8 @@ import { landingCopy } from "@/features/landing/content/landing-copy";
 import { LandingBackdrop } from "@/features/landing/components/landing-backdrop";
 import { LandingHeader } from "@/features/landing/components/landing-header";
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
+import { useLandingReveal } from "@/features/landing/hooks/use-landing-reveal";
+import { revealStyle } from "@/features/landing/lib/reveal";
 import { landingThemeStyles } from "@/features/landing/lib/theme-styles";
 
 type AuthShellProps = {
@@ -29,6 +31,8 @@ const proofPoints = {
 
 export function AuthShell({ children, mode }: AuthShellProps) {
   const { locale, setLocale, setTheme, theme } = useLandingPreferences();
+  useLandingReveal(locale, theme);
+
   const pageCopy = authCopy[locale][mode];
   const marketingCopy = landingCopy[locale];
   const headerCopy = {
@@ -41,7 +45,7 @@ export function AuthShell({ children, mode }: AuthShellProps) {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden bg-(--landing-bg) text-(--landing-text)"
+      className="relative min-h-screen overflow-x-hidden bg-(--landing-bg) text-(--landing-text)"
       data-theme={theme}
       style={landingThemeStyles[theme] as CSSProperties}
     >
@@ -57,7 +61,10 @@ export function AuthShell({ children, mode }: AuthShellProps) {
       />
 
       <div className="relative mx-auto grid min-h-screen w-full max-w-7xl items-start gap-9 px-5 pb-8 pt-32 sm:px-6 sm:pb-10 sm:pt-36 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 lg:px-8 lg:pb-12 lg:pt-36 xl:pt-40">
-        <section className="hidden lg:block">
+        <section
+          className="landing-reveal hidden lg:block"
+          style={revealStyle(60)}
+        >
           <div className="max-w-[34rem] space-y-6">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-(--landing-text-faint)">
               {pageCopy.eyebrow}
@@ -86,7 +93,7 @@ export function AuthShell({ children, mode }: AuthShellProps) {
         </section>
 
         <section className="mx-auto flex w-full max-w-[31rem] flex-col justify-start lg:mx-0 lg:justify-self-end">
-          <div className="mb-6 lg:hidden">
+          <div className="landing-reveal mb-6 lg:hidden" style={revealStyle(60)}>
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.26em] text-(--landing-text-faint)">
                 {pageCopy.eyebrow}
@@ -106,4 +113,5 @@ export function AuthShell({ children, mode }: AuthShellProps) {
     </main>
   );
 }
+
 

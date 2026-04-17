@@ -7,6 +7,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { signInAction, signUpAction } from "@/features/auth/actions";
 import { authCopy, type AuthMode } from "@/features/auth/content/auth-copy";
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
+import { revealStyle } from "@/features/landing/lib/reveal";
 import { cn } from "@/lib/utils";
 
 type AuthFormProps = {
@@ -23,7 +24,10 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
   const copy = authCopy[locale][mode];
 
   return (
-    <div className="landing-card-strong rounded-[2.1rem] border border-(--landing-border) bg-[var(--landing-panel)] p-1 shadow-[var(--landing-shadow)]">
+    <div
+      className="landing-card-strong landing-reveal rounded-[2.1rem] border border-(--landing-border) bg-[var(--landing-panel)] p-1 shadow-[var(--landing-shadow)]"
+      style={revealStyle(120)}
+    >
       <div className="relative overflow-hidden rounded-[calc(2.1rem-0.25rem)] border border-(--landing-border) bg-(--landing-surface) px-5 py-6 sm:px-7 sm:py-7">
         <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--landing-accent-ember),transparent)] opacity-80" />
 
@@ -179,4 +183,5 @@ function AuthInput({ className, ...props }: InputHTMLAttributes<HTMLInputElement
     />
   );
 }
+
 
