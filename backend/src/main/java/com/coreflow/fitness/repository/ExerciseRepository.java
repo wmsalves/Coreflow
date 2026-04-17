@@ -12,6 +12,8 @@ public interface ExerciseRepository {
 
     Optional<ExerciseEntity> findById(Long id);
 
+    Optional<ExerciseEntity> findByExternalId(String externalId);
+
     Optional<ExerciseEntity> findByExternalId(String source, String externalId);
 
     ExerciseEntity save(ExerciseEntity exercise);

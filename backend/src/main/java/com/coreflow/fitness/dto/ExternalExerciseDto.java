@@ -6,10 +6,11 @@ public record ExternalExerciseDto(
         String externalId,
         String source,
         String name,
-        String category,
-        String targetMuscle,
+        String imageUrl,
+        String videoUrl,
+        String bodyPart,
+        String target,
         String equipment,
-        String gifUrl,
         List<String> secondaryMuscles,
         List<String> instructions
 ) {

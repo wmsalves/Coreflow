@@ -1,6 +1,8 @@
 package com.coreflow.fitness.mapper;
 
 import com.coreflow.fitness.dto.ExerciseResponse;
+import com.coreflow.fitness.dto.ExerciseDetailResponse;
+import com.coreflow.fitness.dto.ExerciseSummaryResponse;
 import com.coreflow.fitness.entity.ExerciseEntity;
 import java.util.ArrayList;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,10 @@ public class ExerciseMapper {
                 entity.getExternalId(),
                 entity.getSource(),
                 entity.getName(),
+                entity.getImageUrl(),
+                entity.getVideoUrl(),
+                entity.getBodyPart(),
+                entity.getTarget(),
                 entity.getCategory(),
                 entity.getTargetMuscle(),
                 entity.getEquipment(),
@@ -21,5 +27,40 @@ public class ExerciseMapper {
                 new ArrayList<>(entity.getSecondaryMuscles()),
                 new ArrayList<>(entity.getInstructions())
         );
+    }
+
+    public ExerciseSummaryResponse toSummaryResponse(ExerciseEntity entity) {
+        return new ExerciseSummaryResponse(
+                resolveCatalogId(entity),
+                entity.getId(),
+                entity.getName(),
+                entity.getImageUrl(),
+                entity.getVideoUrl(),
+                entity.getBodyPart(),
+                entity.getTarget(),
+                entity.getEquipment()
+        );
+    }
+
+    public ExerciseDetailResponse toDetailResponse(ExerciseEntity entity) {
+        return new ExerciseDetailResponse(
+                resolveCatalogId(entity),
+                entity.getId(),
+                entity.getName(),
+                entity.getImageUrl(),
+                entity.getVideoUrl(),
+                entity.getBodyPart(),
+                entity.getTarget(),
+                entity.getEquipment(),
+                new ArrayList<>(entity.getSecondaryMuscles()),
+                new ArrayList<>(entity.getInstructions())
+        );
+    }
+
+    private String resolveCatalogId(ExerciseEntity entity) {
+        if (entity.getExternalId() != null && !entity.getExternalId().isBlank()) {
+            return entity.getExternalId();
+        }
+        return String.valueOf(entity.getId());
     }
 }

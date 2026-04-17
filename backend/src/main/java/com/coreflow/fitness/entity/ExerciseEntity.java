@@ -10,6 +10,10 @@ public class ExerciseEntity {
     private String externalId;
     private String source;
     private String name;
+    private String imageUrl;
+    private String videoUrl;
+    private String bodyPart;
+    private String target;
     private String category;
     private String targetMuscle;
     private String equipment;
@@ -49,6 +53,38 @@ public class ExerciseEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
+    }
+
+    public String getBodyPart() {
+        return bodyPart;
+    }
+
+    public void setBodyPart(String bodyPart) {
+        this.bodyPart = bodyPart;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
     }
 
     public String getCategory() {

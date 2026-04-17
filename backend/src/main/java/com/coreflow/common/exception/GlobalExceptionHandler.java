@@ -17,6 +17,13 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(exception.getMessage(), null));
     }
 
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<ApiResponse<Void>> handleExternalServiceException(ExternalServiceException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(new ApiResponse<>(exception.getMessage(), null));
+    }
+
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(NoSuchElementException exception) {
         return ResponseEntity

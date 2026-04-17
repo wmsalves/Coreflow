@@ -54,6 +54,13 @@ public class InMemoryExerciseRepository implements ExerciseRepository {
     }
 
     @Override
+    public Optional<ExerciseEntity> findByExternalId(String externalId) {
+        return exercises.values().stream()
+                .filter(exercise -> normalize(externalId).equals(normalize(exercise.getExternalId())))
+                .findFirst();
+    }
+
+    @Override
     public Optional<ExerciseEntity> findByExternalId(String source, String externalId) {
         return exercises.values().stream()
                 .filter(exercise -> normalize(source).equals(normalize(exercise.getSource())))
@@ -89,6 +96,8 @@ public class InMemoryExerciseRepository implements ExerciseRepository {
         exercise.setName(name);
         exercise.setCategory(category);
         exercise.setTargetMuscle(targetMuscle);
+        exercise.setBodyPart(category);
+        exercise.setTarget(targetMuscle);
         exercise.setEquipment(equipment);
         return exercise;
     }

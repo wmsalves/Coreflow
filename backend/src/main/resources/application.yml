@@ -9,6 +9,7 @@ coreflow:
   api:
     base-path: /api
   fitness:
-    exercise-provider:
-      enabled: false
-      base-url:
+    ascend:
+      base-url: ${ASCEND_API_BASE_URL}
+      host: ${ASCEND_API_HOST}
+      key: ${ASCEND_API_KEY}

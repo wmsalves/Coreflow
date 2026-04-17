@@ -1,7 +1,8 @@
 package com.coreflow.fitness.controller;
 
 import com.coreflow.common.response.ApiResponse;
-import com.coreflow.fitness.dto.ExerciseResponse;
+import com.coreflow.fitness.dto.ExerciseDetailResponse;
+import com.coreflow.fitness.dto.ExerciseSummaryResponse;
 import com.coreflow.fitness.service.ExerciseCatalogService;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,17 +22,17 @@ public class ExerciseController {
     }
 
     @GetMapping
-    public ApiResponse<List<ExerciseResponse>> listExercises() {
-        return new ApiResponse<>("Exercises loaded", exerciseCatalogService.listExercises());
+    public ApiResponse<List<ExerciseSummaryResponse>> listExercises() {
+        return new ApiResponse<>("Exercises loaded", exerciseCatalogService.listExerciseSummaries());
     }
 
     @GetMapping("/search")
-    public ApiResponse<List<ExerciseResponse>> searchExercises(@RequestParam("q") String query) {
-        return new ApiResponse<>("Exercises matched", exerciseCatalogService.searchExercises(query));
+    public ApiResponse<List<ExerciseSummaryResponse>> searchExercises(@RequestParam("q") String query) {
+        return new ApiResponse<>("Exercises matched", exerciseCatalogService.searchExerciseSummaries(query));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<ExerciseResponse> getExercise(@PathVariable Long id) {
-        return new ApiResponse<>("Exercise loaded", exerciseCatalogService.getExercise(id));
+    public ApiResponse<ExerciseDetailResponse> getExercise(@PathVariable String id) {
+        return new ApiResponse<>("Exercise loaded", exerciseCatalogService.getExerciseDetail(id));
     }
 }
