@@ -1,6 +1,6 @@
-package com.coreflow.fitness.entity;
+package com.coreflow.execution.entity;
 
-public class WorkoutEntity {
+public class HabitEntity {
 
     private Long id;
     private Long userId;

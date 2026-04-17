@@ -8,3 +8,7 @@ server:
 coreflow:
   api:
     base-path: /api
+  fitness:
+    exercise-provider:
+      enabled: false
+      base-url:

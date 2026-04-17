@@ -1,9 +1,9 @@
-package com.coreflow.habits.controller;
+package com.coreflow.execution.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/habits")
-public class HabitsController {
+@RequestMapping("/api/v1/execution")
+public class ExecutionController {
 }
