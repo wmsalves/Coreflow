@@ -13,13 +13,13 @@ public class ExternalExerciseMapper {
         entity.setSource(dto.source());
         entity.setName(dto.name());
         entity.setImageUrl(dto.imageUrl());
+        entity.setGifUrl(dto.gifUrl());
         entity.setVideoUrl(dto.videoUrl());
         entity.setBodyPart(dto.bodyPart());
         entity.setTarget(dto.target());
         entity.setCategory(dto.bodyPart());
         entity.setTargetMuscle(dto.target());
         entity.setEquipment(dto.equipment());
-        entity.setGifUrl(dto.imageUrl());
         entity.setSecondaryMuscles(dto.secondaryMuscles());
         entity.setInstructions(dto.instructions());
         return entity;

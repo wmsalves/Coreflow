@@ -16,6 +16,7 @@ public class ExerciseMapper {
                 entity.getExternalId(),
                 entity.getSource(),
                 entity.getName(),
+                entity.getGifUrl(),
                 entity.getImageUrl(),
                 entity.getVideoUrl(),
                 entity.getBodyPart(),
@@ -23,7 +24,6 @@ public class ExerciseMapper {
                 entity.getCategory(),
                 entity.getTargetMuscle(),
                 entity.getEquipment(),
-                entity.getGifUrl(),
                 new ArrayList<>(entity.getSecondaryMuscles()),
                 new ArrayList<>(entity.getInstructions())
         );
@@ -34,6 +34,7 @@ public class ExerciseMapper {
                 resolveCatalogId(entity),
                 entity.getId(),
                 entity.getName(),
+                entity.getGifUrl(),
                 entity.getImageUrl(),
                 entity.getVideoUrl(),
                 entity.getBodyPart(),
@@ -47,6 +48,7 @@ public class ExerciseMapper {
                 resolveCatalogId(entity),
                 entity.getId(),
                 entity.getName(),
+                entity.getGifUrl(),
                 entity.getImageUrl(),
                 entity.getVideoUrl(),
                 entity.getBodyPart(),

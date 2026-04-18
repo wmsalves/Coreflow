@@ -7,6 +7,7 @@ public record ExerciseResponse(
         String externalId,
         String source,
         String name,
+        String gifUrl,
         String imageUrl,
         String videoUrl,
         String bodyPart,
@@ -14,7 +15,6 @@ public record ExerciseResponse(
         String category,
         String targetMuscle,
         String equipment,
-        String gifUrl,
         List<String> secondaryMuscles,
         List<String> instructions
 ) {

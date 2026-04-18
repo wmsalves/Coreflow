@@ -25,6 +25,34 @@ export type HabitsOverview = {
   };
 };
 
+const emptyHabitsOverview: HabitsOverview = {
+  habits: [],
+  summary: {
+    activeCount: 0,
+    bestStreak: 0,
+    completedTodayCount: 0,
+    completionRate: 0,
+  },
+};
+
+type SupabaseQueryError = {
+  code?: string;
+  message?: string;
+};
+
+function isMissingSchemaError(error: SupabaseQueryError | null) {
+  if (!error) {
+    return false;
+  }
+
+  return (
+    error.code === "PGRST205" ||
+    error.code === "PGRST204" ||
+    error.message?.includes("Could not find the table") ||
+    error.message?.includes("schema cache")
+  );
+}
+
 function addDays(dateKey: string, amount: number) {
   const date = new Date(`${dateKey}T00:00:00.000Z`);
   date.setUTCDate(date.getUTCDate() + amount);
@@ -78,10 +106,18 @@ export async function getHabitsOverview(userId: string): Promise<HabitsOverview>
   ]);
 
   if (habitsResult.error) {
+    if (isMissingSchemaError(habitsResult.error)) {
+      return emptyHabitsOverview;
+    }
+
     throw new Error(habitsResult.error.message);
   }
 
   if (logsResult.error) {
+    if (isMissingSchemaError(logsResult.error)) {
+      return emptyHabitsOverview;
+    }
+
     throw new Error(logsResult.error.message);
   }
 

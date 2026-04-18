@@ -6,6 +6,7 @@ public record ExternalExerciseDto(
         String externalId,
         String source,
         String name,
+        String gifUrl,
         String imageUrl,
         String videoUrl,
         String bodyPart,

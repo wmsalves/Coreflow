@@ -11,11 +11,13 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const buttonVariants: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-[var(--foreground)] text-white shadow-[0_18px_32px_rgba(19,33,29,0.14)] hover:-translate-y-0.5 hover:bg-[#0f1b17]",
+    "bg-[var(--landing-button-primary)] text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] hover:-translate-y-0.5 hover:shadow-[var(--landing-button-shadow-hover)]",
   secondary:
-    "bg-white/80 text-foreground ring-1 ring-[var(--border)] hover:-translate-y-0.5 hover:bg-white",
-  ghost: "bg-transparent text-[var(--muted)] hover:bg-[rgba(19,33,29,0.06)] hover:text-foreground",
-  danger: "bg-[var(--danger)] text-white hover:bg-[#b74b36]",
+    "border border-[var(--landing-border)] bg-[var(--landing-button-secondary)] text-[var(--landing-text-soft)] shadow-[var(--landing-shadow-soft)] hover:-translate-y-0.5 hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-button-secondary-hover)] hover:text-[var(--landing-text)]",
+  ghost:
+    "bg-transparent text-[var(--landing-text-muted)] hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)]",
+  danger:
+    "bg-[var(--danger)] text-[var(--danger-text)] shadow-[var(--landing-button-shadow)] hover:-translate-y-0.5 hover:brightness-95",
 };
 
 const buttonSizes: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -39,7 +41,7 @@ export function Button({
     <Component
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(31,122,99,0.24)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--landing-accent-strong)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-bg)]",
         "disabled:cursor-not-allowed disabled:opacity-60",
         buttonVariants[variant],
         buttonSizes[size],

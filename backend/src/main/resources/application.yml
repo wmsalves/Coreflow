@@ -8,6 +8,8 @@ server:
 coreflow:
   api:
     base-path: /api
+  cors:
+    allowed-origins: ${COREFLOW_CORS_ALLOWED_ORIGINS:http://localhost:3000}
   fitness:
     ascend:
       base-url: ${ASCEND_API_BASE_URL}

@@ -6,6 +6,7 @@ public record ExerciseDetailResponse(
         String id,
         Long internalId,
         String name,
+        String gifUrl,
         String imageUrl,
         String videoUrl,
         String bodyPart,

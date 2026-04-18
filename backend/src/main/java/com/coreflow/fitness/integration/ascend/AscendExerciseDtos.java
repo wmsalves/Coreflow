@@ -1,5 +1,6 @@
 package com.coreflow.fitness.integration.ascend;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import java.util.List;
 
 public final class AscendExerciseDtos {
@@ -24,7 +25,11 @@ public final class AscendExerciseDtos {
     public record AscendExerciseItemDto(
             String exerciseId,
             String name,
+            @JsonAlias({"image_url", "thumbnail", "thumbnailUrl"})
             String imageUrl,
+            @JsonAlias({"gif_url", "gif", "animatedGifUrl"})
+            String gifUrl,
+            @JsonAlias({"video_url"})
             String videoUrl,
             String bodyPart,
             String target,

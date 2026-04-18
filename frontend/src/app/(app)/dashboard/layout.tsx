@@ -8,5 +8,5 @@ export default async function DashboardLayout({
 }>) {
   const user = await requireUser();
 
-  return <AppShell userEmail={user.email ?? "Signed in"}>{children}</AppShell>;
+  return <AppShell userEmail={user.email ?? null}>{children}</AppShell>;
 }
