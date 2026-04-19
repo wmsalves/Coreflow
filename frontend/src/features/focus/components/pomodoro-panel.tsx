@@ -1,10 +1,19 @@
 import { Pause, Play, RotateCcw, TimerReset } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { FocusCopy } from "@/features/focus/content/focus-copy";
 import { formatTimer, usePomodoro } from "@/features/focus/hooks/use-pomodoro";
-import type { PomodoroSettings, StudySession } from "@/features/focus/types/focus-types";
+import type {
+  PomodoroSettings,
+  StudySession,
+} from "@/features/focus/types/focus-types";
 
 const settingKeys: Array<keyof PomodoroSettings> = [
   "focusMinutes",
@@ -20,10 +29,19 @@ type PomodoroPanelProps = {
   selectedSession: StudySession | null;
 };
 
-export function PomodoroPanel({ copy, onCompleteSession, onStartSession, selectedSession }: PomodoroPanelProps) {
+export function PomodoroPanel({
+  copy,
+  onCompleteSession,
+  onStartSession,
+  selectedSession,
+}: PomodoroPanelProps) {
   const timer = usePomodoro();
   const canRun = Boolean(selectedSession);
-  const primaryLabel = timer.isRunning ? copy.actions.pause : timer.remainingSeconds < timer.settings.focusMinutes * 60 ? copy.actions.resume : copy.actions.start;
+  const primaryLabel = timer.isRunning
+    ? copy.actions.pause
+    : timer.remainingSeconds < timer.settings.focusMinutes * 60
+      ? copy.actions.resume
+      : copy.actions.start;
 
   function handlePrimaryAction() {
     if (!selectedSession) {
@@ -44,7 +62,10 @@ export function PomodoroPanel({ copy, onCompleteSession, onStartSession, selecte
       return;
     }
 
-    onCompleteSession(selectedSession.id, Math.max(timer.focusMinutesLogged, selectedSession.estimatedMinutes));
+    onCompleteSession(
+      selectedSession.id,
+      Math.max(timer.focusMinutesLogged, selectedSession.estimatedMinutes),
+    );
     timer.reset();
   }
 
@@ -68,13 +89,17 @@ export function PomodoroPanel({ copy, onCompleteSession, onStartSession, selecte
           </p>
           {selectedSession ? (
             <div className="mt-2">
-              <h3 className="font-semibold tracking-[-0.025em] text-[var(--landing-text)]">{selectedSession.title}</h3>
-              <p className="mt-1 text-sm text-[var(--landing-text-muted)]">{selectedSession.subject}</p>
+              <h3 className="font-semibold tracking-[-0.025em] text-[var(--landing-text)]">
+                {selectedSession.title}
+              </h3>
+              <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                {selectedSession.subject}
+              </p>
             </div>
           ) : null}
         </div>
 
-        <div className="rounded-[2rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 text-center shadow-[var(--landing-chip-inset-shadow)]">
+        <div className="rounded-[2rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-12 text-center shadow-[var(--landing-chip-inset-shadow)]">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--landing-accent)]">
             {copy.pomodoro.phase[timer.phase]}
           </p>
@@ -99,7 +124,9 @@ export function PomodoroPanel({ copy, onCompleteSession, onStartSession, selecte
               <Input
                 disabled={timer.isRunning}
                 min={key === "cycles" ? 1 : 1}
-                onChange={(event) => timer.updateSettings({ [key]: Number(event.target.value) })}
+                onChange={(event) =>
+                  timer.updateSettings({ [key]: Number(event.target.value) })
+                }
                 type="number"
                 value={timer.settings[key]}
               />
@@ -109,14 +136,24 @@ export function PomodoroPanel({ copy, onCompleteSession, onStartSession, selecte
 
         <div className="flex flex-wrap gap-2">
           <Button disabled={!canRun} onClick={handlePrimaryAction}>
-            {timer.isRunning ? <Pause className="size-4" /> : <Play className="size-4" />}
+            {timer.isRunning ? (
+              <Pause className="size-4" />
+            ) : (
+              <Play className="size-4" />
+            )}
             {primaryLabel}
           </Button>
           <Button onClick={timer.reset} variant="secondary">
             <RotateCcw className="size-4" />
             {copy.actions.reset}
           </Button>
-          <Button disabled={!selectedSession || selectedSession.status === "completed"} onClick={handleComplete} variant="ghost">
+          <Button
+            disabled={
+              !selectedSession || selectedSession.status === "completed"
+            }
+            onClick={handleComplete}
+            variant="ghost"
+          >
             {copy.actions.complete}
           </Button>
         </div>

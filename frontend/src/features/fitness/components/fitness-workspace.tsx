@@ -1,6 +1,14 @@
 "use client";
 
-import { Activity, Dumbbell, Loader2, Play, Plus, Save, Search } from "lucide-react";
+import {
+  Activity,
+  Dumbbell,
+  Loader2,
+  Play,
+  Plus,
+  Save,
+  Search,
+} from "lucide-react";
 import Image from "next/image";
 import { FormEvent, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -57,24 +65,38 @@ type FitnessWorkspaceProps = {
   initialPlans: WorkoutPlan[];
 };
 
-export function FitnessWorkspace({ initialExercises, initialLoadFailed, initialPlans }: FitnessWorkspaceProps) {
+export function FitnessWorkspace({
+  initialExercises,
+  initialLoadFailed,
+  initialPlans,
+}: FitnessWorkspaceProps) {
   const { locale } = useLandingPreferences();
   const copy = dashboardCopy[locale].fitness;
   const commonCopy = dashboardCopy[locale].common;
   const [query, setQuery] = useState(copy.defaults.searchQuery);
   const [results, setResults] = useState<ExerciseSummary[]>(initialExercises);
   const [plans, setPlans] = useState<WorkoutPlan[]>(initialPlans);
-  const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(initialPlans[0] ?? null);
-  const [selectedExercise, setSelectedExercise] = useState<ExerciseDetail | null>(null);
+  const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(
+    initialPlans[0] ?? null,
+  );
+  const [selectedExercise, setSelectedExercise] =
+    useState<ExerciseDetail | null>(null);
   const [exerciseConfig, setExerciseConfig] = useState(defaultConfig);
   const [planName, setPlanName] = useState(copy.defaults.planName);
-  const [planDescription, setPlanDescription] = useState(copy.defaults.planDescription);
+  const [planDescription, setPlanDescription] = useState(
+    copy.defaults.planDescription,
+  );
   const [catalogState, setCatalogState] = useState<LoadState>("idle");
   const [detailState, setDetailState] = useState<LoadState>("idle");
   const [planState, setPlanState] = useState<LoadState>("idle");
-  const [message, setMessage] = useState<string | null>(initialLoadFailed ? copy.initialLoadError : null);
+  const [message, setMessage] = useState<string | null>(
+    initialLoadFailed ? copy.initialLoadError : null,
+  );
 
-  const activePlanExercises = useMemo(() => activePlan?.exercises ?? [], [activePlan]);
+  const activePlanExercises = useMemo(
+    () => activePlan?.exercises ?? [],
+    [activePlan],
+  );
   const selectedInternalId = selectedExercise?.internalId;
 
   async function runSearch(searchQuery: string) {
@@ -95,7 +117,10 @@ export function FitnessWorkspace({ initialExercises, initialLoadFailed, initialP
   }
 
   const sortedPlanExercises = useMemo(
-    () => [...activePlanExercises].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+    () =>
+      [...activePlanExercises].sort(
+        (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
+      ),
     [activePlanExercises],
   );
 
@@ -125,8 +150,14 @@ export function FitnessWorkspace({ initialExercises, initialLoadFailed, initialP
     setMessage(null);
 
     try {
-      const plan = await createWorkoutPlan({ description: planDescription, name: planName });
-      setPlans((currentPlans) => [plan, ...currentPlans.filter((item) => item.id !== plan.id)]);
+      const plan = await createWorkoutPlan({
+        description: planDescription,
+        name: planName,
+      });
+      setPlans((currentPlans) => [
+        plan,
+        ...currentPlans.filter((item) => item.id !== plan.id),
+      ]);
       setActivePlan(plan);
       setPlanState("idle");
       setMessage(copy.planCreated);
@@ -157,7 +188,9 @@ export function FitnessWorkspace({ initialExercises, initialLoadFailed, initialP
 
       setActivePlan(updatedPlan);
       setPlans((currentPlans) =>
-        currentPlans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan)),
+        currentPlans.map((plan) =>
+          plan.id === updatedPlan.id ? updatedPlan : plan,
+        ),
       );
       setPlanState("idle");
       setMessage(copy.exerciseAdded);
@@ -185,7 +218,10 @@ export function FitnessWorkspace({ initialExercises, initialLoadFailed, initialP
         <div className="grid grid-cols-3 overflow-hidden rounded-[28px] border border-[var(--landing-border)] bg-[var(--landing-surface)] text-center shadow-[var(--landing-shadow-soft)] sm:min-w-[420px]">
           <Metric label={copy.metrics.results} value={results.length} />
           <Metric label={copy.metrics.plans} value={plans.length} />
-          <Metric label={copy.metrics.inPlan} value={activePlanExercises.length} />
+          <Metric
+            label={copy.metrics.inPlan}
+            value={activePlanExercises.length}
+          />
         </div>
       </section>
 
@@ -193,7 +229,9 @@ export function FitnessWorkspace({ initialExercises, initialLoadFailed, initialP
         <div
           className={cn(
             "mt-6 rounded-[24px] border px-4 py-3 text-sm",
-            planState === "error" || catalogState === "error" || detailState === "error"
+            planState === "error" ||
+              catalogState === "error" ||
+              detailState === "error"
               ? "border-[rgba(204,90,67,0.3)] bg-[rgba(204,90,67,0.08)] text-[var(--danger)]"
               : "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]",
           )}
@@ -213,7 +251,10 @@ export function FitnessWorkspace({ initialExercises, initialLoadFailed, initialP
                     {copy.catalog.description}
                   </p>
                 </div>
-                <form className="flex w-full gap-2 lg:max-w-md" onSubmit={handleSearch}>
+                <form
+                  className="flex w-full gap-2 lg:max-w-md"
+                  onSubmit={handleSearch}
+                >
                   <Input
                     aria-label={copy.catalog.searchAria}
                     onChange={(event) => setQuery(event.target.value)}
@@ -221,7 +262,11 @@ export function FitnessWorkspace({ initialExercises, initialLoadFailed, initialP
                     value={query}
                   />
                   <Button disabled={catalogState === "loading"} type="submit">
-                    {catalogState === "loading" ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+                    {catalogState === "loading" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Search className="size-4" />
+                    )}
                     {copy.catalog.searchButton}
                   </Button>
                 </form>
@@ -234,7 +279,7 @@ export function FitnessWorkspace({ initialExercises, initialLoadFailed, initialP
                   {copy.catalog.noResults}
                 </div>
               ) : (
-                <div className="grid gap-px bg-[var(--landing-border)] md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
                   {results.map((exercise) => (
                     <ExerciseResultCard
                       active={selectedExercise?.id === exercise.id}
@@ -309,8 +354,9 @@ function ExerciseResultCard({
   return (
     <button
       className={cn(
-        "group flex min-h-[320px] flex-col bg-[var(--landing-surface-strong)] p-4 text-left text-[var(--landing-text)] hover:bg-[var(--landing-surface-alt)]",
-        active && "bg-[var(--landing-accent-soft)] ring-2 ring-inset ring-[var(--landing-accent-strong)]",
+        "group flex min-h-[320px] flex-col rounded-[24px] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-4 text-left text-[var(--landing-text)] shadow-[var(--landing-chip-inset-shadow)] backdrop-blur transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-[var(--landing-border-strong)] hover:shadow-[var(--landing-hover-shadow-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--landing-accent-strong)]",
+        active &&
+          "border-[var(--landing-border-strong)] ring-1 ring-inset ring-[var(--landing-border-strong)]",
       )}
       onClick={() => onSelect(exercise)}
       type="button"
@@ -319,16 +365,26 @@ function ExerciseResultCard({
       <div className="mt-4 flex flex-1 flex-col justify-between gap-4">
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="text-lg font-semibold leading-tight tracking-tight">{exercise.name}</h3>
-            {!exercise.gifUrl && !exercise.imageUrl && exercise.videoUrl ? <Play className="mt-1 size-4 shrink-0 text-[var(--landing-accent)]" /> : null}
+            <h3 className="text-lg font-semibold leading-tight tracking-tight">
+              {exercise.name}
+            </h3>
+            {!exercise.gifUrl && !exercise.imageUrl && exercise.videoUrl ? (
+              <Play className="mt-1 size-4 shrink-0 text-[var(--landing-accent)]" />
+            ) : null}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="muted">{getMetaValue(exercise.bodyPart, commonCopy.notSpecified)}</Badge>
-            <Badge variant="muted">{getMetaValue(exercise.target, commonCopy.notSpecified)}</Badge>
+            <Badge variant="muted">
+              {getMetaValue(exercise.bodyPart, commonCopy.notSpecified)}
+            </Badge>
+            <Badge variant="muted">
+              {getMetaValue(exercise.target, commonCopy.notSpecified)}
+            </Badge>
           </div>
         </div>
         <p className="text-sm text-[var(--landing-text-muted)]">
-          {copy.catalog.equipment(getMetaValue(exercise.equipment, commonCopy.notSpecified))}
+          {copy.catalog.equipment(
+            getMetaValue(exercise.equipment, commonCopy.notSpecified),
+          )}
         </p>
       </div>
     </button>
@@ -362,7 +418,9 @@ function ExerciseInspector({
         <CardContent className="flex min-h-[260px] flex-col items-center justify-center gap-3 p-8 text-center">
           <Activity className="size-8 text-[var(--landing-accent)]" />
           <div className="space-y-1">
-            <h2 className="text-xl font-semibold tracking-tight">{copy.inspector.emptyTitle}</h2>
+            <h2 className="text-xl font-semibold tracking-tight">
+              {copy.inspector.emptyTitle}
+            </h2>
             <p className="max-w-md text-sm leading-6 text-[var(--landing-text-muted)]">
               {copy.inspector.emptyDescription}
             </p>
@@ -382,7 +440,9 @@ function ExerciseInspector({
           <div className="space-y-3">
             <Badge>{copy.inspector.selected}</Badge>
             <div className="space-y-2">
-              <h2 className="text-2xl font-semibold tracking-tight">{exercise.name}</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                {exercise.name}
+              </h2>
               <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
                 {[
                   getMetaValue(exercise.bodyPart, commonCopy.notSpecified),
@@ -395,17 +455,25 @@ function ExerciseInspector({
 
           {detailState === "loading" ? (
             <div className="flex items-center gap-2 text-sm text-[var(--landing-text-muted)]">
-              <Loader2 className="size-4 animate-spin" /> {copy.inspector.loadingDetails}
+              <Loader2 className="size-4 animate-spin" />{" "}
+              {copy.inspector.loadingDetails}
             </div>
           ) : null}
 
           {exercise.instructions.length > 0 ? (
             <div className="space-y-2">
-              <p className="text-sm font-semibold">{copy.inspector.formNotes}</p>
+              <p className="text-sm font-semibold">
+                {copy.inspector.formNotes}
+              </p>
               <ol className="space-y-2 text-sm leading-6 text-[var(--landing-text-muted)]">
                 {exercise.instructions.slice(0, 3).map((instruction, index) => (
-                  <li className="flex gap-3" key={`${exercise.id}-instruction-${index}`}>
-                    <span className="font-semibold text-[var(--landing-accent)]">{index + 1}</span>
+                  <li
+                    className="flex gap-3"
+                    key={`${exercise.id}-instruction-${index}`}
+                  >
+                    <span className="font-semibold text-[var(--landing-accent)]">
+                      {index + 1}
+                    </span>
                     <span>{instruction}</span>
                   </li>
                 ))}
@@ -429,7 +497,9 @@ function ExerciseInspector({
             <NumberField
               label={copy.inspector.restSeconds}
               min={0}
-              onChange={(restSeconds) => onConfigChange({ ...config, restSeconds })}
+              onChange={(restSeconds) =>
+                onConfigChange({ ...config, restSeconds })
+              }
               value={config.restSeconds}
             />
           </div>
@@ -438,14 +508,24 @@ function ExerciseInspector({
             <span>{copy.inspector.notes}</span>
             <textarea
               className="min-h-24 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)]"
-              onChange={(event) => onConfigChange({ ...config, notes: event.target.value })}
+              onChange={(event) =>
+                onConfigChange({ ...config, notes: event.target.value })
+              }
               placeholder={copy.inspector.notesPlaceholder}
               value={config.notes}
             />
           </label>
 
-          <Button disabled={!planReady || !exercise.internalId || saving} onClick={onAddExercise} size="lg">
-            {saving ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+          <Button
+            disabled={!planReady || !exercise.internalId || saving}
+            onClick={onAddExercise}
+            size="lg"
+          >
+            {saving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Plus className="size-4" />
+            )}
             {copy.inspector.addToWorkout}
           </Button>
         </div>
@@ -491,7 +571,9 @@ function WorkoutBuilder({
             </div>
             <div>
               <CardTitle>{copy.builder.title}</CardTitle>
-              <p className="mt-1 text-sm text-[var(--landing-text-muted)]">{copy.builder.description}</p>
+              <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                {copy.builder.description}
+              </p>
             </div>
           </div>
         </CardHeader>
@@ -499,14 +581,31 @@ function WorkoutBuilder({
           <form className="space-y-4" onSubmit={onCreatePlan}>
             <label className="block space-y-2 text-sm font-medium">
               <span>{copy.builder.planName}</span>
-              <Input onChange={(event) => onPlanNameChange(event.target.value)} required value={planName} />
+              <Input
+                onChange={(event) => onPlanNameChange(event.target.value)}
+                required
+                value={planName}
+              />
             </label>
             <label className="block space-y-2 text-sm font-medium">
               <span>{copy.builder.planDescription}</span>
-              <Input onChange={(event) => onPlanDescriptionChange(event.target.value)} value={planDescription} />
+              <Input
+                onChange={(event) =>
+                  onPlanDescriptionChange(event.target.value)
+                }
+                value={planDescription}
+              />
             </label>
-            <Button className="w-full" disabled={planState === "loading"} type="submit">
-              {planState === "loading" ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+            <Button
+              className="w-full"
+              disabled={planState === "loading"}
+              type="submit"
+            >
+              {planState === "loading" ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
               {copy.builder.savePlan}
             </Button>
           </form>
@@ -537,7 +636,9 @@ function WorkoutBuilder({
         <CardHeader className="border-b border-[var(--landing-border)] bg-[var(--landing-surface)]">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle>{activePlan?.name ?? copy.builder.noWorkout}</CardTitle>
+              <CardTitle>
+                {activePlan?.name ?? copy.builder.noWorkout}
+              </CardTitle>
               <p className="mt-2 text-sm leading-6 text-[var(--landing-text-muted)]">
                 {activePlan?.description || copy.builder.noWorkoutDescription}
               </p>
@@ -552,28 +653,52 @@ function WorkoutBuilder({
             </div>
           ) : (
             sortedPlanExercises.map((item, index) => (
-              <div className="rounded-[24px] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4" key={item.id}>
+              <div
+                className="rounded-[24px] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4"
+                key={item.id}
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-text-muted)]">
                       {String(index + 1).padStart(2, "0")}
                     </p>
-                    <h3 className="mt-1 font-semibold tracking-tight">{item.exercise.name}</h3>
+                    <h3 className="mt-1 font-semibold tracking-tight">
+                      {item.exercise.name}
+                    </h3>
                     <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
                       {[
-                        getMetaValue(item.exercise.bodyPart, commonCopy.notSpecified),
-                        getMetaValue(item.exercise.target, commonCopy.notSpecified),
+                        getMetaValue(
+                          item.exercise.bodyPart,
+                          commonCopy.notSpecified,
+                        ),
+                        getMetaValue(
+                          item.exercise.target,
+                          commonCopy.notSpecified,
+                        ),
                       ].join(commonCopy.slashSeparator)}
                     </p>
                   </div>
                   <Dumbbell className="mt-1 size-4 shrink-0 text-[var(--landing-accent)]" />
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
-                  <MiniStat label={copy.builder.sets} value={item.sets ?? "-"} />
-                  <MiniStat label={copy.builder.reps} value={item.reps ?? "-"} />
-                  <MiniStat label={copy.builder.rest} value={item.restSeconds ? `${item.restSeconds}s` : "-"} />
+                  <MiniStat
+                    label={copy.builder.sets}
+                    value={item.sets ?? "-"}
+                  />
+                  <MiniStat
+                    label={copy.builder.reps}
+                    value={item.reps ?? "-"}
+                  />
+                  <MiniStat
+                    label={copy.builder.rest}
+                    value={item.restSeconds ? `${item.restSeconds}s` : "-"}
+                  />
                 </div>
-                {item.notes ? <p className="mt-3 text-sm leading-6 text-[var(--landing-text-muted)]">{item.notes}</p> : null}
+                {item.notes ? (
+                  <p className="mt-3 text-sm leading-6 text-[var(--landing-text-muted)]">
+                    {item.notes}
+                  </p>
+                ) : null}
               </div>
             ))
           )}
@@ -641,7 +766,9 @@ function NumberField({
       <span>{label}</span>
       <Input
         min={min}
-        onChange={(event) => onChange(Math.max(min, Number(event.target.value) || min))}
+        onChange={(event) =>
+          onChange(Math.max(min, Number(event.target.value) || min))
+        }
         type="number"
         value={value}
       />
@@ -652,7 +779,9 @@ function NumberField({
 function MiniStat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-2xl bg-[var(--landing-surface)] px-3 py-2">
-      <p className="text-xs uppercase tracking-[0.16em] text-[var(--landing-text-muted)]">{label}</p>
+      <p className="text-xs uppercase tracking-[0.16em] text-[var(--landing-text-muted)]">
+        {label}
+      </p>
       <p className="mt-1 font-semibold">{value}</p>
     </div>
   );
