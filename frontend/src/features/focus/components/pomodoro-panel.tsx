@@ -49,7 +49,7 @@ export function PomodoroPanel({ copy, onCompleteSession, onStartSession, selecte
   }
 
   return (
-    <Card className="xl:sticky xl:top-28">
+    <Card>
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div>
