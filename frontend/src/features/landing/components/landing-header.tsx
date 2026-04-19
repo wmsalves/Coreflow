@@ -31,9 +31,11 @@ export function LandingHeader({
   theme,
   userEmail,
 }: LandingHeaderProps) {
+  const accountCta = locale === "pt-BR" ? "Minha conta" : "Go to account";
   const accountCopy = {
     ...dashboardCopy[locale].header.userMenu,
-    dashboard: dashboardCopy[locale].header.navLabel,
+    accountCta,
+    dashboard: accountCta,
     signIn: copy.signIn,
     startFree: copy.cta,
   };
@@ -59,7 +61,7 @@ export function LandingHeader({
             showTagline={false}
           />
 
-          <div className="flex flex-wrap items-center justify-end gap-1">
+          <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-1">
             <LanguageSwitcher
               labels={controls.languages}
               locale={locale}

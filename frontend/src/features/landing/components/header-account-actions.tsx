@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 export type HeaderAccountCopy = {
   accountLabel: string;
+  accountCta?: string;
   dashboard: string;
   fallbackUser: string;
   signIn: string;
@@ -25,9 +26,19 @@ export function HeaderAccountActions({
   userEmail,
 }: HeaderAccountActionsProps) {
   return (
-    <div className="flex min-h-9 min-w-[3rem] items-center justify-end gap-1 sm:min-w-[8.5rem] lg:min-w-[13rem]">
+    <div className="flex min-h-9 shrink-0 items-center justify-end gap-1">
       {userEmail ? (
-        <UserMenu copy={copy} userEmail={userEmail} />
+        <>
+          {copy.accountCta ? (
+            <Link
+              className="hidden h-9 items-center justify-center rounded-full bg-[var(--landing-button-primary)] px-3 text-[13px] font-medium text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] transition hover:-translate-y-px hover:shadow-[var(--landing-button-shadow-hover)] sm:inline-flex sm:px-4"
+              href="/dashboard"
+            >
+              {copy.accountCta}
+            </Link>
+          ) : null}
+          <UserMenu copy={copy} userEmail={userEmail} />
+        </>
       ) : (
         <>
           <Link
@@ -75,9 +86,9 @@ function UserMenu({
         </span>
       </summary>
 
-      <div className="absolute right-0 top-[calc(100%+0.55rem)] z-50 w-[min(14.75rem,calc(100vw-1.5rem))] overflow-hidden rounded-[1.15rem] border border-[var(--landing-border)] bg-[var(--landing-panel)] p-1.5 shadow-[var(--landing-shadow)] backdrop-blur-2xl">
-        <div className="pointer-events-none absolute inset-0 bg-[var(--landing-header-gloss)] opacity-60" />
-        <div className="pointer-events-none absolute right-4 top-[-5px] size-2.5 rotate-45 border-l border-t border-[var(--landing-border)] bg-[var(--landing-bg-elevated)]" />
+      <div className="absolute right-0 top-[calc(100%+0.55rem)] z-50 w-[min(14.75rem,calc(100vw-1.5rem))] overflow-hidden rounded-[1.15rem] border border-[var(--landing-border-strong)] bg-[var(--landing-surface-alt)] p-1.5 shadow-[var(--landing-shadow)]">
+        <div className="pointer-events-none absolute inset-0 bg-[var(--landing-header-gloss)] opacity-75" />
+        <div className="pointer-events-none absolute right-4 top-[-5px] size-2.5 rotate-45 border-l border-t border-[var(--landing-border-strong)] bg-[var(--landing-surface-alt)]" />
 
         <div className="relative z-10 flex items-center gap-2.5 rounded-[0.9rem] px-2.5 py-2.5">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[var(--landing-border)] bg-[var(--landing-logo-frame)] text-[11px] font-semibold text-[var(--landing-text-soft)]">

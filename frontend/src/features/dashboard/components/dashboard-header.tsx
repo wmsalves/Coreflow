@@ -58,7 +58,7 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
             showTagline={false}
           />
 
-          <div className="flex min-w-0 items-center justify-end gap-1">
+          <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-1">
             <LanguageSwitcher
               labels={landingControls.languages}
               locale={locale}

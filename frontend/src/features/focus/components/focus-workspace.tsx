@@ -180,7 +180,7 @@ export function FocusWorkspace() {
         />
       </section>
 
-      <section className="mt-6 grid gap-6 2xl:grid-cols-[minmax(0,1fr)_420px]">
+      <section className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_390px] 2xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="space-y-6">
           <Card>
             <CardHeader className="gap-4 lg:flex lg:flex-row lg:items-start lg:justify-between lg:space-y-0">
