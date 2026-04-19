@@ -1,11 +1,10 @@
 "use client";
 
-import { LogIn, LogOut, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CoreflowLogo } from "@/components/brand/coreflow-logo";
-import { signOutAction } from "@/features/auth/actions";
 import { dashboardCopy } from "@/features/dashboard/content/dashboard-copy";
+import { HeaderAccountActions } from "@/features/landing/components/header-account-actions";
 import { LanguageSwitcher } from "@/features/landing/components/controls/language-switcher";
 import { ThemeToggle } from "@/features/landing/components/controls/theme-toggle";
 import { landingCopy } from "@/features/landing/content/landing-copy";
@@ -29,7 +28,14 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
   const { locale, setLocale, setTheme, theme } = useLandingPreferences();
   const scrolled = useLandingHeaderScroll(8);
   const landingControls = landingCopy[locale].controls;
+  const landingHeader = landingCopy[locale].header;
   const copy = dashboardCopy[locale].header;
+  const accountCopy = {
+    ...copy.userMenu,
+    dashboard: copy.navLabel,
+    signIn: landingHeader.signIn,
+    startFree: landingHeader.cta,
+  };
 
   return (
     <div className="fixed inset-x-0 top-3 z-40 px-3 sm:top-4 sm:px-4">
@@ -60,8 +66,7 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
               onLocaleChange={setLocale}
             />
             <ThemeToggle labels={landingControls.theme} onThemeChange={setTheme} theme={theme} />
-            <DashboardLoginButton label={copy.userMenu.login} />
-            {userEmail ? <UserMenu copy={copy.userMenu} userEmail={userEmail} /> : null}
+            <HeaderAccountActions copy={accountCopy} userEmail={userEmail} />
           </div>
 
           <nav aria-label={copy.navLabel} className="w-full overflow-x-auto">
@@ -110,24 +115,11 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
               onLocaleChange={setLocale}
             />
             <ThemeToggle labels={landingControls.theme} onThemeChange={setTheme} theme={theme} />
-            <DashboardLoginButton label={copy.userMenu.login} />
-            {userEmail ? <UserMenu copy={copy.userMenu} userEmail={userEmail} /> : null}
+            <HeaderAccountActions copy={accountCopy} userEmail={userEmail} />
           </div>
         </div>
       </header>
     </div>
-  );
-}
-
-function DashboardLoginButton({ label }: { label: string }) {
-  return (
-    <Link
-      className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[var(--landing-button-primary)] px-3 text-[13px] font-medium text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] transition hover:-translate-y-px hover:shadow-[var(--landing-button-shadow-hover)] sm:px-4"
-      href="/login"
-    >
-      <LogIn className="size-4" />
-      <span className="hidden sm:inline">{label}</span>
-    </Link>
   );
 }
 
@@ -153,55 +145,5 @@ function DashboardNavLink({
     >
       {label}
     </Link>
-  );
-}
-
-function UserMenu({
-  copy,
-  userEmail,
-}: {
-  copy: {
-    accountLabel: string;
-    signedInAs: string;
-    fallbackUser: string;
-    signOut: string;
-  };
-  userEmail: string | null;
-}) {
-  const displayUser = userEmail ?? copy.fallbackUser;
-  const initial = displayUser.trim().charAt(0).toUpperCase() || "C";
-
-  return (
-    <details className="group relative z-50">
-      <summary
-        aria-label={copy.accountLabel}
-        className="flex size-9 cursor-pointer list-none items-center justify-center rounded-full text-[var(--landing-text-faint)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)] [&::-webkit-details-marker]:hidden"
-      >
-        <span className="flex size-7 items-center justify-center overflow-hidden rounded-full border border-[var(--landing-border)] bg-[var(--landing-logo-frame)] text-[11px] font-semibold text-[var(--landing-text-soft)] shadow-[var(--landing-chip-inset-shadow)]">
-          {initial}
-        </span>
-      </summary>
-
-      <div className="absolute right-0 top-11 z-50 w-[min(16rem,calc(100vw-2rem))] overflow-hidden rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-panel)] p-2 shadow-[var(--landing-shadow)] backdrop-blur-2xl">
-        <div className="pointer-events-none absolute inset-0 bg-[var(--landing-header-gloss)] opacity-50" />
-        <div className="relative z-10 flex items-center gap-3 border-b border-[var(--landing-border)] px-3 py-3">
-          <UserCircle className="size-5 shrink-0 text-[var(--landing-text-muted)]" />
-          <div className="min-w-0">
-            <p className="text-xs text-[var(--landing-text-faint)]">{copy.signedInAs}</p>
-            <p className="mt-0.5 truncate text-sm text-[var(--landing-text)]">{displayUser}</p>
-          </div>
-        </div>
-
-        <form action={signOutAction} className="relative z-10">
-          <button
-            className="mt-1 flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2 text-left text-sm text-[var(--landing-text-muted)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)]"
-            type="submit"
-          >
-            <LogOut className="size-4" />
-            {copy.signOut}
-          </button>
-        </form>
-      </div>
-    </details>
   );
 }

@@ -53,7 +53,7 @@ export const dashboardCopy = {
         doneToday: "Done today",
         pending: "Pending",
         habitStats: (currentStreak: number, completionsThisWeek: number) =>
-          `${currentStreak} day streak Ã‚Â· ${completionsThisWeek} completions this week`,
+          `${currentStreak} day streak \u00b7 ${completionsThisWeek} completions this week`,
       },
       nextModules: {
         title: "Next modules",
@@ -221,7 +221,7 @@ export const dashboardCopy = {
         doneToday: "Feito hoje",
         pending: "Pendente",
         habitStats: (currentStreak: number, completionsThisWeek: number) =>
-          `${currentStreak} dias de sequencia Ã‚Â· ${completionsThisWeek} conclusoes nesta semana`,
+          `${currentStreak} dias de sequencia \u00b7 ${completionsThisWeek} conclusoes nesta semana`,
       },
       nextModules: {
         title: "Proximos modulos",

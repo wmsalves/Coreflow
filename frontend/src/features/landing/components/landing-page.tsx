@@ -22,7 +22,11 @@ import { useLandingPreviewMotion } from "@/features/landing/hooks/use-landing-pr
 import { useLandingReveal } from "@/features/landing/hooks/use-landing-reveal";
 import { landingThemeStyles } from "@/features/landing/lib/theme-styles";
 
-export function LandingPage() {
+type LandingPageProps = {
+  userEmail: string | null;
+};
+
+export function LandingPage({ userEmail }: LandingPageProps) {
   const { locale, setLocale, setTheme, theme } = useLandingPreferences();
   const isScrolled = useLandingHeaderScroll();
   const mainRef = useRef<HTMLElement>(null);
@@ -56,6 +60,7 @@ export function LandingPage() {
           onThemeChange={setTheme}
           scrolled={isScrolled}
           theme={theme}
+          userEmail={userEmail}
         />
 
         <HeroSection

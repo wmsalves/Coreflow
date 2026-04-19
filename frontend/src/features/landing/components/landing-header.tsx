@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { CoreflowLogo } from "@/components/brand/coreflow-logo";
 import type { LandingCopy } from "@/features/landing/content/landing-copy";
+import { dashboardCopy } from "@/features/dashboard/content/dashboard-copy";
+import { HeaderAccountActions } from "@/features/landing/components/header-account-actions";
 import { LanguageSwitcher } from "@/features/landing/components/controls/language-switcher";
 import { ThemeToggle } from "@/features/landing/components/controls/theme-toggle";
 import type { LandingLocale, LandingTheme } from "@/features/landing/types";
@@ -16,6 +18,7 @@ type LandingHeaderProps = {
   onThemeChange: (theme: LandingTheme) => void;
   scrolled: boolean;
   theme: LandingTheme;
+  userEmail: string | null;
 };
 
 export function LandingHeader({
@@ -26,7 +29,15 @@ export function LandingHeader({
   onThemeChange,
   scrolled,
   theme,
+  userEmail,
 }: LandingHeaderProps) {
+  const accountCopy = {
+    ...dashboardCopy[locale].header.userMenu,
+    dashboard: dashboardCopy[locale].header.navLabel,
+    signIn: copy.signIn,
+    startFree: copy.cta,
+  };
+
   return (
     <div className="fixed inset-x-0 top-3 z-40 px-3 sm:top-4 sm:px-4">
       <header
@@ -60,12 +71,7 @@ export function LandingHeader({
               onThemeChange={onThemeChange}
               theme={theme}
             />
-            <Link
-              className="inline-flex h-9 items-center justify-center rounded-full px-3 text-[13px] font-medium text-(--landing-text-muted) transition hover:bg-(--landing-surface) hover:text-(--landing-text)"
-              href="/login"
-            >
-              {copy.signIn}
-            </Link>
+            <HeaderAccountActions copy={accountCopy} userEmail={userEmail} />
           </div>
         </div>
 
@@ -106,18 +112,7 @@ export function LandingHeader({
               onThemeChange={onThemeChange}
               theme={theme}
             />
-            <Link
-              className="inline-flex h-9 items-center justify-center rounded-full px-3 text-[13px] font-medium text-(--landing-text-muted) transition hover:bg-(--landing-surface) hover:text-(--landing-text)"
-              href="/login"
-            >
-              {copy.signIn}
-            </Link>
-            <Link
-              className="inline-flex h-9 items-center justify-center rounded-full bg-(--landing-button-primary) px-4 text-[13px] font-medium text-(--landing-button-primary-text) shadow-[var(--landing-button-shadow)] transition hover:-translate-y-px hover:shadow-[var(--landing-button-shadow-hover)]"
-              href="/signup"
-            >
-              {copy.cta}
-            </Link>
+            <HeaderAccountActions copy={accountCopy} userEmail={userEmail} />
           </div>
         </div>
       </header>

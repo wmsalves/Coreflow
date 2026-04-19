@@ -58,6 +58,7 @@ export function AuthShell({ children, mode }: AuthShellProps) {
         onThemeChange={setTheme}
         scrolled={false}
         theme={theme}
+        userEmail={null}
       />
 
       <div className="relative mx-auto grid min-h-screen w-full max-w-7xl items-start gap-9 px-5 pb-8 pt-32 sm:px-6 sm:pb-10 sm:pt-36 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 lg:px-8 lg:pb-12 lg:pt-36 xl:pt-40">
