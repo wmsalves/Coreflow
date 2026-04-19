@@ -5,24 +5,13 @@ import { useMemo, useState } from "react";
 import { BookOpenCheck, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { focusCopy, type FocusCopy } from "@/features/focus/content/focus-copy";
 import { FocusOverview } from "@/features/focus/components/focus-overview";
 import { PomodoroPanel } from "@/features/focus/components/pomodoro-panel";
 import { StudySessionList } from "@/features/focus/components/study-session-list";
-import type {
-  FocusFilters,
-  FocusLevel,
-  StudySession,
-  StudySessionInput,
-} from "@/features/focus/types/focus-types";
+import type { FocusFilters, FocusLevel, StudySession, StudySessionInput } from "@/features/focus/types/focus-types";
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
 
 function createInitialSessions(copy: FocusCopy): StudySession[] {
@@ -87,9 +76,7 @@ const levelOptions: FocusLevel[] = ["low", "medium", "high"];
 export function FocusWorkspace() {
   const { locale } = useLandingPreferences();
   const copy = focusCopy[locale];
-  const [sessions, setSessions] = useState<StudySession[]>(() =>
-    createInitialSessions(focusCopy.en),
-  );
+  const [sessions, setSessions] = useState<StudySession[]>(() => createInitialSessions(focusCopy.en));
   const [selectedSessionId, setSelectedSessionId] = useState("session-1");
   const [filters, setFilters] = useState<FocusFilters>(defaultFilters);
   const [input, setInput] = useState<StudySessionInput>(defaultInput);
@@ -97,55 +84,27 @@ export function FocusWorkspace() {
   const localizedSessions = useMemo(
     () =>
       sessions.map((session) => {
-        const localizedSession =
-          copy.samples.sessions[
-            session.id as keyof typeof copy.samples.sessions
-          ];
+        const localizedSession = copy.samples.sessions[session.id as keyof typeof copy.samples.sessions];
         return localizedSession ? { ...session, ...localizedSession } : session;
       }),
     [copy, sessions],
   );
 
-  const selectedSession =
-    localizedSessions.find((session) => session.id === selectedSessionId) ??
-    null;
+  const selectedSession = localizedSessions.find((session) => session.id === selectedSessionId) ?? null;
 
   const filteredSessions = useMemo(() => {
     return localizedSessions
-      .filter(
-        (session) =>
-          filters.status === "all" || session.status === filters.status,
-      )
-      .filter(
-        (session) =>
-          filters.difficulty === "all" ||
-          session.difficulty === filters.difficulty,
-      )
-      .filter(
-        (session) =>
-          filters.importance === "all" ||
-          session.importance === filters.importance,
-      )
+      .filter((session) => filters.status === "all" || session.status === filters.status)
+      .filter((session) => filters.difficulty === "all" || session.difficulty === filters.difficulty)
+      .filter((session) => filters.importance === "all" || session.importance === filters.importance)
       .sort((first, second) => first.dueDate.localeCompare(second.dueDate));
   }, [filters, localizedSessions]);
 
-  const completedCount = localizedSessions.filter(
-    (session) => session.status === "completed",
-  ).length;
-  const activeCount = localizedSessions.filter(
-    (session) => session.status === "in_progress",
-  ).length;
-  const pendingCount = localizedSessions.filter(
-    (session) => session.status === "pending",
-  ).length;
-  const totalFocusMinutes = localizedSessions.reduce(
-    (total, session) => total + session.completedFocusMinutes,
-    0,
-  );
-  const completionRate =
-    localizedSessions.length === 0
-      ? 0
-      : Math.round((completedCount / localizedSessions.length) * 100);
+  const completedCount = localizedSessions.filter((session) => session.status === "completed").length;
+  const activeCount = localizedSessions.filter((session) => session.status === "in_progress").length;
+  const pendingCount = localizedSessions.filter((session) => session.status === "pending").length;
+  const totalFocusMinutes = localizedSessions.reduce((total, session) => total + session.completedFocusMinutes, 0);
+  const completionRate = localizedSessions.length === 0 ? 0 : Math.round((completedCount / localizedSessions.length) * 100);
 
   function createSession(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -176,11 +135,7 @@ export function FocusWorkspace() {
   function startSession(id: string) {
     setSelectedSessionId(id);
     setSessions((current) =>
-      current.map((session) =>
-        session.id === id && session.status === "pending"
-          ? { ...session, status: "in_progress" }
-          : session,
-      ),
+      current.map((session) => (session.id === id && session.status === "pending" ? { ...session, status: "in_progress" } : session)),
     );
   }
 
@@ -190,10 +145,7 @@ export function FocusWorkspace() {
         session.id === id
           ? {
               ...session,
-              completedFocusMinutes: Math.max(
-                session.completedFocusMinutes,
-                focusMinutes ?? session.estimatedMinutes,
-              ),
+              completedFocusMinutes: Math.max(session.completedFocusMinutes, focusMinutes ?? session.estimatedMinutes),
               status: "completed",
             }
           : session,
@@ -228,9 +180,9 @@ export function FocusWorkspace() {
         />
       </section>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
-        <div className="h-full space-y-6">
-          <Card className="flex h-full flex-col">
+      <section className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_390px] 2xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="space-y-6">
+          <Card>
             <CardHeader className="gap-4 lg:flex lg:flex-row lg:items-start lg:justify-between lg:space-y-0">
               <div>
                 <CardTitle>{copy.planner.title}</CardTitle>
@@ -240,19 +192,11 @@ export function FocusWorkspace() {
                 <BookOpenCheck className="size-5" />
               </span>
             </CardHeader>
-            <CardContent className="flex flex-1 flex-col">
-              <form
-                className="grid gap-4 lg:grid-cols-2"
-                onSubmit={createSession}
-              >
+            <CardContent>
+              <form className="grid gap-4 lg:grid-cols-2" onSubmit={createSession}>
                 <Field label={copy.planner.titleLabel}>
                   <Input
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        title: event.target.value,
-                      }))
-                    }
+                    onChange={(event) => setInput((current) => ({ ...current, title: event.target.value }))}
                     placeholder={copy.planner.titlePlaceholder}
                     required
                     value={input.title}
@@ -260,28 +204,15 @@ export function FocusWorkspace() {
                 </Field>
                 <Field label={copy.planner.subjectLabel}>
                   <Input
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        subject: event.target.value,
-                      }))
-                    }
+                    onChange={(event) => setInput((current) => ({ ...current, subject: event.target.value }))}
                     placeholder={copy.planner.subjectPlaceholder}
                     value={input.subject}
                   />
                 </Field>
-                <Field
-                  className="lg:col-span-2"
-                  label={copy.planner.descriptionLabel}
-                >
+                <Field className="lg:col-span-2" label={copy.planner.descriptionLabel}>
                   <textarea
                     className="min-h-24 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm text-[var(--landing-text)] outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)]"
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        description: event.target.value,
-                      }))
-                    }
+                    onChange={(event) => setInput((current) => ({ ...current, description: event.target.value }))}
                     placeholder={copy.planner.descriptionPlaceholder}
                     value={input.description}
                   />
@@ -289,36 +220,21 @@ export function FocusWorkspace() {
                 <Field label={copy.planner.estimatedLabel}>
                   <Input
                     min={5}
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        estimatedMinutes: Number(event.target.value) || 5,
-                      }))
-                    }
+                    onChange={(event) => setInput((current) => ({ ...current, estimatedMinutes: Number(event.target.value) || 5 }))}
                     type="number"
                     value={input.estimatedMinutes}
                   />
                 </Field>
                 <Field label={copy.planner.startLabel}>
                   <Input
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        startDate: event.target.value,
-                      }))
-                    }
+                    onChange={(event) => setInput((current) => ({ ...current, startDate: event.target.value }))}
                     type="date"
                     value={input.startDate}
                   />
                 </Field>
                 <Field label={copy.planner.dueLabel}>
                   <Input
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        dueDate: event.target.value,
-                      }))
-                    }
+                    onChange={(event) => setInput((current) => ({ ...current, dueDate: event.target.value }))}
                     type="date"
                     value={input.dueDate}
                   />
@@ -326,18 +242,14 @@ export function FocusWorkspace() {
                 <Field label={copy.planner.difficultyLabel}>
                   <LevelSelect
                     copy={copy}
-                    onChange={(difficulty) =>
-                      setInput((current) => ({ ...current, difficulty }))
-                    }
+                    onChange={(difficulty) => setInput((current) => ({ ...current, difficulty }))}
                     value={input.difficulty}
                   />
                 </Field>
                 <Field label={copy.planner.importanceLabel}>
                   <LevelSelect
                     copy={copy}
-                    onChange={(importance) =>
-                      setInput((current) => ({ ...current, importance }))
-                    }
+                    onChange={(importance) => setInput((current) => ({ ...current, importance }))}
                     value={input.importance}
                   />
                 </Field>
@@ -348,60 +260,28 @@ export function FocusWorkspace() {
                   </Button>
                 </div>
               </form>
-
-              <div className="mt-6 grid gap-3 rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 shadow-[var(--landing-chip-inset-shadow)] sm:grid-cols-2 xl:grid-cols-4">
-                <PlanSummaryItem
-                  label={copy.planner.titleLabel}
-                  value={input.title || copy.planner.titlePlaceholder}
-                />
-                <PlanSummaryItem
-                  label={copy.planner.subjectLabel}
-                  value={input.subject || copy.planner.subjectPlaceholder}
-                />
-                <PlanSummaryItem
-                  label={copy.planner.estimatedLabel}
-                  value={copy.overview.minutes(input.estimatedMinutes)}
-                />
-                <PlanSummaryItem
-                  label={copy.planner.dueLabel}
-                  value={input.dueDate}
-                />
-              </div>
             </CardContent>
           </Card>
+
+          <StudySessionList
+            activeSessionId={selectedSessionId}
+            copy={copy}
+            filters={filters}
+            onComplete={completeSession}
+            onFilterChange={setFilters}
+            onSelect={selectSession}
+            sessions={filteredSessions}
+          />
         </div>
 
-        <aside className="xl:self-start">
-          <PomodoroPanel
-            copy={copy}
-            onCompleteSession={completeSession}
-            onStartSession={startSession}
-            selectedSession={selectedSession}
-          />
-        </aside>
-      </section>
-
-      <section className="mt-6">
-        <StudySessionList
-          activeSessionId={selectedSessionId}
+        <PomodoroPanel
           copy={copy}
-          filters={filters}
-          onComplete={completeSession}
-          onFilterChange={setFilters}
-          onSelect={selectSession}
-          sessions={filteredSessions}
+          onCompleteSession={completeSession}
+          onStartSession={startSession}
+          selectedSession={selectedSession}
         />
       </section>
     </>
-  );
-}
-
-function PlanSummaryItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0 rounded-[1rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-3 py-2">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-faint)]">{label}</p>
-      <p className="mt-1 truncate text-sm font-medium text-[var(--landing-text)]">{value}</p>
-    </div>
   );
 }
 
