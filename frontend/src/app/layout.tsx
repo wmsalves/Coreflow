@@ -1,7 +1,28 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://coreflow.app";
+function withProtocol(url: string) {
+  return /^https?:\/\//.test(url) ? url : `https://${url}`;
+}
+
+function getAppUrl() {
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  const vercelUrl = (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL)?.trim();
+  const configuredIsLocal =
+    configuredUrl?.includes("localhost") || configuredUrl?.includes("127.0.0.1");
+
+  if (configuredUrl && !configuredIsLocal) {
+    return withProtocol(configuredUrl);
+  }
+
+  if (vercelUrl) {
+    return withProtocol(vercelUrl);
+  }
+
+  return configuredUrl ?? "http://localhost:3000";
+}
+
+const appUrl = getAppUrl();
 const siteUrl = new URL(appUrl);
 const logoUrl = new URL("/favicon.ico", siteUrl).toString();
 
