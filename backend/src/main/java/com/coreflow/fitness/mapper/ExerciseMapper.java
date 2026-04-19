@@ -60,9 +60,17 @@ public class ExerciseMapper {
     }
 
     private String resolveCatalogId(ExerciseEntity entity) {
+        if (entity.getExternalId() != null
+                && !entity.getExternalId().isBlank()
+                && !"local".equalsIgnoreCase(entity.getSource())) {
+            return entity.getExternalId();
+        }
+        if (entity.getId() != null) {
+            return String.valueOf(entity.getId());
+        }
         if (entity.getExternalId() != null && !entity.getExternalId().isBlank()) {
             return entity.getExternalId();
         }
-        return String.valueOf(entity.getId());
+        return "";
     }
 }

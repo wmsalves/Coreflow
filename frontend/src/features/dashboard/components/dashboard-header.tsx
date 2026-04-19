@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, UserCircle } from "lucide-react";
+import { LogIn, LogOut, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CoreflowLogo } from "@/components/brand/coreflow-logo";
@@ -13,8 +13,9 @@ import { useLandingHeaderScroll } from "@/features/landing/hooks/use-landing-hea
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
 import { cn } from "@/lib/utils";
 
-const navItems: Array<{ href: string; key: "overview" | "habits" | "fitness" }> = [
+const navItems: Array<{ href: string; key: "overview" | "focus" | "habits" | "fitness" }> = [
   { href: "/dashboard", key: "overview" },
+  { href: "/dashboard/focus", key: "focus" },
   { href: "/dashboard/habits", key: "habits" },
   { href: "/dashboard/fitness", key: "fitness" },
 ];
@@ -59,7 +60,8 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
               onLocaleChange={setLocale}
             />
             <ThemeToggle labels={landingControls.theme} onThemeChange={setTheme} theme={theme} />
-            <UserMenu copy={copy.userMenu} userEmail={userEmail} />
+            <DashboardLoginButton label={copy.userMenu.login} />
+            {userEmail ? <UserMenu copy={copy.userMenu} userEmail={userEmail} /> : null}
           </div>
 
           <nav aria-label={copy.navLabel} className="w-full overflow-x-auto">
@@ -108,11 +110,24 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
               onLocaleChange={setLocale}
             />
             <ThemeToggle labels={landingControls.theme} onThemeChange={setTheme} theme={theme} />
-            <UserMenu copy={copy.userMenu} userEmail={userEmail} />
+            <DashboardLoginButton label={copy.userMenu.login} />
+            {userEmail ? <UserMenu copy={copy.userMenu} userEmail={userEmail} /> : null}
           </div>
         </div>
       </header>
     </div>
+  );
+}
+
+function DashboardLoginButton({ label }: { label: string }) {
+  return (
+    <Link
+      className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[var(--landing-button-primary)] px-3 text-[13px] font-medium text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] transition hover:-translate-y-px hover:shadow-[var(--landing-button-shadow-hover)] sm:px-4"
+      href="/login"
+    >
+      <LogIn className="size-4" />
+      <span className="hidden sm:inline">{label}</span>
+    </Link>
   );
 }
 
@@ -157,7 +172,7 @@ function UserMenu({
   const initial = displayUser.trim().charAt(0).toUpperCase() || "C";
 
   return (
-    <details className="group relative">
+    <details className="group relative z-50">
       <summary
         aria-label={copy.accountLabel}
         className="flex size-9 cursor-pointer list-none items-center justify-center rounded-full text-[var(--landing-text-faint)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)] [&::-webkit-details-marker]:hidden"
@@ -167,8 +182,9 @@ function UserMenu({
         </span>
       </summary>
 
-      <div className="landing-card-strong absolute right-0 top-11 z-50 w-64 rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-panel)] p-2 shadow-[var(--landing-shadow)]">
-        <div className="flex items-center gap-3 border-b border-[var(--landing-border)] px-3 py-3">
+      <div className="absolute right-0 top-11 z-50 w-[min(16rem,calc(100vw-2rem))] overflow-hidden rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-panel)] p-2 shadow-[var(--landing-shadow)] backdrop-blur-2xl">
+        <div className="pointer-events-none absolute inset-0 bg-[var(--landing-header-gloss)] opacity-50" />
+        <div className="relative z-10 flex items-center gap-3 border-b border-[var(--landing-border)] px-3 py-3">
           <UserCircle className="size-5 shrink-0 text-[var(--landing-text-muted)]" />
           <div className="min-w-0">
             <p className="text-xs text-[var(--landing-text-faint)]">{copy.signedInAs}</p>
@@ -176,7 +192,7 @@ function UserMenu({
           </div>
         </div>
 
-        <form action={signOutAction}>
+        <form action={signOutAction} className="relative z-10">
           <button
             className="mt-1 flex w-full items-center gap-2 rounded-[0.9rem] px-3 py-2 text-left text-sm text-[var(--landing-text-muted)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)]"
             type="submit"

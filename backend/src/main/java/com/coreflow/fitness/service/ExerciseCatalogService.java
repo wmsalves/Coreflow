@@ -55,7 +55,18 @@ public class ExerciseCatalogService {
             return listExerciseSummaries();
         }
 
-        return importExternalExerciseEntities(query).stream()
+        try {
+            List<ExerciseEntity> importedExercises = importExternalExerciseEntities(query);
+            if (!importedExercises.isEmpty()) {
+                return importedExercises.stream()
+                        .map(exerciseMapper::toSummaryResponse)
+                        .toList();
+            }
+        } catch (NoSuchElementException exception) {
+            // A text search with no provider match should return an empty/local result set, not a detail-style 404.
+        }
+
+        return exerciseRepository.search(query).stream()
                 .map(exerciseMapper::toSummaryResponse)
                 .toList();
     }
@@ -100,16 +111,17 @@ public class ExerciseCatalogService {
             return Optional.empty();
         }
 
-        Optional<ExerciseEntity> byExternalId = exerciseRepository.findByExternalId(id);
-        if (byExternalId.isPresent()) {
-            return byExternalId;
+        try {
+            Optional<ExerciseEntity> byInternalId = exerciseRepository.findById(Long.parseLong(id));
+            if (byInternalId.isPresent()) {
+                return byInternalId;
+            }
+        } catch (NumberFormatException exception) {
+            // Non-numeric ids may still be real external provider ids.
         }
 
-        try {
-            return exerciseRepository.findById(Long.parseLong(id));
-        } catch (NumberFormatException exception) {
-            return Optional.empty();
-        }
+        return exerciseRepository.findByExternalId(id)
+                .filter(exercise -> !"local".equalsIgnoreCase(exercise.getSource()));
     }
 
     private ExerciseEntity fetchAndStoreExternalExercise(String externalId) {

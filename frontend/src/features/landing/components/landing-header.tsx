@@ -60,6 +60,12 @@ export function LandingHeader({
               onThemeChange={onThemeChange}
               theme={theme}
             />
+            <Link
+              className="inline-flex h-9 items-center justify-center rounded-full px-3 text-[13px] font-medium text-(--landing-text-muted) transition hover:bg-(--landing-surface) hover:text-(--landing-text)"
+              href="/login"
+            >
+              {copy.signIn}
+            </Link>
           </div>
         </div>
 
@@ -100,6 +106,12 @@ export function LandingHeader({
               onThemeChange={onThemeChange}
               theme={theme}
             />
+            <Link
+              className="inline-flex h-9 items-center justify-center rounded-full px-3 text-[13px] font-medium text-(--landing-text-muted) transition hover:bg-(--landing-surface) hover:text-(--landing-text)"
+              href="/login"
+            >
+              {copy.signIn}
+            </Link>
             <Link
               className="inline-flex h-9 items-center justify-center rounded-full bg-(--landing-button-primary) px-4 text-[13px] font-medium text-(--landing-button-primary-text) shadow-[var(--landing-button-shadow)] transition hover:-translate-y-px hover:shadow-[var(--landing-button-shadow-hover)]"
               href="/signup"

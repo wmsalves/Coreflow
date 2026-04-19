@@ -8,11 +8,13 @@ export const dashboardCopy = {
       navLabel: "Dashboard",
       nav: {
         overview: "Overview",
+        focus: "Focus",
         habits: "Habits",
         fitness: "Fitness",
       },
       userMenu: {
         accountLabel: "Account",
+        login: "Log in",
         signedInAs: "Signed in as",
         fallbackUser: "Coreflow user",
         signOut: "Sign out",
@@ -51,7 +53,7 @@ export const dashboardCopy = {
         doneToday: "Done today",
         pending: "Pending",
         habitStats: (currentStreak: number, completionsThisWeek: number) =>
-          `${currentStreak} day streak · ${completionsThisWeek} completions this week`,
+          `${currentStreak} day streak Ã‚Â· ${completionsThisWeek} completions this week`,
       },
       nextModules: {
         title: "Next modules",
@@ -174,11 +176,13 @@ export const dashboardCopy = {
       navLabel: "Dashboard",
       nav: {
         overview: "Visao geral",
+        focus: "Foco",
         habits: "Habitos",
         fitness: "Treino",
       },
       userMenu: {
         accountLabel: "Conta",
+        login: "Entrar",
         signedInAs: "Conectado como",
         fallbackUser: "Usuario Coreflow",
         signOut: "Sair",
@@ -217,7 +221,7 @@ export const dashboardCopy = {
         doneToday: "Feito hoje",
         pending: "Pendente",
         habitStats: (currentStreak: number, completionsThisWeek: number) =>
-          `${currentStreak} dias de sequencia · ${completionsThisWeek} conclusoes nesta semana`,
+          `${currentStreak} dias de sequencia Ã‚Â· ${completionsThisWeek} conclusoes nesta semana`,
       },
       nextModules: {
         title: "Proximos modulos",

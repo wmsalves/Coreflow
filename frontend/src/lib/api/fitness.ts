@@ -84,13 +84,15 @@ export async function listExercises() {
 
 export async function searchExercises(query: string) {
   const response = await apiClient<ApiResponse<ExerciseSummary[]>>("/v1/fitness/exercises/search", {
-    query: { q: query },
+    query: { q: query.trim() },
   });
   return unwrap(response);
 }
 
 export async function getExerciseDetail(id: string) {
-  const response = await apiClient<ApiResponse<ExerciseDetail>>(`/v1/fitness/exercises/${id}`);
+  const response = await apiClient<ApiResponse<ExerciseDetail>>(
+    `/v1/fitness/exercises/${encodeURIComponent(id)}`,
+  );
   return unwrap(response);
 }
 
