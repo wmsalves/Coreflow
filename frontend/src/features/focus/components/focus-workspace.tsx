@@ -12,10 +12,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { Input } from "@/components/ui/input";
 import { focusCopy } from "@/features/focus/content/focus-copy";
 import {
   createStudySessionAction,
+  deleteStudySessionAction,
+  logFocusRunAction,
   updateStudySessionStatusAction,
 } from "@/features/focus/actions";
 import { FocusOverview } from "@/features/focus/components/focus-overview";
@@ -24,6 +27,7 @@ import { StudySessionList } from "@/features/focus/components/study-session-list
 import type {
   FocusFilters,
   FocusLevel,
+  FocusStatus,
   StudySession,
   StudySessionInput,
 } from "@/features/focus/types/focus-types";
@@ -39,6 +43,7 @@ const levelOptions: FocusLevel[] = ["low", "medium", "high"];
 
 type FocusWorkspaceProps = {
   initialSessions: StudySession[];
+  initialStandaloneFocusSeconds: number;
 };
 
 function addDays(dateKey: string, amount: number) {
@@ -62,36 +67,33 @@ function createDefaultInput(): StudySessionInput {
   };
 }
 
-export function FocusWorkspace({ initialSessions }: FocusWorkspaceProps) {
+export function FocusWorkspace({
+  initialSessions,
+  initialStandaloneFocusSeconds,
+}: FocusWorkspaceProps) {
   const { locale } = useLandingPreferences();
   const copy = focusCopy[locale];
   const [sessions, setSessions] = useState<StudySession[]>(initialSessions);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
-    initialSessions[0]?.id ?? null,
+    initialSessions.find((session) => session.status === "in_progress" || session.status === "pending")?.id ??
+      null,
   );
+  const [standaloneFocusSeconds, setStandaloneFocusSeconds] = useState(initialStandaloneFocusSeconds);
   const [filters, setFilters] = useState<FocusFilters>(defaultFilters);
   const [input, setInput] = useState<StudySessionInput>(() => createDefaultInput());
   const [isSavingSession, setIsSavingSession] = useState(false);
+  const [isDeletingSession, setIsDeletingSession] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-
-  const localizedSessions = useMemo(
-    () =>
-      sessions.map((session) => {
-        const localizedSession =
-          copy.samples.sessions[
-            session.id as keyof typeof copy.samples.sessions
-          ];
-        return localizedSession ? { ...session, ...localizedSession } : session;
-      }),
-    [copy, sessions],
-  );
+  const [sessionPendingDeleteId, setSessionPendingDeleteId] = useState<string | null>(null);
 
   const selectedSession =
-    localizedSessions.find((session) => session.id === selectedSessionId) ??
+    sessions.find((session) => session.id === selectedSessionId) ??
     null;
+  const sessionPendingDelete =
+    sessions.find((session) => session.id === sessionPendingDeleteId) ?? null;
 
   const filteredSessions = useMemo(() => {
-    return localizedSessions
+    return sessions
       .filter(
         (session) =>
           filters.status === "all" || session.status === filters.status,
@@ -107,25 +109,27 @@ export function FocusWorkspace({ initialSessions }: FocusWorkspaceProps) {
           session.importance === filters.importance,
       )
       .sort((first, second) => first.dueDate.localeCompare(second.dueDate));
-  }, [filters, localizedSessions]);
+  }, [filters, sessions]);
 
-  const completedCount = localizedSessions.filter(
+  const completedCount = sessions.filter(
     (session) => session.status === "completed",
   ).length;
-  const activeCount = localizedSessions.filter(
+  const activeCount = sessions.filter(
     (session) => session.status === "in_progress",
   ).length;
-  const pendingCount = localizedSessions.filter(
+  const pendingCount = sessions.filter(
     (session) => session.status === "pending",
   ).length;
-  const totalFocusMinutes = localizedSessions.reduce(
-    (total, session) => total + session.completedFocusMinutes,
+  const totalSessionFocusSeconds = sessions.reduce(
+    (total, session) => total + session.completedFocusSeconds,
     0,
   );
+  const totalFocusSeconds = totalSessionFocusSeconds + standaloneFocusSeconds;
+  const visibleSessionCount = sessions.filter((session) => session.status !== "archived").length;
   const completionRate =
-    localizedSessions.length === 0
+    visibleSessionCount === 0
       ? 0
-      : Math.round((completedCount / localizedSessions.length) * 100);
+      : Math.round((completedCount / visibleSessionCount) * 100);
 
   async function createSession(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -153,6 +157,21 @@ export function FocusWorkspace({ initialSessions }: FocusWorkspaceProps) {
     setSelectedSessionId(id);
   }
 
+  async function persistStatus(id: string, status: FocusStatus) {
+    setMessage(null);
+
+    try {
+      const updatedSession = await updateStudySessionStatusAction(id, status);
+      setSessions((current) =>
+        current.map((session) => (session.id === updatedSession.id ? updatedSession : session)),
+      );
+      return updatedSession;
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : copy.fallbackError);
+      return null;
+    }
+  }
+
   function startSession(id: string) {
     setSelectedSessionId(id);
     setSessions((current) =>
@@ -164,38 +183,97 @@ export function FocusWorkspace({ initialSessions }: FocusWorkspaceProps) {
     );
     const session = sessions.find((item) => item.id === id);
     if (session && session.status === "pending") {
-      void updateStudySessionStatusAction({ ...session, status: "in_progress" }, "in_progress").catch(
-        (error: unknown) => setMessage(error instanceof Error ? error.message : copy.fallbackError),
-      );
+      void persistStatus(id, "in_progress");
     }
   }
 
-  function completeSession(id: string, focusMinutes?: number) {
+  async function logFocusRun(studySessionId: string | null, focusSeconds: number) {
+    setMessage(null);
+
+    try {
+      const result = await logFocusRunAction({ durationSeconds: focusSeconds, studySessionId });
+      if (result.studySession) {
+        const updatedSession = result.studySession;
+        setSessions((current) =>
+          current.map((session) =>
+            session.id === updatedSession.id ? updatedSession : session,
+          ),
+        );
+      }
+      if (result.standaloneFocusSeconds !== undefined) {
+        setStandaloneFocusSeconds(result.standaloneFocusSeconds);
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : copy.fallbackError);
+      throw error;
+    }
+  }
+
+  function completeSession(id: string) {
     setSessions((current) =>
       current.map((session) =>
         session.id === id
           ? {
               ...session,
-              completedFocusMinutes: Math.max(
-                session.completedFocusMinutes,
-                focusMinutes ?? session.estimatedMinutes,
-              ),
               status: "completed",
             }
           : session,
       ),
     );
-    const session = sessions.find((item) => item.id === id);
-    if (session) {
-      void updateStudySessionStatusAction(session, "completed", focusMinutes ?? session.estimatedMinutes)
-        .then((updatedSession) => {
-          setSessions((current) =>
-            current.map((item) => (item.id === updatedSession.id ? updatedSession : item)),
-          );
-        })
-        .catch((error: unknown) =>
-          setMessage(error instanceof Error ? error.message : copy.fallbackError),
-        );
+    void persistStatus(id, "completed");
+  }
+
+  function cancelSession(id: string) {
+    setSessions((current) =>
+      current.map((session) =>
+        session.id === id ? { ...session, status: "canceled" } : session,
+      ),
+    );
+    void persistStatus(id, "canceled");
+  }
+
+  function archiveSession(id: string) {
+    setSessions((current) =>
+      current.map((session) =>
+        session.id === id ? { ...session, status: "archived" } : session,
+      ),
+    );
+    if (selectedSessionId === id) {
+      setSelectedSessionId(null);
+    }
+    void persistStatus(id, "archived");
+  }
+
+  function requestDeleteSession(id: string) {
+    setMessage(null);
+    setSessionPendingDeleteId(id);
+  }
+
+  async function confirmDeleteSession() {
+    if (!sessionPendingDeleteId) {
+      return;
+    }
+
+    setIsDeletingSession(true);
+    setMessage(null);
+
+    try {
+      const deletedSessionId = await deleteStudySessionAction(sessionPendingDeleteId);
+      setSessions((current) => current.filter((session) => session.id !== deletedSessionId));
+      if (selectedSessionId === deletedSessionId) {
+        setSelectedSessionId(null);
+      }
+      setSessionPendingDeleteId(null);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : copy.fallbackError);
+    } finally {
+      setIsDeletingSession(false);
+    }
+  }
+
+  function cancelDeleteSession() {
+    if (!isDeletingSession) {
+      setSessionPendingDeleteId(null);
     }
   }
 
@@ -222,7 +300,7 @@ export function FocusWorkspace({ initialSessions }: FocusWorkspaceProps) {
           completionRate={completionRate}
           copy={copy}
           pendingCount={pendingCount}
-          totalFocusMinutes={totalFocusMinutes}
+          totalFocusSeconds={totalFocusSeconds}
         />
       </section>
 
@@ -378,9 +456,12 @@ export function FocusWorkspace({ initialSessions }: FocusWorkspaceProps) {
         <aside className="xl:self-start">
           <PomodoroPanel
             copy={copy}
+            onClearSession={() => setSelectedSessionId(null)}
             onCompleteSession={completeSession}
+            onLogFocusRun={logFocusRun}
             onStartSession={startSession}
             selectedSession={selectedSession}
+            standaloneFocusSeconds={standaloneFocusSeconds}
           />
         </aside>
       </section>
@@ -390,12 +471,39 @@ export function FocusWorkspace({ initialSessions }: FocusWorkspaceProps) {
           activeSessionId={selectedSessionId}
           copy={copy}
           filters={filters}
+          onArchive={archiveSession}
+          onCancel={cancelSession}
           onComplete={completeSession}
+          onDelete={requestDeleteSession}
           onFilterChange={setFilters}
           onSelect={selectSession}
+          onStart={startSession}
           sessions={filteredSessions}
         />
       </section>
+
+      <ConfirmationModal
+        cancelLabel={copy.deleteDialog.cancelLabel}
+        confirmLabel={copy.deleteDialog.confirmLabel}
+        description={copy.deleteDialog.description}
+        loading={isDeletingSession}
+        open={Boolean(sessionPendingDelete)}
+        title={copy.deleteDialog.title}
+        variant="danger"
+        onCancel={cancelDeleteSession}
+        onConfirm={confirmDeleteSession}
+      >
+        {sessionPendingDelete ? (
+          <div className="rounded-[1rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3">
+            <p className="text-sm font-medium text-[var(--landing-text)]">
+              {sessionPendingDelete.title}
+            </p>
+            <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+              {sessionPendingDelete.subject}
+            </p>
+          </div>
+        ) : null}
+      </ConfirmationModal>
     </>
   );
 }

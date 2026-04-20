@@ -1,6 +1,6 @@
 export type FocusLevel = "low" | "medium" | "high";
 
-export type FocusStatus = "pending" | "in_progress" | "completed";
+export type FocusStatus = "pending" | "in_progress" | "completed" | "canceled" | "archived";
 
 export type PomodoroPhase = "focus" | "short_break" | "long_break" | "complete";
 
@@ -22,15 +22,18 @@ export type StudySession = {
   dueDate: string;
   status: FocusStatus;
   subject: string;
-  completedFocusMinutes: number;
+  completedFocusSeconds: number;
 };
 
-export type StudySessionInput = Omit<StudySession, "id" | "completedFocusMinutes" | "status"> & {
-  status?: FocusStatus;
-};
+export type StudySessionInput = Omit<StudySession, "completedFocusSeconds" | "id" | "status">;
 
 export type FocusFilters = {
   difficulty: FocusLevel | "all";
   importance: FocusLevel | "all";
   status: FocusStatus | "all";
+};
+
+export type FocusWorkspaceData = {
+  sessions: StudySession[];
+  standaloneFocusSeconds: number;
 };

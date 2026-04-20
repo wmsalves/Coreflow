@@ -8,12 +8,25 @@ export const focusCopy = {
       create: "Create session",
       start: "Start",
       select: "Select",
+      cancel: "Cancel",
+      archive: "Archive",
+      delete: "Delete",
       complete: "Mark complete",
       pause: "Pause",
       resume: "Resume",
       reset: "Reset",
+      saveFocus: "Save focus time",
+      savingFocus: "Saving time...",
+      useStandalone: "Use free focus",
       save: "Save session",
       saving: "Saving...",
+    },
+    deleteDialog: {
+      cancelLabel: "Keep session",
+      confirmLabel: "Delete session",
+      description:
+        "This permanently removes the study session and any focus runs linked to it. Archive the session instead if you may need the record later.",
+      title: "Delete study session?",
     },
     fallbackError: "Study session could not be saved.",
     overview: {
@@ -22,6 +35,7 @@ export const focusCopy = {
       activePending: "Active / pending",
       completionRate: "Completion rate",
       minutes: (value: number) => `${value} min`,
+      duration: formatDuration,
       ratio: (active: number, pending: number) => `${active} / ${pending}`,
     },
     planner: {
@@ -42,6 +56,9 @@ export const focusCopy = {
     list: {
       title: "Study sessions",
       description: "Keep the plan small enough to execute and clear enough to resume quickly.",
+      upcomingTitle: "Upcoming and active",
+      completedTitle: "Completed",
+      archivedTitle: "Canceled and archived",
       emptyTitle: "No sessions match this view",
       emptyDescription: "Adjust filters or create a study block to start building your focus queue.",
       filters: {
@@ -51,14 +68,17 @@ export const focusCopy = {
         all: "All",
       },
       estimated: (minutes: number) => `${minutes} min planned`,
-      focusLogged: (minutes: number) => `${minutes} min logged`,
+      focusLogged: (seconds: number) => `${formatDuration(seconds)} focused`,
       dateRange: (start: string, due: string) => `${start} to ${due}`,
     },
     pomodoro: {
       title: "Pomodoro execution",
-      description: "Tie the timer to a selected session and close the loop when the work is finished.",
-      noSession: "Select a study session to bind the timer.",
-      selected: "Selected session",
+      description: "Run the timer independently or link it to a selected study session.",
+      noSession: "Free focus mode",
+      noSessionDescription: "Time will be saved as standalone focus history.",
+      selected: "Linked study session",
+      standaloneTotal: (seconds: number) => `${formatDuration(seconds)} saved outside sessions`,
+      currentRun: (seconds: number) => `${formatDuration(seconds)} in this run`,
       phase: {
         focus: "Focus",
         short_break: "Short break",
@@ -82,25 +102,8 @@ export const focusCopy = {
       pending: "Pending",
       in_progress: "In progress",
       completed: "Completed",
-    },
-    samples: {
-      sessions: {
-        "session-1": {
-          description: "Review the core concepts and write one short recall summary.",
-          subject: "Biology",
-          title: "Cellular respiration review",
-        },
-        "session-2": {
-          description: "Work through practice problems without checking the answer key first.",
-          subject: "Math",
-          title: "Integrals practice set",
-        },
-        "session-3": {
-          description: "Annotate the chapter and extract five arguments into notes.",
-          subject: "History",
-          title: "Cold War chapter notes",
-        },
-      },
+      canceled: "Canceled",
+      archived: "Archived",
     },
   },
   "pt-BR": {
@@ -112,12 +115,25 @@ export const focusCopy = {
       create: "Criar sessao",
       start: "Iniciar",
       select: "Selecionar",
+      cancel: "Cancelar",
+      archive: "Arquivar",
+      delete: "Excluir",
       complete: "Concluir",
       pause: "Pausar",
       resume: "Retomar",
       reset: "Resetar",
+      saveFocus: "Salvar tempo focado",
+      savingFocus: "Salvando tempo...",
+      useStandalone: "Usar foco livre",
       save: "Salvar sessao",
       saving: "Salvando...",
+    },
+    deleteDialog: {
+      cancelLabel: "Manter sessao",
+      confirmLabel: "Excluir sessao",
+      description:
+        "Isso remove permanentemente a sessao de estudo e todos os registros de foco vinculados a ela. Arquive a sessao se talvez precisar do registro depois.",
+      title: "Excluir sessao de estudo?",
     },
     fallbackError: "Nao foi possivel salvar a sessao de estudo.",
     overview: {
@@ -126,6 +142,7 @@ export const focusCopy = {
       activePending: "Ativas / pendentes",
       completionRate: "Taxa de conclusao",
       minutes: (value: number) => `${value} min`,
+      duration: formatDuration,
       ratio: (active: number, pending: number) => `${active} / ${pending}`,
     },
     planner: {
@@ -146,6 +163,9 @@ export const focusCopy = {
     list: {
       title: "Sessoes de estudo",
       description: "Mantenha o plano pequeno o bastante para executar e claro o bastante para retomar rapido.",
+      upcomingTitle: "Proximas e ativas",
+      completedTitle: "Concluidas",
+      archivedTitle: "Canceladas e arquivadas",
       emptyTitle: "Nenhuma sessao nesta visao",
       emptyDescription: "Ajuste os filtros ou crie um bloco de estudo para montar sua fila de foco.",
       filters: {
@@ -155,14 +175,17 @@ export const focusCopy = {
         all: "Todos",
       },
       estimated: (minutes: number) => `${minutes} min planejados`,
-      focusLogged: (minutes: number) => `${minutes} min registrados`,
+      focusLogged: (seconds: number) => `${formatDuration(seconds)} focados`,
       dateRange: (start: string, due: string) => `${start} ate ${due}`,
     },
     pomodoro: {
       title: "Execucao Pomodoro",
-      description: "Conecte o timer a uma sessao selecionada e feche o ciclo quando terminar.",
-      noSession: "Selecione uma sessao de estudo para conectar ao timer.",
-      selected: "Sessao selecionada",
+      description: "Use o timer livremente ou conecte a uma sessao de estudo selecionada.",
+      noSession: "Modo foco livre",
+      noSessionDescription: "O tempo sera salvo como historico de foco avulso.",
+      selected: "Sessao de estudo conectada",
+      standaloneTotal: (seconds: number) => `${formatDuration(seconds)} salvos fora de sessoes`,
+      currentRun: (seconds: number) => `${formatDuration(seconds)} nesta execucao`,
       phase: {
         focus: "Foco",
         short_break: "Pausa curta",
@@ -186,27 +209,30 @@ export const focusCopy = {
       pending: "Pendente",
       in_progress: "Em progresso",
       completed: "Concluida",
-    },
-    samples: {
-      sessions: {
-        "session-1": {
-          description: "Revise os conceitos principais e escreva um resumo curto de memoria.",
-          subject: "Biologia",
-          title: "Revisao de respiracao celular",
-        },
-        "session-2": {
-          description: "Resolva exercicios sem consultar o gabarito primeiro.",
-          subject: "Matematica",
-          title: "Lista de integrais",
-        },
-        "session-3": {
-          description: "Anote o capitulo e extraia cinco argumentos para suas notas.",
-          subject: "Historia",
-          title: "Notas do capitulo sobre Guerra Fria",
-        },
-      },
+      canceled: "Cancelada",
+      archived: "Arquivada",
     },
   },
 };
 
 export type FocusCopy = (typeof focusCopy)["en"];
+
+function formatDuration(totalSeconds: number) {
+  if (totalSeconds <= 0) {
+    return "0m";
+  }
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return seconds > 0 ? `${hours}h ${minutes}m ${seconds}s` : `${hours}h ${minutes}m`;
+  }
+
+  if (minutes > 0) {
+    return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
+  }
+
+  return `${seconds}s`;
+}

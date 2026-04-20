@@ -3,82 +3,54 @@ import type {
   FocusLevel,
   FocusStatus,
   StudySession,
-  StudySessionInput,
 } from "@/features/focus/types/focus-types";
 
 type StudySessionRow = Database["public"]["Tables"]["study_sessions"]["Row"];
 
-type StoredSessionMetadata = {
-  description?: string;
-  difficulty?: FocusLevel;
-  dueDate?: string;
-  estimatedMinutes?: number;
-  importance?: FocusLevel;
-  status?: FocusStatus;
-  title?: string;
-};
+export const studySessionSelect =
+  "id, user_id, title, subject, notes, status, difficulty, importance, estimated_minutes, due_date, started_at, ended_at, duration_minutes, created_at";
 
 const defaultDifficulty: FocusLevel = "medium";
 const defaultImportance: FocusLevel = "medium";
+const defaultStatus: FocusStatus = "pending";
 const defaultEstimatedMinutes = 45;
 
-export function serializeStudySessionMetadata(input: StudySessionInput | StudySession) {
-  return JSON.stringify({
-    description: input.description,
-    difficulty: input.difficulty,
-    dueDate: input.dueDate,
-    estimatedMinutes: input.estimatedMinutes,
-    importance: input.importance,
-    status: input.status ?? "pending",
-    title: input.title,
-  } satisfies StoredSessionMetadata);
-}
+const levels: FocusLevel[] = ["low", "medium", "high"];
+const statuses: FocusStatus[] = ["pending", "in_progress", "completed", "canceled", "archived"];
 
-export function toStudySession(row: StudySessionRow): StudySession {
-  const metadata = parseMetadata(row.notes);
-  const startDate = row.started_at.slice(0, 10);
-  const dueDate = metadata.dueDate ?? startDate;
-  const completedFocusMinutes = row.duration_minutes ?? 0;
+export function toStudySession(row: StudySessionRow, completedFocusSeconds?: number): StudySession {
+  const startDate = toDateKey(row.started_at);
+  const totalFocusSeconds =
+    completedFocusSeconds ?? (row.duration_minutes === null ? 0 : row.duration_minutes * 60);
 
   return {
-    completedFocusMinutes,
-    description: metadata.description ?? "",
-    difficulty: metadata.difficulty ?? defaultDifficulty,
-    dueDate,
-    estimatedMinutes: metadata.estimatedMinutes ?? (completedFocusMinutes || defaultEstimatedMinutes),
+    completedFocusSeconds: totalFocusSeconds,
+    description: row.notes ?? "",
+    difficulty: normalizeLevel(row.difficulty, defaultDifficulty),
+    dueDate: row.due_date ?? startDate,
+    estimatedMinutes:
+      row.estimated_minutes ?? (totalFocusSeconds ? Math.ceil(totalFocusSeconds / 60) : defaultEstimatedMinutes),
     id: row.id,
-    importance: metadata.importance ?? defaultImportance,
+    importance: normalizeLevel(row.importance, defaultImportance),
     startDate,
-    status: row.ended_at ? "completed" : metadata.status ?? "pending",
+    status: normalizeStatus(row.status, row.ended_at),
     subject: row.subject ?? "Focus",
-    title: metadata.title ?? row.subject ?? "Study session",
+    title: row.title || row.subject || "Study session",
   };
 }
 
-export function withStatus(session: StudySession, status: FocusStatus, focusMinutes?: number): StudySession {
-  const completedFocusMinutes =
-    focusMinutes === undefined
-      ? session.completedFocusMinutes
-      : Math.max(session.completedFocusMinutes, focusMinutes);
-
-  return {
-    ...session,
-    completedFocusMinutes,
-    status,
-  };
+function normalizeLevel(value: string, fallback: FocusLevel): FocusLevel {
+  return levels.includes(value as FocusLevel) ? (value as FocusLevel) : fallback;
 }
 
-function parseMetadata(notes: string | null): StoredSessionMetadata {
-  if (!notes) {
-    return {};
+function normalizeStatus(value: string, endedAt: string | null): FocusStatus {
+  if (statuses.includes(value as FocusStatus)) {
+    return value as FocusStatus;
   }
 
-  try {
-    const parsed = JSON.parse(notes) as StoredSessionMetadata;
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {
-      description: notes,
-    };
-  }
+  return endedAt ? "completed" : defaultStatus;
+}
+
+function toDateKey(value: string) {
+  return value.slice(0, 10);
 }

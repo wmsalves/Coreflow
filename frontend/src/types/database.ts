@@ -137,35 +137,85 @@ export type Database = {
           updated_at?: string;
         };
       };
-      study_sessions: {
+      focus_runs: {
         Insert: {
           created_at?: string;
-          duration_minutes?: number | null;
-          ended_at?: string | null;
+          duration_seconds: number;
+          ended_at?: string;
           id?: string;
-          notes?: string | null;
+          source?: string;
           started_at?: string;
-          subject?: string | null;
+          study_session_id?: string | null;
           user_id: string;
         };
         Row: {
           created_at: string;
-          duration_minutes: number | null;
-          ended_at: string | null;
+          duration_seconds: number;
+          ended_at: string;
           id: string;
-          notes: string | null;
+          source: string;
           started_at: string;
-          subject: string | null;
+          study_session_id: string | null;
           user_id: string;
         };
         Update: {
           created_at?: string;
-          duration_minutes?: number | null;
-          ended_at?: string | null;
+          duration_seconds?: number;
+          ended_at?: string;
           id?: string;
+          source?: string;
+          started_at?: string;
+          study_session_id?: string | null;
+          user_id?: string;
+        };
+      };
+      study_sessions: {
+        Insert: {
+          created_at?: string;
+          difficulty?: string;
+          duration_minutes?: number | null;
+          due_date?: string;
+          ended_at?: string | null;
+          estimated_minutes?: number;
+          id?: string;
+          importance?: string;
           notes?: string | null;
           started_at?: string;
+          status?: string;
           subject?: string | null;
+          title: string;
+          user_id: string;
+        };
+        Row: {
+          created_at: string;
+          difficulty: string;
+          duration_minutes: number | null;
+          due_date: string;
+          ended_at: string | null;
+          estimated_minutes: number;
+          id: string;
+          importance: string;
+          notes: string | null;
+          started_at: string;
+          status: string;
+          subject: string | null;
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          difficulty?: string;
+          duration_minutes?: number | null;
+          due_date?: string;
+          ended_at?: string | null;
+          estimated_minutes?: number;
+          id?: string;
+          importance?: string;
+          notes?: string | null;
+          started_at?: string;
+          status?: string;
+          subject?: string | null;
+          title?: string;
           user_id?: string;
         };
       };

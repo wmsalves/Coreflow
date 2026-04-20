@@ -168,7 +168,7 @@ export function usePomodoro(initialSettings: PomodoroSettings = defaultSettings)
 
   return {
     cycle: timerState.cycle,
-    focusMinutesLogged: Math.floor(timerState.focusSeconds / 60),
+    focusSecondsLogged: timerState.focusSeconds,
     isRunning: timerState.isRunning,
     phase: timerState.phase,
     progress,

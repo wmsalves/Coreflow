@@ -9,24 +9,47 @@ type StudySessionListProps = {
   activeSessionId: string | null;
   copy: FocusCopy;
   filters: FocusFilters;
+  onArchive: (id: string) => void;
+  onCancel: (id: string) => void;
   onComplete: (id: string) => void;
+  onDelete: (id: string) => void;
   onFilterChange: (filters: FocusFilters) => void;
   onSelect: (id: string) => void;
+  onStart: (id: string) => void;
   sessions: StudySession[];
 };
 
-const statuses: Array<FocusStatus | "all"> = ["all", "pending", "in_progress", "completed"];
+const statuses: Array<FocusStatus | "all"> = [
+  "all",
+  "pending",
+  "in_progress",
+  "completed",
+  "canceled",
+  "archived",
+];
 const levels: Array<FocusLevel | "all"> = ["all", "low", "medium", "high"];
 
 export function StudySessionList({
   activeSessionId,
   copy,
   filters,
+  onArchive,
+  onCancel,
   onComplete,
+  onDelete,
   onFilterChange,
   onSelect,
+  onStart,
   sessions,
 }: StudySessionListProps) {
+  const upcomingSessions = sessions.filter(
+    (session) => session.status === "pending" || session.status === "in_progress",
+  );
+  const completedSessions = sessions.filter((session) => session.status === "completed");
+  const inactiveSessions = sessions.filter(
+    (session) => session.status === "canceled" || session.status === "archived",
+  );
+
   return (
     <Card>
       <CardHeader className="gap-4 lg:flex lg:flex-row lg:items-start lg:justify-between lg:space-y-0">
@@ -71,26 +94,109 @@ export function StudySessionList({
           </FilterSelect>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-5">
         {sessions.length === 0 ? (
           <div className="rounded-[1.35rem] border border-dashed border-[var(--landing-border)] bg-[var(--landing-surface)] p-6 text-sm leading-6 text-[var(--landing-text-muted)]">
             <p className="font-medium text-[var(--landing-text)]">{copy.list.emptyTitle}</p>
             <p className="mt-1">{copy.list.emptyDescription}</p>
           </div>
         ) : (
-          sessions.map((session) => (
-            <StudySessionCard
-              active={session.id === activeSessionId}
+          <>
+            <SessionSection
+              activeSessionId={activeSessionId}
               copy={copy}
-              key={session.id}
+              onArchive={onArchive}
+              onCancel={onCancel}
               onComplete={onComplete}
+              onDelete={onDelete}
               onSelect={onSelect}
-              session={session}
+              onStart={onStart}
+              sessions={upcomingSessions}
+              title={copy.list.upcomingTitle}
             />
-          ))
+            <SessionSection
+              activeSessionId={activeSessionId}
+              copy={copy}
+              onArchive={onArchive}
+              onCancel={onCancel}
+              onComplete={onComplete}
+              onDelete={onDelete}
+              onSelect={onSelect}
+              onStart={onStart}
+              sessions={completedSessions}
+              title={copy.list.completedTitle}
+            />
+            <SessionSection
+              activeSessionId={activeSessionId}
+              copy={copy}
+              onArchive={onArchive}
+              onCancel={onCancel}
+              onComplete={onComplete}
+              onDelete={onDelete}
+              onSelect={onSelect}
+              onStart={onStart}
+              sessions={inactiveSessions}
+              title={copy.list.archivedTitle}
+            />
+          </>
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function SessionSection({
+  activeSessionId,
+  copy,
+  onArchive,
+  onCancel,
+  onComplete,
+  onDelete,
+  onSelect,
+  onStart,
+  sessions,
+  title,
+}: {
+  activeSessionId: string | null;
+  copy: FocusCopy;
+  onArchive: (id: string) => void;
+  onCancel: (id: string) => void;
+  onComplete: (id: string) => void;
+  onDelete: (id: string) => void;
+  onSelect: (id: string) => void;
+  onStart: (id: string) => void;
+  sessions: StudySession[];
+  title: string;
+}) {
+  if (sessions.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-faint)]">
+          {title}
+        </h3>
+        <span className="text-xs font-medium text-[var(--landing-text-muted)]">
+          {sessions.length}
+        </span>
+      </div>
+      {sessions.map((session) => (
+        <StudySessionCard
+          active={session.id === activeSessionId}
+          copy={copy}
+          key={session.id}
+          onArchive={onArchive}
+          onCancel={onCancel}
+          onComplete={onComplete}
+          onDelete={onDelete}
+          onSelect={onSelect}
+          onStart={onStart}
+          session={session}
+        />
+      ))}
+    </section>
   );
 }
 

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Pause, Play, RotateCcw, TimerReset } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,19 +25,33 @@ const settingKeys: Array<keyof PomodoroSettings> = [
 
 type PomodoroPanelProps = {
   copy: FocusCopy;
-  onCompleteSession: (id: string, focusMinutes: number) => void;
+  onClearSession: () => void;
+  onCompleteSession: (id: string) => Promise<void> | void;
+  onLogFocusRun: (studySessionId: string | null, focusSeconds: number) => Promise<void> | void;
   onStartSession: (id: string) => void;
   selectedSession: StudySession | null;
+  standaloneFocusSeconds: number;
 };
 
 export function PomodoroPanel({
   copy,
+  onClearSession,
   onCompleteSession,
+  onLogFocusRun,
   onStartSession,
   selectedSession,
+  standaloneFocusSeconds,
 }: PomodoroPanelProps) {
   const timer = usePomodoro();
-  const canRun = Boolean(selectedSession);
+  const [isSavingFocusRun, setIsSavingFocusRun] = useState(false);
+  const selectedSessionCanRun = Boolean(
+    selectedSession &&
+      selectedSession.status !== "completed" &&
+      selectedSession.status !== "canceled" &&
+      selectedSession.status !== "archived",
+  );
+  const canRun = !selectedSession || selectedSessionCanRun;
+  const hasFocusTimeToSave = timer.focusSecondsLogged > 0;
   const primaryLabel = timer.isRunning
     ? copy.actions.pause
     : timer.remainingSeconds < timer.settings.focusMinutes * 60
@@ -44,7 +59,7 @@ export function PomodoroPanel({
       : copy.actions.start;
 
   function handlePrimaryAction() {
-    if (!selectedSession) {
+    if (!canRun) {
       return;
     }
 
@@ -53,20 +68,41 @@ export function PomodoroPanel({
       return;
     }
 
-    onStartSession(selectedSession.id);
+    if (selectedSession) {
+      onStartSession(selectedSession.id);
+    }
     timer.start();
   }
 
-  function handleComplete() {
-    if (!selectedSession) {
+  async function saveFocusTime() {
+    if (!hasFocusTimeToSave) {
       return;
     }
 
-    onCompleteSession(
-      selectedSession.id,
-      Math.max(timer.focusMinutesLogged, selectedSession.estimatedMinutes),
-    );
-    timer.reset();
+    setIsSavingFocusRun(true);
+    try {
+      await onLogFocusRun(selectedSession?.id ?? null, timer.focusSecondsLogged);
+      timer.reset();
+    } finally {
+      setIsSavingFocusRun(false);
+    }
+  }
+
+  async function handleComplete() {
+    if (!selectedSession || !selectedSessionCanRun) {
+      return;
+    }
+
+    setIsSavingFocusRun(true);
+    try {
+      if (hasFocusTimeToSave) {
+        await onLogFocusRun(selectedSession.id, timer.focusSecondsLogged);
+      }
+      await onCompleteSession(selectedSession.id);
+      timer.reset();
+    } finally {
+      setIsSavingFocusRun(false);
+    }
   }
 
   return (
@@ -95,8 +131,20 @@ export function PomodoroPanel({
               <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
                 {selectedSession.subject}
               </p>
+              <Button className="mt-3" onClick={onClearSession} size="sm" variant="secondary">
+                {copy.actions.useStandalone}
+              </Button>
             </div>
-          ) : null}
+          ) : (
+            <div className="mt-2 space-y-1">
+              <p className="text-sm text-[var(--landing-text-muted)]">
+                {copy.pomodoro.noSessionDescription}
+              </p>
+              <p className="text-sm font-medium text-[var(--landing-text)]">
+                {copy.pomodoro.standaloneTotal(standaloneFocusSeconds)}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="rounded-[2rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-12 text-center shadow-[var(--landing-chip-inset-shadow)]">
@@ -108,6 +156,9 @@ export function PomodoroPanel({
           </p>
           <p className="mt-3 text-sm text-[var(--landing-text-muted)]">
             {copy.pomodoro.cycle(timer.cycle, timer.settings.cycles)}
+          </p>
+          <p className="mt-2 text-xs font-medium text-[var(--landing-text-faint)]">
+            {copy.pomodoro.currentRun(timer.focusSecondsLogged)}
           </p>
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-[var(--landing-surface-alt)]">
             <div
@@ -148,8 +199,20 @@ export function PomodoroPanel({
             {copy.actions.reset}
           </Button>
           <Button
+            disabled={!hasFocusTimeToSave || isSavingFocusRun}
+            onClick={saveFocusTime}
+            variant="secondary"
+          >
+            {isSavingFocusRun ? copy.actions.savingFocus : copy.actions.saveFocus}
+          </Button>
+          <Button
             disabled={
-              !selectedSession || selectedSession.status === "completed"
+              !selectedSession ||
+              !selectedSessionCanRun ||
+              selectedSession.status === "completed" ||
+              selectedSession.status === "canceled" ||
+              selectedSession.status === "archived" ||
+              isSavingFocusRun
             }
             onClick={handleComplete}
             variant="ghost"

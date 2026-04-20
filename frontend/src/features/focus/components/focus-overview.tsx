@@ -8,7 +8,7 @@ type FocusOverviewProps = {
   completedCount: number;
   copy: FocusCopy;
   pendingCount: number;
-  totalFocusMinutes: number;
+  totalFocusSeconds: number;
 };
 
 const metricIcons = [Clock3, ListChecks, Target, TrendingUp];
@@ -19,12 +19,12 @@ export function FocusOverview({
   completedCount,
   copy,
   pendingCount,
-  totalFocusMinutes,
+  totalFocusSeconds,
 }: FocusOverviewProps) {
   const metrics = [
     {
       label: copy.overview.totalFocus,
-      value: copy.overview.minutes(totalFocusMinutes),
+      value: copy.overview.duration(totalFocusSeconds),
     },
     {
       label: copy.overview.completed,
