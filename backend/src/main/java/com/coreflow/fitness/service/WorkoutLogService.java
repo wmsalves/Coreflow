@@ -9,6 +9,7 @@ import com.coreflow.fitness.entity.WorkoutExerciseLogEntity;
 import com.coreflow.fitness.entity.WorkoutLogEntity;
 import com.coreflow.fitness.repository.WorkoutLogRepository;
 import com.coreflow.fitness.repository.WorkoutPlanRepository;
+import com.coreflow.common.validation.ApiRequestValidator;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -17,6 +18,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class WorkoutLogService {
+
+    private static final int MAX_EXERCISE_LOGS = 50;
+    private static final int MAX_NOTES_LENGTH = 1000;
 
     private final WorkoutLogRepository workoutLogRepository;
     private final WorkoutPlanRepository workoutPlanRepository;
@@ -32,40 +36,46 @@ public class WorkoutLogService {
         this.exerciseCatalogService = exerciseCatalogService;
     }
 
-    public List<WorkoutLogResponse> listWorkoutLogs(Long userId) {
-        return workoutLogRepository.findByUserId(userId).stream()
+    public List<WorkoutLogResponse> listWorkoutLogs(String userId) {
+        String normalizedUserId = ApiRequestValidator.requireUserId(userId);
+
+        return workoutLogRepository.findByUserId(normalizedUserId).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public WorkoutLogResponse logWorkout(Long userId, CreateWorkoutLogRequest request) {
+    public WorkoutLogResponse logWorkout(String userId, CreateWorkoutLogRequest request) {
+        String normalizedUserId = ApiRequestValidator.requireUserId(userId);
         if (request == null) {
             throw new ApiException("Workout log request is required");
         }
 
+        Long workoutPlanId = null;
         if (request.workoutPlanId() != null) {
-            workoutPlanRepository.findById(request.workoutPlanId())
-                    .filter(workoutPlan -> userId.equals(workoutPlan.getUserId()))
+            workoutPlanId = ApiRequestValidator.requirePositiveLong(request.workoutPlanId(), "Workout plan id");
+            workoutPlanRepository.findById(workoutPlanId)
+                    .filter(workoutPlan -> normalizedUserId.equals(workoutPlan.getUserId()))
                     .orElseThrow(() -> new NoSuchElementException("Workout plan not found"));
         }
 
         WorkoutLogEntity workoutLog = new WorkoutLogEntity();
-        workoutLog.setUserId(userId);
-        workoutLog.setWorkoutPlanId(request.workoutPlanId());
+        workoutLog.setUserId(normalizedUserId);
+        workoutLog.setWorkoutPlanId(workoutPlanId);
         workoutLog.setCompletedAt(request.completedAt() == null ? Instant.now() : request.completedAt());
-        workoutLog.setDurationMinutes(request.durationMinutes());
-        workoutLog.setNotes(request.notes());
+        workoutLog.setDurationMinutes(ApiRequestValidator.optionalIntegerRange(
+                request.durationMinutes(),
+                "Duration minutes",
+                0,
+                1440
+        ));
+        workoutLog.setNotes(ApiRequestValidator.optionalText(request.notes(), "Workout notes", MAX_NOTES_LENGTH));
         workoutLog.setExercises(mapExerciseLogs(request.exercises()));
 
         return toResponse(workoutLogRepository.save(workoutLog));
     }
 
     private List<WorkoutExerciseLogEntity> mapExerciseLogs(List<WorkoutLogExerciseRequest> requests) {
-        if (requests == null || requests.isEmpty()) {
-            throw new ApiException("At least one exercise log is required");
-        }
-
-        return requests.stream()
+        return ApiRequestValidator.requireList("Exercise logs", requests, MAX_EXERCISE_LOGS).stream()
                 .map(this::mapExerciseLog)
                 .toList();
     }
@@ -74,18 +84,16 @@ public class WorkoutLogService {
         if (request == null) {
             throw new ApiException("Exercise log is required");
         }
-        if (request.exerciseId() == null) {
-            throw new ApiException("Exercise id is required");
-        }
-        exerciseCatalogService.getExerciseEntity(request.exerciseId());
+        Long exerciseId = ApiRequestValidator.requirePositiveLong(request.exerciseId(), "Exercise id");
+        exerciseCatalogService.getExerciseEntity(exerciseId);
 
         WorkoutExerciseLogEntity exerciseLog = new WorkoutExerciseLogEntity();
-        exerciseLog.setExerciseId(request.exerciseId());
-        exerciseLog.setSortOrder(request.sortOrder());
-        exerciseLog.setSetsCompleted(request.setsCompleted());
-        exerciseLog.setRepsCompleted(request.repsCompleted());
-        exerciseLog.setWeight(request.weight());
-        exerciseLog.setNotes(request.notes());
+        exerciseLog.setExerciseId(exerciseId);
+        exerciseLog.setSortOrder(ApiRequestValidator.optionalIntegerRange(request.sortOrder(), "Sort order", 0, 1000));
+        exerciseLog.setSetsCompleted(ApiRequestValidator.optionalIntegerRange(request.setsCompleted(), "Sets completed", 0, 100));
+        exerciseLog.setRepsCompleted(ApiRequestValidator.optionalIntegerRange(request.repsCompleted(), "Reps completed", 0, 1000));
+        exerciseLog.setWeight(ApiRequestValidator.optionalDoubleRange(request.weight(), "Weight", 0, 10000));
+        exerciseLog.setNotes(ApiRequestValidator.optionalText(request.notes(), "Exercise log notes", MAX_NOTES_LENGTH));
         return exerciseLog;
     }
 

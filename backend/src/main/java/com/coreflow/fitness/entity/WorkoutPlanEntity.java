@@ -7,7 +7,7 @@ import java.util.List;
 public class WorkoutPlanEntity {
 
     private Long id;
-    private Long userId;
+    private String userId;
     private String name;
     private String description;
     private List<WorkoutPlanExerciseEntity> exercises = new ArrayList<>();
@@ -22,11 +22,11 @@ public class WorkoutPlanEntity {
         this.id = id;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

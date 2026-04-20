@@ -5,7 +5,7 @@ import java.util.List;
 
 public record WorkoutPlanResponse(
         Long id,
-        Long userId,
+        String userId,
         String name,
         String description,
         List<WorkoutPlanExerciseResponse> exercises,

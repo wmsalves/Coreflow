@@ -168,8 +168,27 @@ create policy "subscriptions owner access" on public.subscriptions
 create policy "habits owner access" on public.habits
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "habit logs owner access" on public.habit_logs;
 create policy "habit logs owner access" on public.habit_logs
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  for all
+  using (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.habits
+      where habits.id = habit_logs.habit_id
+        and habits.user_id = auth.uid()
+    )
+  )
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.habits
+      where habits.id = habit_logs.habit_id
+        and habits.user_id = auth.uid()
+    )
+  );
 
 create policy "study sessions owner access" on public.study_sessions
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
@@ -177,8 +196,52 @@ create policy "study sessions owner access" on public.study_sessions
 create policy "workout plans owner access" on public.workout_plans
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "exercises owner access" on public.exercises;
 create policy "exercises owner access" on public.exercises
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  for all
+  using (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.workout_plans
+      where workout_plans.id = exercises.plan_id
+        and workout_plans.user_id = auth.uid()
+    )
+  )
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.workout_plans
+      where workout_plans.id = exercises.plan_id
+        and workout_plans.user_id = auth.uid()
+    )
+  );
 
+drop policy if exists "workout logs owner access" on public.workout_logs;
 create policy "workout logs owner access" on public.workout_logs
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  for all
+  using (
+    auth.uid() = user_id
+    and (
+      plan_id is null
+      or exists (
+        select 1
+        from public.workout_plans
+        where workout_plans.id = workout_logs.plan_id
+          and workout_plans.user_id = auth.uid()
+      )
+    )
+  )
+  with check (
+    auth.uid() = user_id
+    and (
+      plan_id is null
+      or exists (
+        select 1
+        from public.workout_plans
+        where workout_plans.id = workout_logs.plan_id
+          and workout_plans.user_id = auth.uid()
+      )
+    )
+  );

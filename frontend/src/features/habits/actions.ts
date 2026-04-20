@@ -20,8 +20,8 @@ export async function createHabitAction(formData: FormData) {
 
   const { error } = await supabase.from("habits").insert({
     user_id: user.id,
-    name: getRequiredString(formData, "name"),
-    description: getOptionalString(formData, "description"),
+    name: getRequiredString(formData, "name", { maxLength: 120 }),
+    description: getOptionalString(formData, "description", { maxLength: 1000 }),
     frequency_per_week: frequencyPerWeek,
   });
 

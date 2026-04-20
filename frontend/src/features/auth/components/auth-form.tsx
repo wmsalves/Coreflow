@@ -103,7 +103,7 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
             <AuthInput
               autoComplete={isSignup ? "new-password" : "current-password"}
               id="password"
-              minLength={6}
+              minLength={isSignup ? 8 : 1}
               name="password"
               placeholder={
                 isSignup
@@ -119,7 +119,7 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
             <AuthField
               autoComplete="new-password"
               label={copy.confirmPasswordLabel}
-              minLength={6}
+              minLength={8}
               name="confirmPassword"
               placeholder={copy.confirmPasswordPlaceholder}
               required

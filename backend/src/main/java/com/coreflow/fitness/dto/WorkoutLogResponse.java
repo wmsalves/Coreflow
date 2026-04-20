@@ -5,7 +5,7 @@ import java.util.List;
 
 public record WorkoutLogResponse(
         Long id,
-        Long userId,
+        String userId,
         Long workoutPlanId,
         Instant completedAt,
         Integer durationMinutes,

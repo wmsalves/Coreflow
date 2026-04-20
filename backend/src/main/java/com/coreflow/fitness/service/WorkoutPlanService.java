@@ -11,6 +11,7 @@ import com.coreflow.fitness.entity.WorkoutPlanEntity;
 import com.coreflow.fitness.entity.WorkoutPlanExerciseEntity;
 import com.coreflow.fitness.mapper.ExerciseMapper;
 import com.coreflow.fitness.repository.WorkoutPlanRepository;
+import com.coreflow.common.validation.ApiRequestValidator;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -19,6 +20,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class WorkoutPlanService {
+
+    private static final int MAX_DESCRIPTION_LENGTH = 1000;
+    private static final int MAX_NAME_LENGTH = 120;
+    private static final int MAX_NOTES_LENGTH = 1000;
 
     private final WorkoutPlanRepository workoutPlanRepository;
     private final ExerciseCatalogService exerciseCatalogService;
@@ -34,55 +39,73 @@ public class WorkoutPlanService {
         this.exerciseMapper = exerciseMapper;
     }
 
-    public List<WorkoutPlanResponse> listWorkoutPlans(Long userId) {
-        return workoutPlanRepository.findByUserId(userId).stream()
+    public List<WorkoutPlanResponse> listWorkoutPlans(String userId) {
+        String normalizedUserId = ApiRequestValidator.requireUserId(userId);
+
+        return workoutPlanRepository.findByUserId(normalizedUserId).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public WorkoutPlanResponse createWorkoutPlan(Long userId, CreateWorkoutPlanRequest request) {
+    public WorkoutPlanResponse createWorkoutPlan(String userId, CreateWorkoutPlanRequest request) {
+        String normalizedUserId = ApiRequestValidator.requireUserId(userId);
         if (request == null) {
             throw new ApiException("Workout plan request is required");
         }
-        if (request.name() == null || request.name().isBlank()) {
-            throw new ApiException("Workout plan name is required");
-        }
+
+        String name = ApiRequestValidator.requireText(request.name(), "Workout plan name", MAX_NAME_LENGTH);
+        String description = ApiRequestValidator.optionalText(
+                request.description(),
+                "Workout plan description",
+                MAX_DESCRIPTION_LENGTH
+        );
 
         WorkoutPlanEntity workoutPlan = new WorkoutPlanEntity();
-        workoutPlan.setUserId(userId);
-        workoutPlan.setName(request.name().trim());
-        workoutPlan.setDescription(request.description());
+        workoutPlan.setUserId(normalizedUserId);
+        workoutPlan.setName(name);
+        workoutPlan.setDescription(description);
 
         return toResponse(workoutPlanRepository.save(workoutPlan));
     }
 
-    public WorkoutPlanResponse addExercise(Long userId, Long workoutPlanId, AddExerciseRequest request) {
+    public WorkoutPlanResponse addExercise(String userId, Long workoutPlanId, AddExerciseRequest request) {
+        String normalizedUserId = ApiRequestValidator.requireUserId(userId);
+        Long normalizedWorkoutPlanId = ApiRequestValidator.requirePositiveLong(workoutPlanId, "Workout plan id");
         if (request == null) {
             throw new ApiException("Exercise request is required");
         }
-        if (request.exerciseId() == null) {
-            throw new ApiException("Exercise id is required");
-        }
 
-        WorkoutPlanEntity workoutPlan = getUserWorkoutPlan(userId, workoutPlanId);
-        ExerciseEntity exercise = exerciseCatalogService.getExerciseEntity(request.exerciseId());
+        Long exerciseId = ApiRequestValidator.requirePositiveLong(request.exerciseId(), "Exercise id");
+        WorkoutPlanEntity workoutPlan = getUserWorkoutPlan(normalizedUserId, normalizedWorkoutPlanId);
+        ExerciseEntity exercise = exerciseCatalogService.getExerciseEntity(exerciseId);
 
         WorkoutPlanExerciseEntity planExercise = new WorkoutPlanExerciseEntity();
         planExercise.setExerciseId(exercise.getId());
-        planExercise.setSortOrder(resolveSortOrder(workoutPlan, request.sortOrder()));
-        planExercise.setSets(request.sets());
-        planExercise.setReps(request.reps());
-        planExercise.setRestSeconds(request.restSeconds());
-        planExercise.setDurationSeconds(request.durationSeconds());
-        planExercise.setNotes(request.notes());
+        planExercise.setSortOrder(resolveSortOrder(
+                workoutPlan,
+                ApiRequestValidator.optionalIntegerRange(request.sortOrder(), "Sort order", 0, 1000)
+        ));
+        planExercise.setSets(ApiRequestValidator.optionalIntegerRange(request.sets(), "Sets", 1, 100));
+        planExercise.setReps(ApiRequestValidator.optionalIntegerRange(request.reps(), "Reps", 1, 1000));
+        planExercise.setRestSeconds(ApiRequestValidator.optionalIntegerRange(request.restSeconds(), "Rest seconds", 0, 86400));
+        planExercise.setDurationSeconds(ApiRequestValidator.optionalIntegerRange(
+                request.durationSeconds(),
+                "Duration seconds",
+                0,
+                86400
+        ));
+        planExercise.setNotes(ApiRequestValidator.optionalText(request.notes(), "Exercise notes", MAX_NOTES_LENGTH));
 
         workoutPlan.getExercises().add(planExercise);
         return toResponse(workoutPlanRepository.save(workoutPlan));
     }
 
-    public WorkoutPlanResponse removeExercise(Long userId, Long workoutPlanId, Long exerciseId) {
-        WorkoutPlanEntity workoutPlan = getUserWorkoutPlan(userId, workoutPlanId);
-        boolean removed = workoutPlan.getExercises().removeIf(exercise -> exerciseId.equals(exercise.getExerciseId()));
+    public WorkoutPlanResponse removeExercise(String userId, Long workoutPlanId, Long exerciseId) {
+        String normalizedUserId = ApiRequestValidator.requireUserId(userId);
+        Long normalizedWorkoutPlanId = ApiRequestValidator.requirePositiveLong(workoutPlanId, "Workout plan id");
+        Long normalizedExerciseId = ApiRequestValidator.requirePositiveLong(exerciseId, "Exercise id");
+        WorkoutPlanEntity workoutPlan = getUserWorkoutPlan(normalizedUserId, normalizedWorkoutPlanId);
+        boolean removed = workoutPlan.getExercises().removeIf(exercise -> normalizedExerciseId.equals(exercise.getExerciseId()));
         if (!removed) {
             throw new NoSuchElementException("Workout plan exercise not found");
         }
@@ -90,7 +113,7 @@ public class WorkoutPlanService {
         return toResponse(workoutPlanRepository.save(workoutPlan));
     }
 
-    private WorkoutPlanEntity getUserWorkoutPlan(Long userId, Long workoutPlanId) {
+    private WorkoutPlanEntity getUserWorkoutPlan(String userId, Long workoutPlanId) {
         return workoutPlanRepository.findById(workoutPlanId)
                 .filter(workoutPlan -> userId.equals(workoutPlan.getUserId()))
                 .orElseThrow(() -> new NoSuchElementException("Workout plan not found"));

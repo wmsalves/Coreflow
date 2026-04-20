@@ -7,13 +7,20 @@ import com.coreflow.fitness.entity.ExerciseEntity;
 import com.coreflow.fitness.mapper.ExerciseMapper;
 import com.coreflow.fitness.mapper.ExternalExerciseMapper;
 import com.coreflow.fitness.repository.ExerciseRepository;
+import com.coreflow.common.exception.ApiException;
+import com.coreflow.common.validation.ApiRequestValidator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ExerciseCatalogService {
+
+    private static final int MAX_EXTERNAL_ID_LENGTH = 120;
+    private static final int MAX_SEARCH_QUERY_LENGTH = 80;
+    private static final Pattern EXTERNAL_ID_PATTERN = Pattern.compile("[A-Za-z0-9._:-]+");
 
     private final ExerciseRepository exerciseRepository;
     private final ExternalExerciseService externalExerciseService;
@@ -45,18 +52,22 @@ public class ExerciseCatalogService {
     }
 
     public List<ExerciseResponse> searchExercises(String query) {
-        return exerciseRepository.search(query).stream()
+        String normalizedQuery = ApiRequestValidator.optionalText(query, "Search query", MAX_SEARCH_QUERY_LENGTH);
+
+        return exerciseRepository.search(normalizedQuery).stream()
                 .map(exerciseMapper::toResponse)
                 .toList();
     }
 
     public List<ExerciseSummaryResponse> searchExerciseSummaries(String query) {
-        if (query == null || query.isBlank()) {
+        String normalizedQuery = ApiRequestValidator.optionalText(query, "Search query", MAX_SEARCH_QUERY_LENGTH);
+
+        if (normalizedQuery == null) {
             return listExerciseSummaries();
         }
 
         try {
-            List<ExerciseEntity> importedExercises = importExternalExerciseEntities(query);
+            List<ExerciseEntity> importedExercises = importExternalExerciseEntities(normalizedQuery);
             if (!importedExercises.isEmpty()) {
                 return importedExercises.stream()
                         .map(exerciseMapper::toSummaryResponse)
@@ -66,18 +77,19 @@ public class ExerciseCatalogService {
             // A text search with no provider match should return an empty/local result set, not a detail-style 404.
         }
 
-        return exerciseRepository.search(query).stream()
+        return exerciseRepository.search(normalizedQuery).stream()
                 .map(exerciseMapper::toSummaryResponse)
                 .toList();
     }
 
     public ExerciseResponse getExercise(Long id) {
-        return exerciseMapper.toResponse(getExerciseEntity(id));
+        return exerciseMapper.toResponse(getExerciseEntity(ApiRequestValidator.requirePositiveLong(id, "Exercise id")));
     }
 
     public ExerciseDetailResponse getExerciseDetail(String id) {
-        Optional<ExerciseEntity> existingExercise = findExerciseByCatalogId(id);
-        ExerciseEntity exercise = existingExercise.orElseGet(() -> fetchAndStoreExternalExercise(id));
+        String normalizedId = normalizeExternalId(id);
+        Optional<ExerciseEntity> existingExercise = findExerciseByCatalogId(normalizedId);
+        ExerciseEntity exercise = existingExercise.orElseGet(() -> fetchAndStoreExternalExercise(normalizedId));
 
         if (existingExercise.isPresent()) {
             enrichExerciseIfAvailable(exercise);
@@ -87,12 +99,14 @@ public class ExerciseCatalogService {
     }
 
     public ExerciseEntity getExerciseEntity(Long id) {
-        return exerciseRepository.findById(id)
+        return exerciseRepository.findById(ApiRequestValidator.requirePositiveLong(id, "Exercise id"))
                 .orElseThrow(() -> new NoSuchElementException("Exercise not found"));
     }
 
     public List<ExerciseResponse> importExternalExercises(String query) {
-        return importExternalExerciseEntities(query).stream()
+        String normalizedQuery = ApiRequestValidator.requireText(query, "Search query", MAX_SEARCH_QUERY_LENGTH);
+
+        return importExternalExerciseEntities(normalizedQuery).stream()
                 .map(exerciseMapper::toResponse)
                 .toList();
     }
@@ -104,6 +118,16 @@ public class ExerciseCatalogService {
                 .toList();
 
         return exerciseRepository.saveAll(normalizedExercises);
+    }
+
+    private String normalizeExternalId(String id) {
+        String normalizedId = ApiRequestValidator.requireText(id, "Exercise id", MAX_EXTERNAL_ID_LENGTH);
+
+        if (!EXTERNAL_ID_PATTERN.matcher(normalizedId).matches()) {
+            throw new ApiException("Exercise id contains unsupported characters");
+        }
+
+        return normalizedId;
     }
 
     private Optional<ExerciseEntity> findExerciseByCatalogId(String id) {

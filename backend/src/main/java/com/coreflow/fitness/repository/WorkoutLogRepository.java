@@ -10,5 +10,5 @@ public interface WorkoutLogRepository {
 
     Optional<WorkoutLogEntity> findById(Long id);
 
-    List<WorkoutLogEntity> findByUserId(Long userId);
+    List<WorkoutLogEntity> findByUserId(String userId);
 }

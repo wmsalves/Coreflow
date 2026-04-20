@@ -1,10 +1,12 @@
 import { FitnessWorkspace } from "@/features/fitness/components/fitness-workspace";
 import { getWorkoutPlans, listExercises } from "@/lib/api/fitness";
+import { requireAccessToken } from "@/lib/auth";
 
 export default async function FitnessPage() {
+  const accessToken = await requireAccessToken();
   const [exercisesResult, plansResult] = await Promise.allSettled([
-    listExercises(),
-    getWorkoutPlans(),
+    listExercises({ accessToken }),
+    getWorkoutPlans({ accessToken }),
   ]);
 
   const initialExercises = exercisesResult.status === "fulfilled" ? exercisesResult.value : [];

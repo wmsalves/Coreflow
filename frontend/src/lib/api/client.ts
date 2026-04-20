@@ -9,6 +9,7 @@ export class ApiError extends Error {
 }
 
 type ApiRequestOptions = RequestInit & {
+  accessToken?: string | null;
   query?: Record<string, string | number | boolean | null | undefined>;
 };
 
@@ -37,14 +38,32 @@ function buildUrl(path: string, query?: ApiRequestOptions["query"]) {
   return url.toString();
 }
 
+async function getBrowserAccessToken() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const { createBrowserSupabaseClient } = await import("@/lib/supabase/client");
+  const {
+    data: { session },
+  } = await createBrowserSupabaseClient().auth.getSession();
+
+  return session?.access_token ?? null;
+}
+
 export async function apiClient<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  const { headers, query, ...init } = options;
+  const { accessToken, headers, query, ...init } = options;
+  const token = accessToken ?? (await getBrowserAccessToken());
+  const requestHeaders = new Headers(headers);
+  requestHeaders.set("Content-Type", "application/json");
+
+  if (token && !requestHeaders.has("Authorization")) {
+    requestHeaders.set("Authorization", `Bearer ${token}`);
+  }
+
   const response = await fetch(buildUrl(path, query), {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
+    headers: requestHeaders,
   });
 
   if (!response.ok) {

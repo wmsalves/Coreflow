@@ -7,7 +7,7 @@ import java.util.List;
 public class WorkoutLogEntity {
 
     private Long id;
-    private Long userId;
+    private String userId;
     private Long workoutPlanId;
     private Instant completedAt;
     private Integer durationMinutes;
@@ -22,11 +22,11 @@ public class WorkoutLogEntity {
         this.id = id;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

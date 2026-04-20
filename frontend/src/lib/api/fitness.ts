@@ -51,7 +51,7 @@ export type WorkoutPlanExercise = {
 
 export type WorkoutPlan = {
   id: number;
-  userId: number;
+  userId: string;
   name: string;
   description: string | null;
   exercises: WorkoutPlanExercise[];
@@ -77,32 +77,45 @@ function unwrap<T>(response: ApiResponse<T>) {
   return response.data;
 }
 
-export async function listExercises() {
-  const response = await apiClient<ApiResponse<ExerciseSummary[]>>("/v1/fitness/exercises");
+type ApiAuthOptions = {
+  accessToken?: string | null;
+};
+
+export async function listExercises(options: ApiAuthOptions = {}) {
+  const response = await apiClient<ApiResponse<ExerciseSummary[]>>("/v1/fitness/exercises", {
+    accessToken: options.accessToken,
+  });
   return unwrap(response);
 }
 
-export async function searchExercises(query: string) {
+export async function searchExercises(query: string, options: ApiAuthOptions = {}) {
   const response = await apiClient<ApiResponse<ExerciseSummary[]>>("/v1/fitness/exercises/search", {
+    accessToken: options.accessToken,
     query: { q: query.trim() },
   });
   return unwrap(response);
 }
 
-export async function getExerciseDetail(id: string) {
+export async function getExerciseDetail(id: string, options: ApiAuthOptions = {}) {
   const response = await apiClient<ApiResponse<ExerciseDetail>>(
     `/v1/fitness/exercises/${encodeURIComponent(id)}`,
+    {
+      accessToken: options.accessToken,
+    },
   );
   return unwrap(response);
 }
 
-export async function getWorkoutPlans() {
-  const response = await apiClient<ApiResponse<WorkoutPlan[]>>("/v1/fitness/workout-plans");
+export async function getWorkoutPlans(options: ApiAuthOptions = {}) {
+  const response = await apiClient<ApiResponse<WorkoutPlan[]>>("/v1/fitness/workout-plans", {
+    accessToken: options.accessToken,
+  });
   return unwrap(response);
 }
 
-export async function createWorkoutPlan(input: CreateWorkoutPlanInput) {
+export async function createWorkoutPlan(input: CreateWorkoutPlanInput, options: ApiAuthOptions = {}) {
   const response = await apiClient<ApiResponse<WorkoutPlan>>("/v1/fitness/workout-plans", {
+    accessToken: options.accessToken,
     body: JSON.stringify({
       description: input.description ?? "",
       name: input.name,
@@ -113,10 +126,15 @@ export async function createWorkoutPlan(input: CreateWorkoutPlanInput) {
   return unwrap(response);
 }
 
-export async function addExerciseToWorkoutPlan(planId: number, input: AddWorkoutExerciseInput) {
+export async function addExerciseToWorkoutPlan(
+  planId: number,
+  input: AddWorkoutExerciseInput,
+  options: ApiAuthOptions = {},
+) {
   const response = await apiClient<ApiResponse<WorkoutPlan>>(
     `/v1/fitness/workout-plans/${planId}/exercises`,
     {
+      accessToken: options.accessToken,
       body: JSON.stringify(input),
       method: "POST",
     },
@@ -125,8 +143,10 @@ export async function addExerciseToWorkoutPlan(planId: number, input: AddWorkout
   return unwrap(response);
 }
 
-export async function getWorkoutLogs() {
-  const response = await apiClient<ApiResponse<unknown[]>>("/v1/fitness/workout-logs");
+export async function getWorkoutLogs(options: ApiAuthOptions = {}) {
+  const response = await apiClient<ApiResponse<unknown[]>>("/v1/fitness/workout-logs", {
+    accessToken: options.accessToken,
+  });
   return unwrap(response);
 }
 

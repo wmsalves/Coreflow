@@ -30,7 +30,7 @@ public class InMemoryWorkoutLogRepository implements WorkoutLogRepository {
     }
 
     @Override
-    public List<WorkoutLogEntity> findByUserId(Long userId) {
+    public List<WorkoutLogEntity> findByUserId(String userId) {
         return workoutLogs.values().stream()
                 .filter(workoutLog -> userId.equals(workoutLog.getUserId()))
                 .sorted(Comparator.comparing(WorkoutLogEntity::getCompletedAt).reversed())

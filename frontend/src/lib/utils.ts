@@ -3,24 +3,44 @@ export function cn(...values: Array<string | false | null | undefined>) {
 }
 
 export function getQueryParam(value: string | string[] | undefined) {
-  if (Array.isArray(value)) {
-    return value[0];
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  if (!rawValue) {
+    return rawValue;
   }
 
-  return value;
+  return rawValue.replace(/[\u0000-\u001F\u007F]/g, "").slice(0, 300);
 }
 
-export function getRequiredString(formData: FormData, key: string) {
+type StringOptions = {
+  maxLength?: number;
+};
+
+export function getRequiredString(
+  formData: FormData,
+  key: string,
+  options: StringOptions = {},
+) {
   const value = formData.get(key);
 
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new Error(`Expected "${key}" to be a non-empty string.`);
   }
 
-  return value.trim();
+  const trimmed = value.trim();
+
+  if (options.maxLength && trimmed.length > options.maxLength) {
+    throw new Error(`Expected "${key}" to be ${options.maxLength} characters or fewer.`);
+  }
+
+  return trimmed;
 }
 
-export function getOptionalString(formData: FormData, key: string) {
+export function getOptionalString(
+  formData: FormData,
+  key: string,
+  options: StringOptions = {},
+) {
   const value = formData.get(key);
 
   if (typeof value !== "string") {
@@ -28,6 +48,10 @@ export function getOptionalString(formData: FormData, key: string) {
   }
 
   const trimmed = value.trim();
+
+  if (options.maxLength && trimmed.length > options.maxLength) {
+    throw new Error(`Expected "${key}" to be ${options.maxLength} characters or fewer.`);
+  }
 
   return trimmed.length > 0 ? trimmed : null;
 }

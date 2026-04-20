@@ -41,7 +41,7 @@ public class InMemoryWorkoutPlanRepository implements WorkoutPlanRepository {
     }
 
     @Override
-    public List<WorkoutPlanEntity> findByUserId(Long userId) {
+    public List<WorkoutPlanEntity> findByUserId(String userId) {
         return workoutPlans.values().stream()
                 .filter(workoutPlan -> userId.equals(workoutPlan.getUserId()))
                 .sorted(Comparator.comparing(WorkoutPlanEntity::getUpdatedAt).reversed())

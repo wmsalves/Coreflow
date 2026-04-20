@@ -20,3 +20,22 @@ export async function requireUser() {
 
   return user;
 }
+
+export async function getCurrentAccessToken() {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return session?.access_token ?? null;
+}
+
+export async function requireAccessToken() {
+  const accessToken = await getCurrentAccessToken();
+
+  if (!accessToken) {
+    redirect("/login");
+  }
+
+  return accessToken;
+}

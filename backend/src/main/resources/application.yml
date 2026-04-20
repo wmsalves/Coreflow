@@ -10,6 +10,11 @@ coreflow:
     base-path: /api
   cors:
     allowed-origins: ${COREFLOW_CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  auth:
+    supabase:
+      url: ${SUPABASE_URL:${NEXT_PUBLIC_SUPABASE_URL:}}
+      jwks-uri: ${SUPABASE_JWKS_URI:}
+      jwt-secret: ${SUPABASE_JWT_SECRET:}
   fitness:
     ascend:
       base-url: ${ASCEND_API_BASE_URL}

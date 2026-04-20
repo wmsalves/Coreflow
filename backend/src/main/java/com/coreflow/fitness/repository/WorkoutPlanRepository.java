@@ -10,5 +10,5 @@ public interface WorkoutPlanRepository {
 
     Optional<WorkoutPlanEntity> findById(Long id);
 
-    List<WorkoutPlanEntity> findByUserId(Long userId);
+    List<WorkoutPlanEntity> findByUserId(String userId);
 }
