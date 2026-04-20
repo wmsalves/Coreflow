@@ -77,14 +77,14 @@ export function HabitList({ copy, habits }: HabitListProps) {
             <div className="flex flex-wrap gap-3">
               <form action={toggleHabitCompletionAction}>
                 <input name="habitId" type="hidden" value={habit.id} />
-                <Button variant={habit.completedToday ? "secondary" : "primary"}>
+                <Button type="submit" variant={habit.completedToday ? "secondary" : "primary"}>
                   {habit.completedToday ? copy.undoToday : copy.markComplete}
                 </Button>
               </form>
 
               <form action={deleteHabitAction}>
                 <input name="habitId" type="hidden" value={habit.id} />
-                <Button aria-label={copy.deleteLabel(habit.name)} variant="ghost">
+                <Button aria-label={copy.deleteLabel(habit.name)} type="submit" variant="ghost">
                   <Trash2 className="size-4" />
                 </Button>
               </form>

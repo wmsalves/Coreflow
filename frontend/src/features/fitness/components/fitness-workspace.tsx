@@ -22,9 +22,11 @@ import {
   createWorkoutPlan,
   getExerciseDetail,
   listExercises,
+  logWorkout,
   searchExercises,
   type ExerciseDetail,
   type ExerciseSummary,
+  type WorkoutLog,
   type WorkoutPlan,
 } from "@/lib/api/fitness";
 import { cn } from "@/lib/utils";
@@ -62,12 +64,14 @@ function getErrorMessage(error: unknown, fallback: string) {
 type FitnessWorkspaceProps = {
   initialExercises: ExerciseSummary[];
   initialLoadFailed: boolean;
+  initialLogs: WorkoutLog[];
   initialPlans: WorkoutPlan[];
 };
 
 export function FitnessWorkspace({
   initialExercises,
   initialLoadFailed,
+  initialLogs,
   initialPlans,
 }: FitnessWorkspaceProps) {
   const { locale } = useLandingPreferences();
@@ -76,6 +80,7 @@ export function FitnessWorkspace({
   const [query, setQuery] = useState(copy.defaults.searchQuery);
   const [results, setResults] = useState<ExerciseSummary[]>(initialExercises);
   const [plans, setPlans] = useState<WorkoutPlan[]>(initialPlans);
+  const [logs, setLogs] = useState<WorkoutLog[]>(initialLogs);
   const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(
     initialPlans[0] ?? null,
   );
@@ -200,6 +205,41 @@ export function FitnessWorkspace({
     }
   }
 
+  async function handleLogWorkout() {
+    if (!activePlan) {
+      setMessage(copy.createPlanFirst);
+      return;
+    }
+
+    if (activePlanExercises.length === 0) {
+      setMessage(copy.addExerciseBeforeLogging);
+      return;
+    }
+
+    setPlanState("loading");
+    setMessage(null);
+
+    try {
+      const workoutLog = await logWorkout({
+        exercises: activePlanExercises.map((exercise, index) => ({
+          exerciseId: exercise.exerciseId,
+          notes: exercise.notes ?? undefined,
+          repsCompleted: exercise.reps ?? undefined,
+          setsCompleted: exercise.sets ?? undefined,
+          sortOrder: exercise.sortOrder ?? index + 1,
+        })),
+        workoutPlanId: activePlan.id,
+      });
+
+      setLogs((currentLogs) => [workoutLog, ...currentLogs]);
+      setPlanState("idle");
+      setMessage(copy.workoutLogged);
+    } catch (error) {
+      setPlanState("error");
+      setMessage(getErrorMessage(error, copy.fallbackError));
+    }
+  }
+
   return (
     <>
       <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
@@ -312,12 +352,14 @@ export function FitnessWorkspace({
           activePlan={activePlan}
           commonCopy={commonCopy}
           copy={copy}
+          logs={logs}
           planDescription={planDescription}
           planName={planName}
           planState={planState}
           plans={plans}
           sortedPlanExercises={sortedPlanExercises}
           onCreatePlan={handleCreatePlan}
+          onLogWorkout={handleLogWorkout}
           onPlanDescriptionChange={setPlanDescription}
           onPlanNameChange={setPlanName}
           onSelectPlan={setActivePlan}
@@ -538,7 +580,9 @@ function WorkoutBuilder({
   activePlan,
   commonCopy,
   copy,
+  logs,
   onCreatePlan,
+  onLogWorkout,
   onPlanDescriptionChange,
   onPlanNameChange,
   onSelectPlan,
@@ -551,7 +595,9 @@ function WorkoutBuilder({
   activePlan: WorkoutPlan | null;
   commonCopy: CommonCopy;
   copy: FitnessCopy;
+  logs: WorkoutLog[];
   onCreatePlan: (event: FormEvent<HTMLFormElement>) => void;
+  onLogWorkout: () => void;
   onPlanDescriptionChange: (value: string) => void;
   onPlanNameChange: (value: string) => void;
   onSelectPlan: (plan: WorkoutPlan) => void;
@@ -699,6 +745,51 @@ function WorkoutBuilder({
                     {item.notes}
                   </p>
                 ) : null}
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b border-[var(--landing-border)] bg-[var(--landing-surface)]">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle>{copy.logs.title}</CardTitle>
+              <p className="mt-2 text-sm leading-6 text-[var(--landing-text-muted)]">
+                {copy.logs.description}
+              </p>
+            </div>
+            <Badge variant="muted">{logs.length}</Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 p-4">
+          <Button
+            className="w-full"
+            disabled={!activePlan || sortedPlanExercises.length === 0 || planState === "loading"}
+            onClick={onLogWorkout}
+            type="button"
+            variant="secondary"
+          >
+            {copy.logs.logActivePlan}
+          </Button>
+
+          {logs.length === 0 ? (
+            <div className="rounded-[24px] border border-dashed border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 text-sm leading-6 text-[var(--landing-text-muted)]">
+              {copy.logs.empty}
+            </div>
+          ) : (
+            logs.slice(0, 5).map((log) => (
+              <div
+                className="rounded-[20px] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 text-sm"
+                key={log.id}
+              >
+                <p className="font-semibold text-[var(--landing-text)]">
+                  {copy.logs.completedAt(new Date(log.completedAt).toLocaleString())}
+                </p>
+                <p className="mt-1 text-[var(--landing-text-muted)]">
+                  {copy.logs.exerciseCount(log.exercises.length)}
+                </p>
               </div>
             ))
           )}

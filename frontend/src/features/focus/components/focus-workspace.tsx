@@ -13,7 +13,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { focusCopy, type FocusCopy } from "@/features/focus/content/focus-copy";
+import { focusCopy } from "@/features/focus/content/focus-copy";
+import {
+  createStudySessionAction,
+  updateStudySessionStatusAction,
+} from "@/features/focus/actions";
 import { FocusOverview } from "@/features/focus/components/focus-overview";
 import { PomodoroPanel } from "@/features/focus/components/pomodoro-panel";
 import { StudySessionList } from "@/features/focus/components/study-session-list";
@@ -25,74 +29,50 @@ import type {
 } from "@/features/focus/types/focus-types";
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
 
-function createInitialSessions(copy: FocusCopy): StudySession[] {
-  const samples = copy.samples.sessions;
-
-  return [
-    {
-      ...samples["session-1"],
-      completedFocusMinutes: 20,
-      difficulty: "medium",
-      dueDate: "2026-04-22",
-      estimatedMinutes: 45,
-      id: "session-1",
-      importance: "high",
-      startDate: "2026-04-19",
-      status: "in_progress",
-    },
-    {
-      ...samples["session-2"],
-      completedFocusMinutes: 0,
-      difficulty: "high",
-      dueDate: "2026-04-24",
-      estimatedMinutes: 60,
-      id: "session-2",
-      importance: "high",
-      startDate: "2026-04-20",
-      status: "pending",
-    },
-    {
-      ...samples["session-3"],
-      completedFocusMinutes: 30,
-      difficulty: "low",
-      dueDate: "2026-04-18",
-      estimatedMinutes: 30,
-      id: "session-3",
-      importance: "medium",
-      startDate: "2026-04-18",
-      status: "completed",
-    },
-  ];
-}
-
 const defaultFilters: FocusFilters = {
   difficulty: "all",
   importance: "all",
   status: "all",
 };
 
-const defaultInput: StudySessionInput = {
-  description: "",
-  difficulty: "medium",
-  dueDate: "2026-04-25",
-  estimatedMinutes: 45,
-  importance: "medium",
-  startDate: "2026-04-19",
-  subject: "",
-  title: "",
-};
-
 const levelOptions: FocusLevel[] = ["low", "medium", "high"];
 
-export function FocusWorkspace() {
+type FocusWorkspaceProps = {
+  initialSessions: StudySession[];
+};
+
+function addDays(dateKey: string, amount: number) {
+  const date = new Date(`${dateKey}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + amount);
+  return date.toISOString().slice(0, 10);
+}
+
+function createDefaultInput(): StudySessionInput {
+  const today = new Date().toISOString().slice(0, 10);
+
+  return {
+    description: "",
+    difficulty: "medium",
+    dueDate: addDays(today, 7),
+    estimatedMinutes: 45,
+    importance: "medium",
+    startDate: today,
+    subject: "",
+    title: "",
+  };
+}
+
+export function FocusWorkspace({ initialSessions }: FocusWorkspaceProps) {
   const { locale } = useLandingPreferences();
   const copy = focusCopy[locale];
-  const [sessions, setSessions] = useState<StudySession[]>(() =>
-    createInitialSessions(focusCopy.en),
+  const [sessions, setSessions] = useState<StudySession[]>(initialSessions);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    initialSessions[0]?.id ?? null,
   );
-  const [selectedSessionId, setSelectedSessionId] = useState("session-1");
   const [filters, setFilters] = useState<FocusFilters>(defaultFilters);
-  const [input, setInput] = useState<StudySessionInput>(defaultInput);
+  const [input, setInput] = useState<StudySessionInput>(() => createDefaultInput());
+  const [isSavingSession, setIsSavingSession] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const localizedSessions = useMemo(
     () =>
@@ -147,26 +127,26 @@ export function FocusWorkspace() {
       ? 0
       : Math.round((completedCount / localizedSessions.length) * 100);
 
-  function createSession(event: FormEvent<HTMLFormElement>) {
+  async function createSession(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const session: StudySession = {
-      ...input,
-      completedFocusMinutes: 0,
-      description: input.description.trim(),
-      id: globalThis.crypto?.randomUUID?.() ?? `session-${Date.now()}`,
-      status: input.status ?? "pending",
-      subject: input.subject.trim() || copy.badge,
-      title: input.title.trim(),
-    };
-
-    if (!session.title) {
+    if (!input.title.trim()) {
       return;
     }
 
-    setSessions((current) => [session, ...current]);
-    setSelectedSessionId(session.id);
-    setInput(defaultInput);
+    setIsSavingSession(true);
+    setMessage(null);
+
+    try {
+      const session = await createStudySessionAction(input);
+      setSessions((current) => [session, ...current]);
+      setSelectedSessionId(session.id);
+      setInput(createDefaultInput());
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : copy.fallbackError);
+    } finally {
+      setIsSavingSession(false);
+    }
   }
 
   function selectSession(id: string) {
@@ -182,6 +162,12 @@ export function FocusWorkspace() {
           : session,
       ),
     );
+    const session = sessions.find((item) => item.id === id);
+    if (session && session.status === "pending") {
+      void updateStudySessionStatusAction({ ...session, status: "in_progress" }, "in_progress").catch(
+        (error: unknown) => setMessage(error instanceof Error ? error.message : copy.fallbackError),
+      );
+    }
   }
 
   function completeSession(id: string, focusMinutes?: number) {
@@ -199,6 +185,18 @@ export function FocusWorkspace() {
           : session,
       ),
     );
+    const session = sessions.find((item) => item.id === id);
+    if (session) {
+      void updateStudySessionStatusAction(session, "completed", focusMinutes ?? session.estimatedMinutes)
+        .then((updatedSession) => {
+          setSessions((current) =>
+            current.map((item) => (item.id === updatedSession.id ? updatedSession : item)),
+          );
+        })
+        .catch((error: unknown) =>
+          setMessage(error instanceof Error ? error.message : copy.fallbackError),
+        );
+    }
   }
 
   return (
@@ -227,6 +225,12 @@ export function FocusWorkspace() {
           totalFocusMinutes={totalFocusMinutes}
         />
       </section>
+
+      {message ? (
+        <div className="mt-6 rounded-[1.5rem] border border-[rgba(204,90,67,0.3)] bg-[rgba(204,90,67,0.08)] px-4 py-3 text-sm text-[var(--danger)]">
+          {message}
+        </div>
+      ) : null}
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
         <div className="h-full space-y-6">
@@ -342,9 +346,9 @@ export function FocusWorkspace() {
                   />
                 </Field>
                 <div className="lg:col-span-2">
-                  <Button type="submit">
+                  <Button disabled={isSavingSession} type="submit">
                     <Plus className="size-4" />
-                    {copy.actions.save}
+                    {isSavingSession ? copy.actions.saving : copy.actions.save}
                   </Button>
                 </div>
               </form>

@@ -59,6 +59,25 @@ export type WorkoutPlan = {
   updatedAt: string;
 };
 
+export type WorkoutLogExercise = {
+  exerciseId: number;
+  notes: string | null;
+  repsCompleted: number | null;
+  setsCompleted: number | null;
+  sortOrder: number | null;
+  weight: number | null;
+};
+
+export type WorkoutLog = {
+  completedAt: string;
+  durationMinutes: number | null;
+  exercises: WorkoutLogExercise[];
+  id: number;
+  notes: string | null;
+  userId: string;
+  workoutPlanId: number | null;
+};
+
 export type CreateWorkoutPlanInput = {
   name: string;
   description?: string;
@@ -71,6 +90,21 @@ export type AddWorkoutExerciseInput = {
   reps?: number;
   restSeconds?: number;
   notes?: string;
+};
+
+export type CreateWorkoutLogInput = {
+  completedAt?: string;
+  durationMinutes?: number;
+  exercises: Array<{
+    exerciseId: number;
+    notes?: string;
+    repsCompleted?: number;
+    setsCompleted?: number;
+    sortOrder?: number | null;
+    weight?: number;
+  }>;
+  notes?: string;
+  workoutPlanId?: number;
 };
 
 function unwrap<T>(response: ApiResponse<T>) {
@@ -144,9 +178,19 @@ export async function addExerciseToWorkoutPlan(
 }
 
 export async function getWorkoutLogs(options: ApiAuthOptions = {}) {
-  const response = await apiClient<ApiResponse<unknown[]>>("/v1/fitness/workout-logs", {
+  const response = await apiClient<ApiResponse<WorkoutLog[]>>("/v1/fitness/workout-logs", {
     accessToken: options.accessToken,
   });
+  return unwrap(response);
+}
+
+export async function logWorkout(input: CreateWorkoutLogInput, options: ApiAuthOptions = {}) {
+  const response = await apiClient<ApiResponse<WorkoutLog>>("/v1/fitness/workout-logs", {
+    accessToken: options.accessToken,
+    body: JSON.stringify(input),
+    method: "POST",
+  });
+
   return unwrap(response);
 }
 

@@ -21,6 +21,7 @@ type DashboardOverviewProps = {
       value: string;
     }>;
     nextSteps: Array<{
+      href: string;
       key: "studySessions" | "workoutTracking" | "stripePlans";
     }>;
     recentHabits: Array<{
@@ -122,15 +123,16 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
               const stepCopy = copy.nextModules[step.key];
 
               return (
-                <div
+                <Link
                   key={step.key}
-                  className="rounded-[1.35rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4 shadow-[var(--landing-chip-inset-shadow)]"
+                  className="block rounded-[1.35rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4 shadow-[var(--landing-chip-inset-shadow)] transition hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-bg-elevated)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--landing-border-strong)]"
+                  href={step.href}
                 >
                   <p className="font-medium text-[var(--landing-text)]">{stepCopy.title}</p>
                   <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
                     {stepCopy.description}
                   </p>
-                </div>
+                </Link>
               );
             })}
           </CardContent>

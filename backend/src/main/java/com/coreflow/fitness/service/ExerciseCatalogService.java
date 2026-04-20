@@ -8,6 +8,7 @@ import com.coreflow.fitness.mapper.ExerciseMapper;
 import com.coreflow.fitness.mapper.ExternalExerciseMapper;
 import com.coreflow.fitness.repository.ExerciseRepository;
 import com.coreflow.common.exception.ApiException;
+import com.coreflow.common.exception.ExternalServiceException;
 import com.coreflow.common.validation.ApiRequestValidator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -73,8 +74,8 @@ public class ExerciseCatalogService {
                         .map(exerciseMapper::toSummaryResponse)
                         .toList();
             }
-        } catch (NoSuchElementException exception) {
-            // A text search with no provider match should return an empty/local result set, not a detail-style 404.
+        } catch (NoSuchElementException | ExternalServiceException exception) {
+            // Provider failures should not block the local catalog fallback.
         }
 
         return exerciseRepository.search(normalizedQuery).stream()
@@ -167,8 +168,8 @@ public class ExerciseCatalogService {
                     .map(this::upsertExternalExercise)
                     .map(exerciseRepository::save)
                     .ifPresent(enrichedExercise -> merge(exercise, enrichedExercise));
-        } catch (NoSuchElementException exception) {
-            // Search responses may be enough for MVP when provider detail is unavailable.
+        } catch (NoSuchElementException | ExternalServiceException exception) {
+            // Search responses may be enough when provider detail is unavailable.
         }
     }
 

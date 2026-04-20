@@ -13,6 +13,10 @@ type ApiRequestOptions = RequestInit & {
   query?: Record<string, string | number | boolean | null | undefined>;
 };
 
+type ApiErrorResponse = {
+  message?: string;
+};
+
 function getApiBaseUrl() {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -67,8 +71,8 @@ export async function apiClient<T>(path: string, options: ApiRequestOptions = {}
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new ApiError(message || "API request failed.", response.status);
+    const message = await readErrorMessage(response);
+    throw new ApiError(message, response.status);
   }
 
   if (response.status === 204) {
@@ -76,4 +80,20 @@ export async function apiClient<T>(path: string, options: ApiRequestOptions = {}
   }
 
   return (await response.json()) as T;
+}
+
+async function readErrorMessage(response: Response) {
+  const fallback = "API request failed.";
+  const rawBody = await response.text();
+
+  if (!rawBody) {
+    return fallback;
+  }
+
+  try {
+    const parsed = JSON.parse(rawBody) as ApiErrorResponse;
+    return parsed.message || fallback;
+  } catch {
+    return rawBody;
+  }
 }

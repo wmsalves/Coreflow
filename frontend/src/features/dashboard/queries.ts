@@ -1,12 +1,24 @@
 import "server-only";
+import { getStudySessionsOverview } from "@/features/focus/queries";
 import { getHabitsOverview } from "@/features/habits/queries";
+import { getWorkoutLogs, getWorkoutPlans } from "@/lib/api/fitness";
 import { formatPercentage } from "@/lib/utils";
 
 export type DashboardMetricKey = "habitsToday" | "completionRate" | "longestStreak" | "modulesInProgress";
 export type DashboardNextStepKey = "studySessions" | "workoutTracking" | "stripePlans";
 
-export async function getDashboardSnapshot(userId: string) {
-  const habitsOverview = await getHabitsOverview(userId);
+export async function getDashboardSnapshot(userId: string, accessToken: string) {
+  const [habitsOverview, studySessions, fitnessSnapshot] = await Promise.all([
+    getHabitsOverview(userId),
+    getStudySessionsOverview(userId),
+    getFitnessSnapshot(accessToken),
+  ]);
+
+  const modulesInProgress = [
+    habitsOverview.summary.activeCount > 0,
+    studySessions.length > 0,
+    fitnessSnapshot.planCount > 0 || fitnessSnapshot.logCount > 0,
+  ].filter(Boolean).length;
 
   return {
     metrics: [
@@ -24,14 +36,26 @@ export async function getDashboardSnapshot(userId: string) {
       },
       {
         key: "modulesInProgress" as const,
-        value: "2",
+        value: `${modulesInProgress}/3`,
       },
     ],
     recentHabits: habitsOverview.habits.slice(0, 3),
     nextSteps: [
-      { key: "studySessions" as const },
-      { key: "workoutTracking" as const },
-      { key: "stripePlans" as const },
+      { href: "/dashboard/focus", key: "studySessions" as const },
+      { href: "/dashboard/fitness", key: "workoutTracking" as const },
+      { href: "/dashboard", key: "stripePlans" as const },
     ],
+  };
+}
+
+async function getFitnessSnapshot(accessToken: string) {
+  const [plansResult, logsResult] = await Promise.allSettled([
+    getWorkoutPlans({ accessToken }),
+    getWorkoutLogs({ accessToken }),
+  ]);
+
+  return {
+    logCount: logsResult.status === "fulfilled" ? logsResult.value.length : 0,
+    planCount: plansResult.status === "fulfilled" ? plansResult.value.length : 0,
   };
 }

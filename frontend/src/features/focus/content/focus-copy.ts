@@ -13,7 +13,9 @@ export const focusCopy = {
       resume: "Resume",
       reset: "Reset",
       save: "Save session",
+      saving: "Saving...",
     },
+    fallbackError: "Study session could not be saved.",
     overview: {
       totalFocus: "Focus time",
       completed: "Completed",
@@ -115,7 +117,9 @@ export const focusCopy = {
       resume: "Retomar",
       reset: "Resetar",
       save: "Salvar sessao",
+      saving: "Salvando...",
     },
+    fallbackError: "Nao foi possivel salvar a sessao de estudo.",
     overview: {
       totalFocus: "Tempo focado",
       completed: "Concluidas",

@@ -24,7 +24,7 @@ export const dashboardCopy = {
       badge: "Overview",
       title: "Keep your systems moving.",
       description:
-        "Your first Coreflow slice starts with habits, while study sessions and workouts are already represented in the dashboard structure for the next implementation steps.",
+        "Track the real activity already flowing through habits, focus sessions, and workout planning from one authenticated workspace.",
       manageHabits: "Manage habits",
       metrics: {
         habitsToday: {
@@ -41,7 +41,7 @@ export const dashboardCopy = {
         },
         modulesInProgress: {
           label: "Modules in progress",
-          detail: "Study sessions and workouts are scaffolded in the schema and dashboard roadmap.",
+          detail: "Counts modules with saved records for the signed-in user.",
         },
       },
       habitMomentum: {
@@ -56,15 +56,15 @@ export const dashboardCopy = {
           `${currentStreak} day streak \u00b7 ${completionsThisWeek} completions this week`,
       },
       nextModules: {
-        title: "Next modules",
-        description: "Scaffolded space for the rest of the MVP roadmap.",
+        title: "Continue flows",
+        description: "Jump into the next authenticated workflow without leaving the dashboard.",
         studySessions: {
           title: "Study sessions",
-          description: "Timer, history, and duration analytics can plug into the same authenticated app shell.",
+          description: "Plan sessions, start focus work, and save completed duration history.",
         },
         workoutTracking: {
           title: "Workout tracking",
-          description: "Plans, exercises, and workout logs already have table definitions in the initial schema.",
+          description: "Build plans from the exercise catalog and record completed workouts.",
         },
         stripePlans: {
           title: "Stripe plans",
@@ -119,7 +119,9 @@ export const dashboardCopy = {
       fallbackError: "Something went wrong.",
       planCreated: "Workout plan created.",
       exerciseAdded: "Exercise added to the workout.",
+      workoutLogged: "Workout logged.",
       createPlanFirst: "Create a workout plan and select an exercise first.",
+      addExerciseBeforeLogging: "Add at least one exercise before logging this workout.",
       defaults: {
         searchQuery: "squat",
         planName: "Strength foundation",
@@ -165,6 +167,14 @@ export const dashboardCopy = {
         reps: "Reps",
         rest: "Rest",
       },
+      logs: {
+        title: "Workout logs",
+        description: "Record completed plans without changing the plan template.",
+        logActivePlan: "Log active workout",
+        empty: "Completed workouts will appear here.",
+        completedAt: (value: string) => `Completed: ${value}`,
+        exerciseCount: (value: number) => `${value} exercises logged`,
+      },
     },
   },
   "pt-BR": {
@@ -192,7 +202,7 @@ export const dashboardCopy = {
       badge: "Visao geral",
       title: "Mantenha seus sistemas em movimento.",
       description:
-        "A primeira parte do Coreflow comeca pelos habitos, enquanto sessoes de estudo e treinos ja aparecem na estrutura do dashboard para os proximos passos.",
+        "Acompanhe a atividade real que ja passa por habitos, foco e planejamento de treino em um workspace autenticado.",
       manageHabits: "Gerenciar habitos",
       metrics: {
         habitsToday: {
@@ -209,7 +219,7 @@ export const dashboardCopy = {
         },
         modulesInProgress: {
           label: "Modulos em progresso",
-          detail: "Sessoes de estudo e treinos ja estao preparados no schema e no roadmap do dashboard.",
+          detail: "Conta modulos com registros salvos para o usuario conectado.",
         },
       },
       habitMomentum: {
@@ -224,15 +234,15 @@ export const dashboardCopy = {
           `${currentStreak} dias de sequencia \u00b7 ${completionsThisWeek} conclusoes nesta semana`,
       },
       nextModules: {
-        title: "Proximos modulos",
-        description: "Espaco preparado para o restante do roadmap MVP.",
+        title: "Continuar fluxos",
+        description: "Entre no proximo fluxo autenticado sem sair do dashboard.",
         studySessions: {
           title: "Sessoes de estudo",
-          description: "Timer, historico e analise de duracao podem entrar no mesmo app autenticado.",
+          description: "Planeje sessoes, inicie foco e salve historico de duracao concluida.",
         },
         workoutTracking: {
           title: "Registro de treino",
-          description: "Planos, exercicios e logs de treino ja tem definicoes de tabela no schema inicial.",
+          description: "Monte planos pelo catalogo de exercicios e registre treinos concluidos.",
         },
         stripePlans: {
           title: "Planos Stripe",
@@ -287,7 +297,9 @@ export const dashboardCopy = {
       fallbackError: "Algo deu errado.",
       planCreated: "Plano de treino criado.",
       exerciseAdded: "Exercicio adicionado ao treino.",
+      workoutLogged: "Treino registrado.",
       createPlanFirst: "Crie um plano de treino e selecione um exercicio primeiro.",
+      addExerciseBeforeLogging: "Adicione pelo menos um exercicio antes de registrar este treino.",
       defaults: {
         searchQuery: "squat",
         planName: "Base de forca",
@@ -332,6 +344,14 @@ export const dashboardCopy = {
         sets: "Series",
         reps: "Reps",
         rest: "Descanso",
+      },
+      logs: {
+        title: "Logs de treino",
+        description: "Registre planos concluidos sem alterar o modelo do treino.",
+        logActivePlan: "Registrar treino ativo",
+        empty: "Treinos concluidos aparecerao aqui.",
+        completedAt: (value: string) => `Concluido: ${value}`,
+        exerciseCount: (value: number) => `${value} exercicios registrados`,
       },
     },
   },

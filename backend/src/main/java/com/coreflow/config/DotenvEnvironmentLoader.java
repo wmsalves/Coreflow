@@ -13,6 +13,7 @@ public final class DotenvEnvironmentLoader {
 
     public static void load() {
         loadFromDirectories(List.of("backend", "."));
+        loadSupabaseUrlFromFrontendEnv();
     }
 
     private static void loadFromDirectories(List<String> directories) {
@@ -38,5 +39,38 @@ public final class DotenvEnvironmentLoader {
             return;
         }
         System.setProperty(key, value);
+    }
+
+    private static void loadSupabaseUrlFromFrontendEnv() {
+        if (hasValue("SUPABASE_URL")) {
+            return;
+        }
+
+        for (String directory : List.of("frontend", "../frontend")) {
+            if (!Files.isDirectory(Path.of(directory))) {
+                continue;
+            }
+
+            Dotenv dotenv = Dotenv.configure()
+                    .directory(directory)
+                    .ignoreIfMalformed()
+                    .ignoreIfMissing()
+                    .load();
+            String frontendSupabaseUrl = dotenv.get("NEXT_PUBLIC_SUPABASE_URL");
+            if (frontendSupabaseUrl != null && !frontendSupabaseUrl.isBlank()) {
+                System.setProperty("SUPABASE_URL", frontendSupabaseUrl.trim());
+                return;
+            }
+        }
+    }
+
+    private static boolean hasValue(String key) {
+        String environmentValue = System.getenv(key);
+        if (environmentValue != null && !environmentValue.isBlank()) {
+            return true;
+        }
+
+        String propertyValue = System.getProperty(key);
+        return propertyValue != null && !propertyValue.isBlank();
     }
 }
