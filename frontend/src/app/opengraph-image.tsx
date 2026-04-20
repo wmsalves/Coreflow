@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 export const alt = "Coreflow - One disciplined system for habits, focus, and training.";
@@ -7,7 +10,10 @@ export const size = {
 };
 export const contentType = "image/png";
 
-export default function Image() {
+export default async function Image() {
+  const logo = await readFile(join(process.cwd(), "public", "logo.png"));
+  const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -61,29 +67,18 @@ export default function Image() {
               position: "relative",
             }}
           >
-            <div
+            <img
+              alt=""
+              height="54"
+              src={logoSrc}
               style={{
-                alignItems: "center",
-                background:
-                  "linear-gradient(145deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04))",
-                border: "1px solid rgba(255,255,255,0.14)",
                 borderRadius: 18,
                 display: "flex",
                 height: 54,
-                justifyContent: "center",
                 width: 54,
               }}
-            >
-              <div
-                style={{
-                  background:
-                    "linear-gradient(135deg, #f7f8fb 0%, #8f9cff 52%, #ffb06d 100%)",
-                  borderRadius: 999,
-                  height: 24,
-                  width: 24,
-                }}
-              />
-            </div>
+              width="54"
+            />
             <div
               style={{
                 color: "#f7f8fb",

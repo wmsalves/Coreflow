@@ -19,12 +19,18 @@ function getAppUrl() {
     return withProtocol(vercelUrl);
   }
 
-  return configuredUrl ?? "http://localhost:3000";
+  return "https://coreflow-wms.vercel.app";
 }
 
 const appUrl = getAppUrl();
 const siteUrl = new URL(appUrl);
-const logoUrl = new URL("/favicon.ico", siteUrl).toString();
+const brandAssets = {
+  // Static public brand assets. Replace these files in frontend/public when final artwork changes.
+  emailBanner: "/email/coreflow-banner.png",
+  logo: "/logo.png",
+  openGraph: "/og/coreflow.png",
+} as const;
+const logoUrl = new URL(brandAssets.logo, siteUrl).toString();
 
 export const metadata: Metadata = {
   metadataBase: siteUrl,
@@ -36,11 +42,25 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "Coreflow",
     type: "website",
+    images: [
+      {
+        url: brandAssets.openGraph,
+        width: 1200,
+        height: 630,
+        alt: "Coreflow - Habits, focus, and training in one system.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Coreflow",
     description: "One disciplined system for habits, focus, and training.",
+    images: [
+      {
+        url: brandAssets.openGraph,
+        alt: "Coreflow - Habits, focus, and training in one system.",
+      },
+    ],
   },
 };
 
