@@ -37,6 +37,15 @@ import { useLandingPreferences } from "@/features/landing/hooks/use-landing-pref
 import { cn } from "@/lib/utils";
 
 type LoadState = "idle" | "loading" | "error";
+type Notice = {
+  kind: "error" | "info" | "success";
+  text: string;
+};
+type PendingMutation =
+  | { type: "add-exercise" }
+  | { type: "create-plan" }
+  | { exerciseId: string; type: "remove-exercise" }
+  | { type: "log-workout" };
 type FitnessCopy = (typeof dashboardCopy)["en"]["fitness"];
 type CommonCopy = (typeof dashboardCopy)["en"]["common"];
 
@@ -91,20 +100,22 @@ export function FitnessWorkspace({
   );
   const [catalogState, setCatalogState] = useState<LoadState>("idle");
   const [detailState, setDetailState] = useState<LoadState>("idle");
-  const [planState, setPlanState] = useState<LoadState>("idle");
-  const [message, setMessage] = useState<string | null>(
-    initialLoadFailed ? copy.initialLoadError : null,
+  const [pendingMutation, setPendingMutation] =
+    useState<PendingMutation | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(
+    initialLoadFailed ? { kind: "error", text: copy.initialLoadError } : null,
   );
 
   const activePlanExercises = useMemo(
     () => activePlan?.exercises ?? [],
     [activePlan],
   );
+  const isMutating = pendingMutation !== null;
   const selectedInternalId = selectedExercise?.internalId;
 
   async function runSearch(searchQuery: string) {
     setCatalogState("loading");
-    setMessage(null);
+    setNotice(null);
 
     try {
       const loadedExercises = searchQuery.trim()
@@ -115,7 +126,10 @@ export function FitnessWorkspace({
       setCatalogState("idle");
     } catch (error) {
       setCatalogState("error");
-      setMessage(getErrorMessage(error, copy.fallbackError));
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
     }
   }
 
@@ -134,7 +148,7 @@ export function FitnessWorkspace({
 
   async function handleSelectExercise(exercise: ExerciseSummary) {
     setDetailState("loading");
-    setMessage(null);
+    setNotice(null);
 
     try {
       const detail = await getExerciseDetailAction(exercise.id);
@@ -143,14 +157,21 @@ export function FitnessWorkspace({
       setDetailState("idle");
     } catch (error) {
       setDetailState("error");
-      setMessage(getErrorMessage(error, copy.fallbackError));
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
     }
   }
 
   async function handleCreatePlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setPlanState("loading");
-    setMessage(null);
+    if (isMutating) {
+      return;
+    }
+
+    setPendingMutation({ type: "create-plan" });
+    setNotice(null);
 
     try {
       const plan = await createWorkoutPlanAction({
@@ -162,22 +183,29 @@ export function FitnessWorkspace({
         ...currentPlans.filter((item) => item.id !== plan.id),
       ]);
       setActivePlan(plan);
-      setPlanState("idle");
-      setMessage(copy.planCreated);
+      setNotice({ kind: "success", text: copy.planCreated });
     } catch (error) {
-      setPlanState("error");
-      setMessage(getErrorMessage(error, copy.fallbackError));
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
+    } finally {
+      setPendingMutation(null);
     }
   }
 
   async function handleAddExercise() {
-    if (!activePlan || !selectedInternalId) {
-      setMessage(copy.createPlanFirst);
+    if (isMutating) {
       return;
     }
 
-    setPlanState("loading");
-    setMessage(null);
+    if (!activePlan || !selectedInternalId) {
+      setNotice({ kind: "info", text: copy.createPlanFirst });
+      return;
+    }
+
+    setPendingMutation({ type: "add-exercise" });
+    setNotice(null);
 
     try {
       const updatedPlan = await addExerciseToWorkoutPlanAction(
@@ -193,22 +221,42 @@ export function FitnessWorkspace({
           plan.id === updatedPlan.id ? updatedPlan : plan,
         ),
       );
-      setPlanState("idle");
-      setMessage(copy.exerciseAdded);
+      setNotice({ kind: "success", text: copy.exerciseAdded });
     } catch (error) {
-      setPlanState("error");
-      setMessage(getErrorMessage(error, copy.fallbackError));
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
+    } finally {
+      setPendingMutation(null);
     }
   }
 
   async function handleRemoveExercise(exerciseId: string) {
-    if (!activePlan) {
-      setMessage(copy.createPlanFirst);
+    if (isMutating) {
       return;
     }
 
-    setPlanState("loading");
-    setMessage(null);
+    if (!activePlan) {
+      setNotice({ kind: "info", text: copy.createPlanFirst });
+      return;
+    }
+
+    const previousActivePlan = activePlan;
+    const previousPlans = plans;
+    const removeFromPlan = (plan: WorkoutPlan) => ({
+      ...plan,
+      exercises: plan.exercises.filter((exercise) => exercise.id !== exerciseId),
+    });
+
+    setPendingMutation({ exerciseId, type: "remove-exercise" });
+    setNotice({ kind: "info", text: copy.exerciseRemoving });
+    setActivePlan(removeFromPlan(activePlan));
+    setPlans((currentPlans) =>
+      currentPlans.map((plan) =>
+        plan.id === activePlan.id ? removeFromPlan(plan) : plan,
+      ),
+    );
 
     try {
       const updatedPlan = await removeExerciseFromWorkoutPlanAction(activePlan.id, exerciseId);
@@ -219,36 +267,49 @@ export function FitnessWorkspace({
           plan.id === updatedPlan.id ? updatedPlan : plan,
         ),
       );
-      setPlanState("idle");
+      setNotice({ kind: "success", text: copy.exerciseRemoved });
     } catch (error) {
-      setPlanState("error");
-      setMessage(getErrorMessage(error, copy.fallbackError));
+      setActivePlan(previousActivePlan);
+      setPlans(previousPlans);
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
+    } finally {
+      setPendingMutation(null);
     }
   }
 
   async function handleLogWorkout() {
+    if (isMutating) {
+      return;
+    }
+
     if (!activePlan) {
-      setMessage(copy.createPlanFirst);
+      setNotice({ kind: "info", text: copy.createPlanFirst });
       return;
     }
 
     if (activePlanExercises.length === 0) {
-      setMessage(copy.addExerciseBeforeLogging);
+      setNotice({ kind: "info", text: copy.addExerciseBeforeLogging });
       return;
     }
 
-    setPlanState("loading");
-    setMessage(null);
+    setPendingMutation({ type: "log-workout" });
+    setNotice(null);
 
     try {
       const workoutLog = await logWorkoutAction(activePlan.id);
 
       setLogs((currentLogs) => [workoutLog, ...currentLogs]);
-      setPlanState("idle");
-      setMessage(copy.workoutLogged);
+      setNotice({ kind: "success", text: copy.workoutLogged });
     } catch (error) {
-      setPlanState("error");
-      setMessage(getErrorMessage(error, copy.fallbackError));
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
+    } finally {
+      setPendingMutation(null);
     }
   }
 
@@ -277,18 +338,17 @@ export function FitnessWorkspace({
         </div>
       </section>
 
-      {message ? (
+      {notice ? (
         <div
+          aria-live="polite"
           className={cn(
             "mt-6 rounded-[24px] border px-4 py-3 text-sm",
-            planState === "error" ||
-              catalogState === "error" ||
-              detailState === "error"
+            notice.kind === "error"
               ? "border-[rgba(204,90,67,0.3)] bg-[rgba(204,90,67,0.08)] text-[var(--danger)]"
               : "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]",
           )}
         >
-          {message}
+          {notice.text}
         </div>
       ) : null}
 
@@ -309,6 +369,7 @@ export function FitnessWorkspace({
                 >
                   <Input
                     aria-label={copy.catalog.searchAria}
+                    disabled={catalogState === "loading"}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder={copy.catalog.searchPlaceholder}
                     value={query}
@@ -329,6 +390,11 @@ export function FitnessWorkspace({
               {results.length === 0 && catalogState !== "loading" ? (
                 <div className="p-6 text-sm text-[var(--landing-text-muted)]">
                   {copy.catalog.noResults}
+                </div>
+              ) : results.length === 0 && catalogState === "loading" ? (
+                <div className="flex items-center gap-2 p-6 text-sm text-[var(--landing-text-muted)]">
+                  <Loader2 className="size-4 animate-spin" />
+                  {copy.catalog.loading}
                 </div>
               ) : (
                 <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
@@ -355,8 +421,9 @@ export function FitnessWorkspace({
             exercise={selectedExercise}
             onAddExercise={handleAddExercise}
             onConfigChange={setExerciseConfig}
+            mutationPending={isMutating}
             planReady={Boolean(activePlan)}
-            saving={planState === "loading"}
+            saving={pendingMutation?.type === "add-exercise"}
           />
         </div>
 
@@ -367,7 +434,14 @@ export function FitnessWorkspace({
           logs={logs}
           planDescription={planDescription}
           planName={planName}
-          planState={planState}
+          creatingPlan={pendingMutation?.type === "create-plan"}
+          loggingWorkout={pendingMutation?.type === "log-workout"}
+          mutationPending={isMutating}
+          pendingRemovalId={
+            pendingMutation?.type === "remove-exercise"
+              ? pendingMutation.exerciseId
+              : null
+          }
           plans={plans}
           sortedPlanExercises={sortedPlanExercises}
           onCreatePlan={handleCreatePlan}
@@ -452,6 +526,7 @@ function ExerciseInspector({
   copy,
   detailState,
   exercise,
+  mutationPending,
   onAddExercise,
   onConfigChange,
   planReady,
@@ -462,6 +537,7 @@ function ExerciseInspector({
   copy: FitnessCopy;
   detailState: LoadState;
   exercise: ExerciseDetail | null;
+  mutationPending: boolean;
   onAddExercise: () => void;
   onConfigChange: (config: ExerciseConfig) => void;
   planReady: boolean;
@@ -572,7 +648,7 @@ function ExerciseInspector({
           </label>
 
           <Button
-            disabled={!planReady || !exercise.internalId || saving}
+            disabled={!planReady || !exercise.internalId || mutationPending}
             onClick={onAddExercise}
             size="lg"
           >
@@ -593,32 +669,38 @@ function WorkoutBuilder({
   activePlan,
   commonCopy,
   copy,
+  creatingPlan,
+  loggingWorkout,
   logs,
+  mutationPending,
   onCreatePlan,
   onLogWorkout,
   onPlanDescriptionChange,
   onPlanNameChange,
   onRemoveExercise,
   onSelectPlan,
+  pendingRemovalId,
   planDescription,
   planName,
-  planState,
   plans,
   sortedPlanExercises,
 }: {
   activePlan: WorkoutPlan | null;
   commonCopy: CommonCopy;
   copy: FitnessCopy;
+  creatingPlan: boolean;
+  loggingWorkout: boolean;
   logs: WorkoutLog[];
+  mutationPending: boolean;
   onCreatePlan: (event: FormEvent<HTMLFormElement>) => void;
   onLogWorkout: () => void;
   onPlanDescriptionChange: (value: string) => void;
   onPlanNameChange: (value: string) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onSelectPlan: (plan: WorkoutPlan) => void;
+  pendingRemovalId: string | null;
   planDescription: string;
   planName: string;
-  planState: LoadState;
   plans: WorkoutPlan[];
   sortedPlanExercises: WorkoutPlan["exercises"];
 }) {
@@ -643,6 +725,7 @@ function WorkoutBuilder({
             <label className="block space-y-2 text-sm font-medium">
               <span>{copy.builder.planName}</span>
               <Input
+                disabled={creatingPlan}
                 onChange={(event) => onPlanNameChange(event.target.value)}
                 required
                 value={planName}
@@ -651,6 +734,7 @@ function WorkoutBuilder({
             <label className="block space-y-2 text-sm font-medium">
               <span>{copy.builder.planDescription}</span>
               <Input
+                disabled={creatingPlan}
                 onChange={(event) =>
                   onPlanDescriptionChange(event.target.value)
                 }
@@ -659,10 +743,10 @@ function WorkoutBuilder({
             </label>
             <Button
               className="w-full"
-              disabled={planState === "loading"}
+              disabled={mutationPending}
               type="submit"
             >
-              {planState === "loading" ? (
+              {creatingPlan ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <Plus className="size-4" />
@@ -678,12 +762,13 @@ function WorkoutBuilder({
           {plans.map((plan) => (
             <button
               className={cn(
-                "rounded-full border px-3 py-2 text-sm font-medium",
+                "rounded-full border px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60",
                 activePlan?.id === plan.id
                   ? "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]"
                   : "border-[var(--landing-border)] bg-[var(--landing-surface)] text-[var(--landing-text-muted)] hover:bg-[var(--landing-surface-strong)]",
               )}
               key={plan.id}
+              disabled={mutationPending}
               onClick={() => onSelectPlan(plan)}
               type="button"
             >
@@ -710,7 +795,7 @@ function WorkoutBuilder({
         <CardContent className="space-y-3 p-4">
           {sortedPlanExercises.length === 0 ? (
             <div className="rounded-[24px] border border-dashed border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 text-sm leading-6 text-[var(--landing-text-muted)]">
-              {copy.builder.emptyPlan}
+              {activePlan ? copy.builder.emptyPlan : copy.builder.noWorkoutDescription}
             </div>
           ) : (
             sortedPlanExercises.map((item, index) => (
@@ -763,13 +848,17 @@ function WorkoutBuilder({
                 <Button
                   aria-label={`Remove ${item.exercise.name}`}
                   className="mt-3"
-                  disabled={planState === "loading"}
+                  disabled={mutationPending}
                   onClick={() => onRemoveExercise(item.id)}
                   size="sm"
                   type="button"
                   variant="ghost"
                 >
-                  <Trash2 className="size-4" />
+                  {pendingRemovalId === item.id ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-4" />
+                  )}
                 </Button>
               </div>
             ))
@@ -792,11 +881,12 @@ function WorkoutBuilder({
         <CardContent className="space-y-3 p-4">
           <Button
             className="w-full"
-            disabled={!activePlan || sortedPlanExercises.length === 0 || planState === "loading"}
+            disabled={!activePlan || sortedPlanExercises.length === 0 || mutationPending}
             onClick={onLogWorkout}
             type="button"
             variant="secondary"
           >
+            {loggingWorkout ? <Loader2 className="size-4 animate-spin" /> : null}
             {copy.logs.logActivePlan}
           </Button>
 
