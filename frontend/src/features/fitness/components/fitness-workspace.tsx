@@ -8,6 +8,7 @@ import {
   Plus,
   Save,
   Search,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { FormEvent, useMemo, useState } from "react";
@@ -22,6 +23,7 @@ import {
   getExerciseDetailAction,
   listExerciseCatalogAction,
   logWorkoutAction,
+  removeExerciseFromWorkoutPlanAction,
   searchExerciseCatalogAction,
 } from "@/features/fitness/actions";
 import type {
@@ -199,6 +201,31 @@ export function FitnessWorkspace({
     }
   }
 
+  async function handleRemoveExercise(exerciseId: string) {
+    if (!activePlan) {
+      setMessage(copy.createPlanFirst);
+      return;
+    }
+
+    setPlanState("loading");
+    setMessage(null);
+
+    try {
+      const updatedPlan = await removeExerciseFromWorkoutPlanAction(activePlan.id, exerciseId);
+
+      setActivePlan(updatedPlan);
+      setPlans((currentPlans) =>
+        currentPlans.map((plan) =>
+          plan.id === updatedPlan.id ? updatedPlan : plan,
+        ),
+      );
+      setPlanState("idle");
+    } catch (error) {
+      setPlanState("error");
+      setMessage(getErrorMessage(error, copy.fallbackError));
+    }
+  }
+
   async function handleLogWorkout() {
     if (!activePlan) {
       setMessage(copy.createPlanFirst);
@@ -347,6 +374,7 @@ export function FitnessWorkspace({
           onLogWorkout={handleLogWorkout}
           onPlanDescriptionChange={setPlanDescription}
           onPlanNameChange={setPlanName}
+          onRemoveExercise={handleRemoveExercise}
           onSelectPlan={setActivePlan}
         />
       </section>
@@ -570,6 +598,7 @@ function WorkoutBuilder({
   onLogWorkout,
   onPlanDescriptionChange,
   onPlanNameChange,
+  onRemoveExercise,
   onSelectPlan,
   planDescription,
   planName,
@@ -585,6 +614,7 @@ function WorkoutBuilder({
   onLogWorkout: () => void;
   onPlanDescriptionChange: (value: string) => void;
   onPlanNameChange: (value: string) => void;
+  onRemoveExercise: (exerciseId: string) => void;
   onSelectPlan: (plan: WorkoutPlan) => void;
   planDescription: string;
   planName: string;
@@ -730,6 +760,17 @@ function WorkoutBuilder({
                     {item.notes}
                   </p>
                 ) : null}
+                <Button
+                  aria-label={`Remove ${item.exercise.name}`}
+                  className="mt-3"
+                  disabled={planState === "loading"}
+                  onClick={() => onRemoveExercise(item.id)}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
               </div>
             ))
           )}

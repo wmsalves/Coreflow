@@ -134,6 +134,38 @@ export async function addExerciseToWorkoutPlanAction(
   return getWorkoutPlanById(user.id, plan.id);
 }
 
+export async function removeExerciseFromWorkoutPlanAction(
+  planId: string,
+  exerciseId: string,
+): Promise<WorkoutPlan> {
+  const user = await requireUser();
+  const supabase = await createServerSupabaseClient();
+  const { data: exercise, error: exerciseError } = await supabase
+    .from("exercises")
+    .select("id, plan_id")
+    .eq("id", exerciseId)
+    .eq("plan_id", planId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (exerciseError) {
+    throw new Error(exerciseError.message);
+  }
+
+  const { error } = await supabase
+    .from("exercises")
+    .delete()
+    .eq("id", exercise.id)
+    .eq("user_id", user.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidateFitnessViews();
+  return getWorkoutPlanById(user.id, exercise.plan_id);
+}
+
 export async function logWorkoutAction(planId: string): Promise<WorkoutLog> {
   const user = await requireUser();
   const supabase = await createServerSupabaseClient();
@@ -158,18 +190,27 @@ export async function logWorkoutAction(planId: string): Promise<WorkoutLog> {
 
   const { error: exercisesError } = await supabase.from("workout_log_exercises").insert(
     plan.exercises.map((exercise, index) => ({
+      body_part: exercise.exercise.bodyPart,
+      catalog_id: exercise.exercise.externalId,
       catalog_internal_id: exercise.exerciseId,
+      equipment: exercise.exercise.equipment,
+      gif_url: exercise.exercise.gifUrl,
+      image_url: exercise.exercise.imageUrl,
       name: exercise.exercise.name,
       notes: exercise.notes,
       order_index: exercise.sortOrder ?? index + 1,
       reps_completed: exercise.reps,
+      rest_seconds: exercise.restSeconds,
       sets_completed: exercise.sets,
+      target: exercise.exercise.target,
       user_id: user.id,
+      video_url: exercise.exercise.videoUrl,
       workout_log_id: log.id,
     })),
   );
 
   if (exercisesError) {
+    await supabase.from("workout_logs").delete().eq("id", log.id).eq("user_id", user.id);
     throw new Error(exercisesError.message);
   }
 

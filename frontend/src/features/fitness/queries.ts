@@ -25,13 +25,21 @@ type PlanExerciseRow = Pick<
 >;
 type WorkoutLogExerciseRow = Pick<
   Database["public"]["Tables"]["workout_log_exercises"]["Row"],
+  | "body_part"
+  | "catalog_id"
   | "catalog_internal_id"
+  | "equipment"
+  | "gif_url"
   | "id"
+  | "image_url"
   | "name"
   | "notes"
   | "order_index"
   | "reps_completed"
+  | "rest_seconds"
   | "sets_completed"
+  | "target"
+  | "video_url"
   | "weight"
   | "workout_log_id"
 >;
@@ -223,7 +231,7 @@ async function getLogExercises(userId: string, logIds: string[]) {
   const { data, error } = await supabase
     .from("workout_log_exercises")
     .select(
-      "catalog_internal_id, id, name, notes, order_index, reps_completed, sets_completed, user_id, weight, workout_log_id",
+      "body_part, catalog_id, catalog_internal_id, equipment, gif_url, id, image_url, name, notes, order_index, reps_completed, rest_seconds, sets_completed, target, user_id, video_url, weight, workout_log_id",
     )
     .eq("user_id", userId)
     .in("workout_log_id", logIds)
@@ -286,11 +294,20 @@ function toWorkoutLog(log: WorkoutLogRow, exercises: WorkoutLogExerciseRow[]): W
     completedAt: log.performed_at,
     durationMinutes: log.duration_minutes,
     exercises: exercises.map((exercise) => ({
+      bodyPart: exercise.body_part,
+      equipment: exercise.equipment,
+      externalId: exercise.catalog_id,
       exerciseId: exercise.catalog_internal_id,
+      gifUrl: exercise.gif_url,
+      imageUrl: exercise.image_url,
+      name: exercise.name,
       notes: exercise.notes,
       repsCompleted: exercise.reps_completed,
+      restSeconds: exercise.rest_seconds,
       setsCompleted: exercise.sets_completed,
       sortOrder: exercise.order_index,
+      target: exercise.target,
+      videoUrl: exercise.video_url,
       weight: exercise.weight,
     })),
     id: log.id,

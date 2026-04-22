@@ -20,15 +20,33 @@ create table if not exists public.workout_log_exercises (
   id uuid primary key default gen_random_uuid(),
   workout_log_id uuid not null references public.workout_logs(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
+  catalog_id text,
   catalog_internal_id bigint,
   name text not null,
+  gif_url text,
+  image_url text,
+  video_url text,
+  body_part text,
+  target text,
+  equipment text,
   sets_completed integer,
   reps_completed integer,
+  rest_seconds integer,
   weight numeric(8, 2),
   order_index integer not null default 0,
   notes text,
   created_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.workout_log_exercises
+  add column if not exists catalog_id text,
+  add column if not exists gif_url text,
+  add column if not exists image_url text,
+  add column if not exists video_url text,
+  add column if not exists body_part text,
+  add column if not exists target text,
+  add column if not exists equipment text,
+  add column if not exists rest_seconds integer;
 
 alter table public.workout_log_exercises enable row level security;
 

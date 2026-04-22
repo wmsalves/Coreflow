@@ -53,11 +53,20 @@ export type WorkoutPlan = {
 };
 
 export type WorkoutLogExercise = {
+  bodyPart: string | null;
+  equipment: string | null;
+  externalId: string | null;
+  gifUrl: string | null;
+  imageUrl: string | null;
   exerciseId: number | null;
+  name: string;
   notes: string | null;
   repsCompleted: number | null;
+  restSeconds: number | null;
   setsCompleted: number | null;
   sortOrder: number | null;
+  target: string | null;
+  videoUrl: string | null;
   weight: number | null;
 };
 
