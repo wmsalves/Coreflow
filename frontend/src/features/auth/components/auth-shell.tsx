@@ -61,7 +61,7 @@ export function AuthShell({ children, mode }: AuthShellProps) {
         userEmail={null}
       />
 
-      <div className="relative mx-auto grid min-h-screen w-full max-w-7xl items-start gap-9 px-5 pb-8 pt-32 sm:px-6 sm:pb-10 sm:pt-36 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 lg:px-8 lg:pb-12 lg:pt-36 xl:pt-40">
+      <div className="relative mx-auto grid min-h-screen w-full max-w-7xl items-start gap-8 px-4 pb-8 pt-28 sm:px-6 sm:pb-10 sm:pt-36 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 lg:px-8 lg:pb-12 lg:pt-36 xl:pt-40">
         <section
           className="landing-reveal hidden lg:block"
           style={revealStyle(60)}
@@ -99,7 +99,7 @@ export function AuthShell({ children, mode }: AuthShellProps) {
               <p className="text-xs font-semibold uppercase tracking-[0.26em] text-(--landing-text-faint)">
                 {pageCopy.eyebrow}
               </p>
-              <h1 className="text-4xl font-semibold tracking-[-0.055em] text-(--landing-text)">
+              <h1 className="text-3xl font-semibold tracking-[-0.055em] text-(--landing-text) sm:text-4xl">
                 {pageCopy.title}
               </h1>
               <p className="text-sm leading-7 text-(--landing-text-muted)">

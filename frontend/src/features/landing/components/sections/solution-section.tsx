@@ -9,17 +9,17 @@ type SolutionSectionProps = {
 
 export function SolutionSection({ copy }: SolutionSectionProps) {
   return (
-    <section className="relative py-22">
+    <section className="relative py-14 sm:py-22">
       <SectionDivider />
       <div className="grid gap-6 lg:grid-cols-[1.12fr_0.88fr]">
         <div className="landing-reveal" style={revealStyle(60)}>
           <div
             data-card-motion="panel"
-            className="landing-card-strong overflow-hidden rounded-[2.4rem] border border-(--landing-border) bg-[var(--landing-panel)] px-7 py-8 shadow-[var(--landing-shadow-soft)]"
+            className="landing-card-strong overflow-hidden rounded-[1.6rem] border border-(--landing-border) bg-[var(--landing-panel)] px-5 py-6 shadow-[var(--landing-shadow-soft)] sm:rounded-[2.4rem] sm:px-7 sm:py-8"
           >
             <div className="max-w-2xl space-y-5">
               <SectionLabel>{copy.eyebrow}</SectionLabel>
-              <h2 className="text-3xl font-semibold tracking-[-0.05em] text-(--landing-text) sm:text-[2.6rem]">
+              <h2 className="text-2xl font-semibold tracking-[-0.05em] text-(--landing-text) sm:text-[2.6rem]">
                 {copy.title}
               </h2>
               <p className="max-w-xl text-base leading-7 text-(--landing-text-muted)">
@@ -56,7 +56,7 @@ export function SignalPanel({
 }) {
   return (
     <div
-      className="landing-card-soft landing-reveal group rounded-[1.8rem] border border-(--landing-border) bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-5 shadow-[var(--landing-shadow-soft)]"
+      className="landing-card-soft landing-reveal group rounded-[1.35rem] border border-(--landing-border) bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-4 shadow-[var(--landing-shadow-soft)] sm:rounded-[1.8rem] sm:p-5"
       style={style}
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-(--landing-text-faint)">

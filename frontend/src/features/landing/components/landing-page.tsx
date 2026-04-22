@@ -51,7 +51,7 @@ export function LandingPage({ userEmail }: LandingPageProps) {
     >
       <LandingBackdrop theme={theme} />
 
-      <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-5 pb-20 pt-28 sm:px-6 sm:pt-32 lg:px-8 lg:pt-32">
+      <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-16 pt-24 sm:px-6 sm:pb-20 sm:pt-32 lg:px-8 lg:pt-32">
         <LandingHeader
           controls={copy.controls}
           copy={copy.header}

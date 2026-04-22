@@ -55,7 +55,7 @@ function LocaleButton({
     <button
       aria-pressed={active}
       className={cn(
-        "inline-flex items-center justify-center text-[11px] font-medium tracking-[0.22em] uppercase",
+        "inline-flex min-h-10 min-w-10 items-center justify-center rounded-full px-2 text-[11px] font-medium tracking-[0.18em] uppercase sm:min-h-0 sm:min-w-0 sm:rounded-none sm:px-0 sm:tracking-[0.22em]",
         active
           ? "text-(--landing-text)"
           : "text-(--landing-text-faint) hover:text-(--landing-text-muted)",

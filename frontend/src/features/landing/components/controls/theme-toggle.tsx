@@ -28,7 +28,7 @@ export function ThemeToggle({
     <button
       aria-label={`${labels.label}: ${label}`}
       className={cn(
-        "inline-flex size-9 items-center justify-center rounded-full text-(--landing-text-faint) transition",
+        "inline-flex size-10 items-center justify-center rounded-full text-(--landing-text-faint) transition sm:size-9",
         "hover:bg-(--landing-surface) hover:text-(--landing-text)",
       )}
       onClick={() => onThemeChange(nextTheme)}

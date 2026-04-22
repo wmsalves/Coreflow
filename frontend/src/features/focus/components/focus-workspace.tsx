@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent, ReactNode } from "react";
+import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react";
 import { useMemo, useState } from "react";
 import { BookOpenCheck, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { Input } from "@/components/ui/input";
+import { MobileSheet } from "@/components/ui/mobile-sheet";
 import { focusCopy } from "@/features/focus/content/focus-copy";
 import {
   createStudySessionAction,
@@ -83,6 +84,7 @@ export function FocusWorkspace({
   const [input, setInput] = useState<StudySessionInput>(() => createDefaultInput());
   const [isSavingSession, setIsSavingSession] = useState(false);
   const [isDeletingSession, setIsDeletingSession] = useState(false);
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [sessionPendingDeleteId, setSessionPendingDeleteId] = useState<string | null>(null);
 
@@ -146,6 +148,7 @@ export function FocusWorkspace({
       setSessions((current) => [session, ...current]);
       setSelectedSessionId(session.id);
       setInput(createDefaultInput());
+      setCreateSheetOpen(false);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : copy.fallbackError);
     } finally {
@@ -258,17 +261,17 @@ export function FocusWorkspace({
         <div className="max-w-3xl space-y-3">
           <Badge>{copy.badge}</Badge>
           <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-[-0.045em] text-[var(--landing-text)] sm:text-[2.35rem]">
+            <h1 className="text-[2rem] font-semibold leading-tight tracking-[-0.045em] text-[var(--landing-text)] sm:text-[2.35rem]">
               {copy.title}
             </h1>
-            <p className="max-w-2xl text-sm leading-7 text-[var(--landing-text-muted)] sm:text-base">
+            <p className="max-w-2xl text-sm leading-6 text-[var(--landing-text-muted)] sm:text-base sm:leading-7">
               {copy.description}
             </p>
           </div>
         </div>
       </section>
 
-      <section className="mt-6">
+      <section className="mt-5 sm:mt-6">
         <FocusOverview
           activeCount={activeCount}
           completedCount={completedCount}
@@ -285,10 +288,33 @@ export function FocusWorkspace({
         </div>
       ) : null}
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
-        <div className="h-full space-y-6">
-          <Card className="flex h-full flex-col">
-            <CardHeader className="gap-4 lg:flex lg:flex-row lg:items-start lg:justify-between lg:space-y-0">
+      <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
+        <div className="h-full space-y-5 sm:space-y-6">
+          <div className="sm:hidden">
+            <MobileSheet
+              description={copy.planner.description}
+              open={createSheetOpen}
+              title={copy.planner.title}
+              trigger={
+                <Button className="w-full" size="lg">
+                  <Plus className="size-4" />
+                  {copy.actions.create}
+                </Button>
+              }
+              onOpenChange={setCreateSheetOpen}
+            >
+              <StudySessionPlannerForm
+                copy={copy}
+                input={input}
+                isSavingSession={isSavingSession}
+                onCreateSession={createSession}
+                onInputChange={setInput}
+              />
+            </MobileSheet>
+          </div>
+
+          <Card className="hidden h-full flex-col sm:flex">
+            <CardHeader className="gap-4 sm:flex sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
               <div>
                 <CardTitle>{copy.planner.title}</CardTitle>
                 <CardDescription>{copy.planner.description}</CardDescription>
@@ -298,132 +324,14 @@ export function FocusWorkspace({
               </span>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col">
-              <form
-                className="grid gap-4 lg:grid-cols-2"
-                onSubmit={createSession}
-              >
-                <Field label={copy.planner.titleLabel}>
-                  <Input
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        title: event.target.value,
-                      }))
-                    }
-                    placeholder={copy.planner.titlePlaceholder}
-                    required
-                    value={input.title}
-                  />
-                </Field>
-                <Field label={copy.planner.subjectLabel}>
-                  <Input
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        subject: event.target.value,
-                      }))
-                    }
-                    placeholder={copy.planner.subjectPlaceholder}
-                    value={input.subject}
-                  />
-                </Field>
-                <Field
-                  className="lg:col-span-2"
-                  label={copy.planner.descriptionLabel}
-                >
-                  <textarea
-                    className="min-h-24 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm text-[var(--landing-text)] outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)]"
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        description: event.target.value,
-                      }))
-                    }
-                    placeholder={copy.planner.descriptionPlaceholder}
-                    value={input.description}
-                  />
-                </Field>
-                <Field label={copy.planner.estimatedLabel}>
-                  <Input
-                    min={5}
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        estimatedMinutes: Number(event.target.value) || 5,
-                      }))
-                    }
-                    type="number"
-                    value={input.estimatedMinutes}
-                  />
-                </Field>
-                <Field label={copy.planner.startLabel}>
-                  <Input
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        startDate: event.target.value,
-                      }))
-                    }
-                    type="date"
-                    value={input.startDate}
-                  />
-                </Field>
-                <Field label={copy.planner.dueLabel}>
-                  <Input
-                    onChange={(event) =>
-                      setInput((current) => ({
-                        ...current,
-                        dueDate: event.target.value,
-                      }))
-                    }
-                    type="date"
-                    value={input.dueDate}
-                  />
-                </Field>
-                <Field label={copy.planner.difficultyLabel}>
-                  <LevelSelect
-                    copy={copy}
-                    onChange={(difficulty) =>
-                      setInput((current) => ({ ...current, difficulty }))
-                    }
-                    value={input.difficulty}
-                  />
-                </Field>
-                <Field label={copy.planner.importanceLabel}>
-                  <LevelSelect
-                    copy={copy}
-                    onChange={(importance) =>
-                      setInput((current) => ({ ...current, importance }))
-                    }
-                    value={input.importance}
-                  />
-                </Field>
-                <div className="lg:col-span-2">
-                  <Button disabled={isSavingSession} type="submit">
-                    <Plus className="size-4" />
-                    {isSavingSession ? copy.actions.saving : copy.actions.save}
-                  </Button>
-                </div>
-              </form>
-
-              <div className="mt-6 grid gap-3 rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 shadow-[var(--landing-chip-inset-shadow)] sm:grid-cols-2 xl:grid-cols-4">
-                <PlanSummaryItem
-                  label={copy.planner.titleLabel}
-                  value={input.title || copy.planner.titlePlaceholder}
-                />
-                <PlanSummaryItem
-                  label={copy.planner.subjectLabel}
-                  value={input.subject || copy.planner.subjectPlaceholder}
-                />
-                <PlanSummaryItem
-                  label={copy.planner.estimatedLabel}
-                  value={copy.overview.minutes(input.estimatedMinutes)}
-                />
-                <PlanSummaryItem
-                  label={copy.planner.dueLabel}
-                  value={input.dueDate}
-                />
-              </div>
+              <StudySessionPlannerForm
+                copy={copy}
+                input={input}
+                isSavingSession={isSavingSession}
+                onCreateSession={createSession}
+                onInputChange={setInput}
+                showSummary
+              />
             </CardContent>
           </Card>
         </div>
@@ -489,6 +397,155 @@ function PlanSummaryItem({ label, value }: { label: string; value: string }) {
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-faint)]">{label}</p>
       <p className="mt-1 truncate text-sm font-medium text-[var(--landing-text)]">{value}</p>
     </div>
+  );
+}
+
+function StudySessionPlannerForm({
+  copy,
+  input,
+  isSavingSession,
+  onCreateSession,
+  onInputChange,
+  showSummary = false,
+}: {
+  copy: typeof focusCopy.en;
+  input: StudySessionInput;
+  isSavingSession: boolean;
+  onCreateSession: (event: FormEvent<HTMLFormElement>) => void;
+  onInputChange: Dispatch<SetStateAction<StudySessionInput>>;
+  showSummary?: boolean;
+}) {
+  return (
+    <>
+      <form
+        className="grid gap-4 sm:grid-cols-2"
+        onSubmit={onCreateSession}
+      >
+        <Field label={copy.planner.titleLabel}>
+          <Input
+            onChange={(event) =>
+              onInputChange((current) => ({
+                ...current,
+                title: event.target.value,
+              }))
+            }
+            placeholder={copy.planner.titlePlaceholder}
+            required
+            value={input.title}
+          />
+        </Field>
+        <Field label={copy.planner.subjectLabel}>
+          <Input
+            onChange={(event) =>
+              onInputChange((current) => ({
+                ...current,
+                subject: event.target.value,
+              }))
+            }
+            placeholder={copy.planner.subjectPlaceholder}
+            value={input.subject}
+          />
+        </Field>
+        <Field
+          className="sm:col-span-2"
+          label={copy.planner.descriptionLabel}
+        >
+          <textarea
+            className="min-h-24 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm text-[var(--landing-text)] outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)]"
+            onChange={(event) =>
+              onInputChange((current) => ({
+                ...current,
+                description: event.target.value,
+              }))
+            }
+            placeholder={copy.planner.descriptionPlaceholder}
+            value={input.description}
+          />
+        </Field>
+        <Field label={copy.planner.estimatedLabel}>
+          <Input
+            min={5}
+            onChange={(event) =>
+              onInputChange((current) => ({
+                ...current,
+                estimatedMinutes: Number(event.target.value) || 5,
+              }))
+            }
+            type="number"
+            value={input.estimatedMinutes}
+          />
+        </Field>
+        <Field label={copy.planner.startLabel}>
+          <Input
+            onChange={(event) =>
+              onInputChange((current) => ({
+                ...current,
+                startDate: event.target.value,
+              }))
+            }
+            type="date"
+            value={input.startDate}
+          />
+        </Field>
+        <Field label={copy.planner.dueLabel}>
+          <Input
+            onChange={(event) =>
+              onInputChange((current) => ({
+                ...current,
+                dueDate: event.target.value,
+              }))
+            }
+            type="date"
+            value={input.dueDate}
+          />
+        </Field>
+        <Field label={copy.planner.difficultyLabel}>
+          <LevelSelect
+            copy={copy}
+            onChange={(difficulty) =>
+              onInputChange((current) => ({ ...current, difficulty }))
+            }
+            value={input.difficulty}
+          />
+        </Field>
+        <Field label={copy.planner.importanceLabel}>
+          <LevelSelect
+            copy={copy}
+            onChange={(importance) =>
+              onInputChange((current) => ({ ...current, importance }))
+            }
+            value={input.importance}
+          />
+        </Field>
+        <div className="sm:col-span-2">
+          <Button className="w-full sm:w-auto" disabled={isSavingSession} type="submit">
+            <Plus className="size-4" />
+            {isSavingSession ? copy.actions.saving : copy.actions.save}
+          </Button>
+        </div>
+      </form>
+
+      {showSummary ? (
+        <div className="mt-5 grid grid-cols-2 gap-3 rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3 shadow-[var(--landing-chip-inset-shadow)] sm:mt-6 sm:rounded-[1.5rem] sm:p-4 xl:grid-cols-4">
+          <PlanSummaryItem
+            label={copy.planner.titleLabel}
+            value={input.title || copy.planner.titlePlaceholder}
+          />
+          <PlanSummaryItem
+            label={copy.planner.subjectLabel}
+            value={input.subject || copy.planner.subjectPlaceholder}
+          />
+          <PlanSummaryItem
+            label={copy.planner.estimatedLabel}
+            value={copy.overview.minutes(input.estimatedMinutes)}
+          />
+          <PlanSummaryItem
+            label={copy.planner.dueLabel}
+            value={input.dueDate}
+          />
+        </div>
+      ) : null}
+    </>
   );
 }
 

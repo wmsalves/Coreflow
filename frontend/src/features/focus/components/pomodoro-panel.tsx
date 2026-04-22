@@ -156,11 +156,11 @@ export function PomodoroPanel({
           )}
         </div>
 
-        <div className="rounded-[2rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-12 text-center shadow-[var(--landing-chip-inset-shadow)]">
+        <div className="rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-6 text-center shadow-[var(--landing-chip-inset-shadow)] sm:rounded-[2rem] sm:p-12">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--landing-accent)]">
             {copy.pomodoro.phase[timer.phase]}
           </p>
-          <p className="mt-3 text-6xl font-semibold tracking-[-0.08em] text-[var(--landing-text)] sm:text-7xl">
+          <p className="mt-3 text-5xl font-semibold tracking-[-0.08em] text-[var(--landing-text)] sm:text-7xl">
             {formatTimer(timer.remainingSeconds)}
           </p>
           <p className="mt-3 text-sm text-[var(--landing-text-muted)]">
@@ -194,8 +194,8 @@ export function PomodoroPanel({
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button disabled={!canRun || isStartingSession} onClick={handlePrimaryAction}>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <Button className="w-full sm:w-auto" disabled={!canRun || isStartingSession} onClick={handlePrimaryAction}>
             {timer.isRunning ? (
               <Pause className="size-4" />
             ) : (
@@ -203,11 +203,12 @@ export function PomodoroPanel({
             )}
             {isStartingSession ? copy.actions.saving : primaryLabel}
           </Button>
-          <Button onClick={timer.reset} variant="secondary">
+          <Button className="w-full sm:w-auto" onClick={timer.reset} variant="secondary">
             <RotateCcw className="size-4" />
             {copy.actions.reset}
           </Button>
           <Button
+            className="w-full sm:w-auto"
             disabled={!hasFocusTimeToSave || isSavingFocusRun}
             onClick={saveFocusTime}
             variant="secondary"
@@ -215,6 +216,7 @@ export function PomodoroPanel({
             {isSavingFocusRun ? copy.actions.savingFocus : copy.actions.saveFocus}
           </Button>
           <Button
+            className="w-full sm:w-auto"
             disabled={
               !selectedSession ||
               !selectedSessionCanRun ||

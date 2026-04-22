@@ -57,8 +57,8 @@ export function StudySessionList({
           <CardTitle>{copy.list.title}</CardTitle>
           <CardDescription>{copy.list.description}</CardDescription>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <SlidersHorizontal className="size-4 text-[var(--landing-text-muted)]" />
+        <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
+          <SlidersHorizontal className="hidden size-4 text-[var(--landing-text-muted)] sm:block" />
           <FilterSelect
             label={copy.list.filters.status}
             value={filters.status}
@@ -215,7 +215,7 @@ function FilterSelect({
     <label className="sr-only">
       {label}
       <select
-        className="not-sr-only h-9 rounded-full border border-[var(--landing-border)] bg-[var(--landing-surface)] px-3 text-xs font-medium text-[var(--landing-text-muted)] outline-none transition focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)]"
+        className="not-sr-only h-11 w-full rounded-full border border-[var(--landing-border)] bg-[var(--landing-surface)] px-3 text-sm font-medium text-[var(--landing-text-muted)] outline-none transition focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)] sm:h-9 sm:w-auto sm:text-xs"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       >

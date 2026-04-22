@@ -25,10 +25,10 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
 
   return (
     <div
-      className="landing-card-strong landing-reveal rounded-[2.1rem] border border-(--landing-border) bg-[var(--landing-panel)] p-1 shadow-[var(--landing-shadow)]"
+      className="landing-card-strong landing-reveal rounded-[1.55rem] border border-(--landing-border) bg-[var(--landing-panel)] p-1 shadow-[var(--landing-shadow)] sm:rounded-[2.1rem]"
       style={revealStyle(120)}
     >
-      <div className="relative overflow-hidden rounded-[calc(2.1rem-0.25rem)] border border-(--landing-border) bg-(--landing-surface) px-5 py-6 sm:px-7 sm:py-7">
+      <div className="relative overflow-hidden rounded-[calc(1.55rem-0.25rem)] border border-(--landing-border) bg-(--landing-surface) px-4 py-5 sm:rounded-[calc(2.1rem-0.25rem)] sm:px-7 sm:py-7">
         <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--landing-accent-ember),transparent)] opacity-80" />
 
         <div className="space-y-2.5">
@@ -36,7 +36,7 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
             {copy.formEyebrow}
           </p>
           <div className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-[-0.045em] text-(--landing-text)">
+            <h2 className="text-xl font-semibold tracking-[-0.045em] text-(--landing-text) sm:text-2xl">
               {copy.formTitle}
             </h2>
             <p className="text-sm leading-6 text-(--landing-text-muted)">
@@ -136,10 +136,10 @@ export function AuthForm({ feedback, mode }: AuthFormProps) {
           </SubmitButton>
         </form>
 
-        <div className="mt-5 flex items-center justify-between gap-3 rounded-[1.25rem] border border-(--landing-border) bg-(--landing-bg-elevated) px-4 py-3.5 text-sm">
+        <div className="mt-5 flex flex-col gap-2 rounded-[1.25rem] border border-(--landing-border) bg-(--landing-bg-elevated) px-4 py-3.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <p className="text-(--landing-text-muted)">{copy.alternateLabel}</p>
           <Link
-            className="font-medium text-(--landing-text) transition hover:text-(--landing-accent)"
+            className="inline-flex min-h-11 items-center font-medium text-(--landing-text) transition hover:text-(--landing-accent) sm:min-h-0"
             href={copy.alternateHref}
           >
             {copy.alternateCta}
@@ -175,7 +175,7 @@ function AuthInput({ className, ...props }: InputHTMLAttributes<HTMLInputElement
   return (
     <input
       className={cn(
-        "h-11 w-full rounded-2xl border border-(--landing-border) bg-(--landing-bg-elevated) px-4 text-sm text-(--landing-text) outline-none",
+        "h-12 w-full rounded-2xl border border-(--landing-border) bg-(--landing-bg-elevated) px-4 text-sm text-(--landing-text) outline-none sm:h-11",
         "placeholder:text-(--landing-text-faint) focus:border-(--landing-border-strong) focus:ring-4 focus:ring-[var(--landing-accent-soft)]",
         className,
       )}

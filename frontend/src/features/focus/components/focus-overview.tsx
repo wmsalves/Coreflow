@@ -41,20 +41,20 @@ export function FocusOverview({
   ];
 
   return (
-    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <section className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
       {metrics.map((metric, index) => {
         const Icon = metricIcons[index];
 
         return (
           <Card key={metric.label} className="overflow-hidden">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 max-sm:space-y-1">
               <div className="flex items-start justify-between gap-4">
-                <CardDescription>{metric.label}</CardDescription>
-                <span className="flex size-9 items-center justify-center rounded-full border border-[var(--landing-border)] bg-[var(--landing-surface)] text-[var(--landing-accent)] shadow-[var(--landing-chip-inset-shadow)]">
+                <CardDescription className="max-sm:text-xs max-sm:leading-5">{metric.label}</CardDescription>
+                <span className="hidden size-9 items-center justify-center rounded-full border border-[var(--landing-border)] bg-[var(--landing-surface)] text-[var(--landing-accent)] shadow-[var(--landing-chip-inset-shadow)] sm:flex">
                   <Icon className="size-4" />
                 </span>
               </div>
-              <CardTitle className="text-3xl tracking-[-0.05em]">{metric.value}</CardTitle>
+              <CardTitle className="text-2xl tracking-[-0.05em] sm:text-3xl">{metric.value}</CardTitle>
             </CardHeader>
           </Card>
         );

@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Disclosure } from "@/components/ui/disclosure";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SubmitButton } from "@/components/ui/submit-button";
 import {
@@ -31,6 +32,7 @@ type HabitListCopy = {
   needsCheckIn: string;
   undoToday: string;
   markComplete: string;
+  details: string;
   deleteLabel: (name: string) => string;
   habitStats: (currentStreak: number, completionsThisWeek: number, frequencyPerWeek: number) => string[];
 };
@@ -61,11 +63,11 @@ export function HabitList({ copy, habits }: HabitListProps) {
         <CardTitle>{copy.title}</CardTitle>
         <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {habits.map((habit) => (
           <div
             key={habit.id}
-            className="flex flex-col gap-4 rounded-[26px] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 shadow-[var(--landing-chip-inset-shadow)] lg:flex-row lg:items-center lg:justify-between"
+            className="flex flex-col gap-4 rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 shadow-[var(--landing-chip-inset-shadow)] sm:rounded-[26px] sm:p-5 lg:flex-row lg:items-center lg:justify-between"
           >
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -75,18 +77,31 @@ export function HabitList({ copy, habits }: HabitListProps) {
                 </Badge>
               </div>
 
-              {habit.description ? (
-                <p className="max-w-2xl text-sm leading-6 text-[var(--landing-text-muted)]">{habit.description}</p>
-              ) : null}
+              <div className="hidden space-y-2 sm:block">
+                {habit.description ? (
+                  <p className="max-w-2xl text-sm leading-6 text-[var(--landing-text-muted)]">{habit.description}</p>
+                ) : null}
 
-              <div className="flex flex-wrap gap-3 text-sm text-[var(--landing-text-muted)]">
-                {copy.habitStats(habit.currentStreak, habit.completionsThisWeek, habit.frequencyPerWeek).map((stat) => (
-                  <span key={stat}>{stat}</span>
-                ))}
+                <div className="flex flex-wrap gap-2 text-sm text-[var(--landing-text-muted)] sm:gap-3">
+                  {copy.habitStats(habit.currentStreak, habit.completionsThisWeek, habit.frequencyPerWeek).map((stat) => (
+                    <span key={stat}>{stat}</span>
+                  ))}
+                </div>
               </div>
+
+              <Disclosure className="sm:hidden" summary={copy.details}>
+                {habit.description ? (
+                  <p className="mb-3 text-sm leading-6 text-[var(--landing-text-muted)]">{habit.description}</p>
+                ) : null}
+                <div className="grid gap-2 text-sm text-[var(--landing-text-muted)]">
+                  {copy.habitStats(habit.currentStreak, habit.completionsThisWeek, habit.frequencyPerWeek).map((stat) => (
+                    <span key={stat}>{stat}</span>
+                  ))}
+                </div>
+              </Disclosure>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 sm:flex sm:flex-wrap sm:gap-3">
               <HabitToggleForm copy={copy} habit={habit} />
               <HabitDeleteForm copy={copy} habit={habit} />
             </div>
@@ -111,6 +126,7 @@ function HabitToggleForm({
     <form action={formAction} className="space-y-2">
       <input name="habitId" type="hidden" value={habit.id} />
       <SubmitButton
+        className="w-full sm:w-auto"
         pendingLabel={label}
         variant={habit.completedToday ? "secondary" : "primary"}
       >

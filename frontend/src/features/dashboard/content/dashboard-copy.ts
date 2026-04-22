@@ -101,6 +101,7 @@ export const dashboardCopy = {
           "Once you create a habit, you can mark it complete for today, watch the streak grow, and see the metrics land on the dashboard.",
         doneToday: "Done today",
         needsCheckIn: "Needs check-in",
+        details: "Details",
         undoToday: "Undo today",
         markComplete: "Mark complete",
         deleteLabel: (name: string) => `Delete ${name}`,
@@ -169,6 +170,7 @@ export const dashboardCopy = {
         sets: "Sets",
         reps: "Reps",
         rest: "Rest",
+        notes: "Notes",
       },
       logs: {
         title: "Workout logs",
@@ -282,6 +284,7 @@ export const dashboardCopy = {
           "Depois de criar um habito, voce pode marcar o dia como concluido, acompanhar a sequencia e ver as metricas no dashboard.",
         doneToday: "Feito hoje",
         needsCheckIn: "Precisa check-in",
+        details: "Detalhes",
         undoToday: "Desfazer hoje",
         markComplete: "Marcar concluido",
         deleteLabel: (name: string) => `Excluir ${name}`,
@@ -350,6 +353,7 @@ export const dashboardCopy = {
         sets: "Series",
         reps: "Reps",
         rest: "Descanso",
+        notes: "Notas",
       },
       logs: {
         title: "Logs de treino",

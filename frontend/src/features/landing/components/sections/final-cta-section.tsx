@@ -10,12 +10,12 @@ type FinalCtaSectionProps = {
 
 export function FinalCtaSection({ copy }: FinalCtaSectionProps) {
   return (
-    <section className="relative py-22">
+    <section className="relative py-14 sm:py-22">
       <SectionDivider />
       <div className="landing-reveal" style={revealStyle(80)}>
         <div
           data-card-motion="panel"
-          className="landing-card-strong overflow-hidden rounded-[2.5rem] border border-(--landing-border) bg-[var(--landing-panel)] px-6 py-10 shadow-[var(--landing-shadow)] sm:px-10 sm:py-12"
+          className="landing-card-strong overflow-hidden rounded-[1.6rem] border border-(--landing-border) bg-[var(--landing-panel)] px-5 py-8 shadow-[var(--landing-shadow)] sm:rounded-[2.5rem] sm:px-10 sm:py-12"
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,var(--landing-glow),transparent_34%),radial-gradient(circle_at_86%_20%,var(--landing-cta-veil),transparent_22%)] opacity-70" />
           <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">

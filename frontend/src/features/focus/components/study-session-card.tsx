@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { CalendarDays, CheckCircle2, CircleDot, Timer, Trash2, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Disclosure } from "@/components/ui/disclosure";
 import type { FocusCopy } from "@/features/focus/content/focus-copy";
 import type { StudySession } from "@/features/focus/types/focus-types";
 import { cn } from "@/lib/utils";
@@ -51,7 +52,7 @@ export function StudySessionCard({
   return (
     <article
       className={cn(
-        "group rounded-[1.45rem] border bg-[var(--landing-surface)] p-4 shadow-[var(--landing-chip-inset-shadow)] transition hover:-translate-y-0.5 hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-surface-strong)]",
+        "group rounded-[1.25rem] border bg-[var(--landing-surface)] p-4 shadow-[var(--landing-chip-inset-shadow)] transition hover:-translate-y-0.5 hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-surface-strong)] sm:rounded-[1.45rem]",
         active
           ? "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)]"
           : "border-[var(--landing-border)]",
@@ -70,13 +71,14 @@ export function StudySessionCard({
           <div>
             <h3 className="text-lg font-semibold tracking-[-0.03em] text-[var(--landing-text)]">{session.title}</h3>
             {session.description ? (
-              <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--landing-text-muted)]">{session.description}</p>
+              <p className="mt-1 hidden max-w-2xl text-sm leading-6 text-[var(--landing-text-muted)] sm:block">{session.description}</p>
             ) : null}
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
           <Button
+            className="w-full sm:w-auto"
             onClick={() => primaryAction(session.id)}
             size="sm"
             variant={active && canStart ? "primary" : "secondary"}
@@ -84,6 +86,7 @@ export function StudySessionCard({
             {primaryLabel}
           </Button>
           <Button
+            className="w-full sm:w-auto"
             disabled={isCompleted || isInactive}
             onClick={() => onComplete(session.id)}
             size="sm"
@@ -92,23 +95,37 @@ export function StudySessionCard({
             {copy.actions.complete}
           </Button>
           {canStart ? (
-            <Button onClick={() => onCancel(session.id)} size="sm" variant="ghost">
+            <Button className="w-full sm:w-auto" onClick={() => onCancel(session.id)} size="sm" variant="ghost">
               {copy.actions.cancel}
             </Button>
           ) : null}
           {session.status !== "archived" ? (
-            <Button onClick={() => onArchive(session.id)} size="sm" variant="ghost">
+            <Button className="w-full sm:w-auto" onClick={() => onArchive(session.id)} size="sm" variant="ghost">
               {copy.actions.archive}
             </Button>
           ) : null}
-          <Button onClick={() => onDelete(session.id)} size="sm" variant="danger">
+          <Button className="w-full sm:w-auto" onClick={() => onDelete(session.id)} size="sm" variant="danger">
             <Trash2 className="size-4" />
             {copy.actions.delete}
           </Button>
         </div>
       </div>
 
-      <div className="mt-4 grid gap-2 text-sm text-[var(--landing-text-muted)] sm:grid-cols-2 xl:grid-cols-4">
+      <Disclosure className="mt-4 sm:hidden" summary={copy.list.details}>
+        {session.description ? (
+          <p className="mb-3 text-sm leading-6 text-[var(--landing-text-muted)]">
+            {session.description}
+          </p>
+        ) : null}
+        <div className="mt-2 grid gap-2 text-sm text-[var(--landing-text-muted)]">
+          <Meta icon={Zap} label={copy.levels[session.difficulty]} value={copy.planner.difficultyLabel} />
+          <Meta icon={TargetDot} label={copy.levels[session.importance]} value={copy.planner.importanceLabel} />
+          <Meta icon={Timer} label={copy.list.estimated(session.estimatedMinutes)} value={copy.list.focusLogged(session.completedFocusSeconds)} />
+          <Meta icon={CalendarDays} label={copy.list.dateRange(session.startDate, session.dueDate)} value="" />
+        </div>
+      </Disclosure>
+
+      <div className="mt-4 hidden gap-2 text-sm text-[var(--landing-text-muted)] sm:grid sm:grid-cols-2 xl:grid-cols-4">
         <Meta icon={Zap} label={copy.levels[session.difficulty]} value={copy.planner.difficultyLabel} />
         <Meta icon={TargetDot} label={copy.levels[session.importance]} value={copy.planner.importanceLabel} />
         <Meta icon={Timer} label={copy.list.estimated(session.estimatedMinutes)} value={copy.list.focusLogged(session.completedFocusSeconds)} />

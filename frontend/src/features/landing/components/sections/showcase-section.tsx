@@ -10,7 +10,7 @@ type ShowcaseSectionProps = {
 
 export function ShowcaseSection({ copy }: ShowcaseSectionProps) {
   return (
-    <section className="relative py-22" id="showcase">
+    <section className="relative py-14 sm:py-22" id="showcase">
       <SectionDivider />
       <SectionIntro
         centered
@@ -19,11 +19,11 @@ export function ShowcaseSection({ copy }: ShowcaseSectionProps) {
         title={copy.title}
       />
 
-      <div className="mt-12 grid gap-4 lg:grid-cols-[1.24fr_0.76fr]">
+      <div className="mt-8 grid gap-4 sm:mt-12 lg:grid-cols-[1.24fr_0.76fr]">
         <div className="landing-reveal" style={revealStyle(80)}>
           <div
             data-card-motion="panel"
-            className="landing-card-strong overflow-hidden rounded-[2.4rem] border border-(--landing-border) bg-[var(--landing-panel)] p-6 shadow-[var(--landing-shadow)]"
+            className="landing-card-strong overflow-hidden rounded-[1.6rem] border border-(--landing-border) bg-[var(--landing-panel)] p-4 shadow-[var(--landing-shadow)] sm:rounded-[2.4rem] sm:p-6"
           >
             <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
               <div className="rounded-[1.7rem] border border-(--landing-border) bg-(--landing-surface) p-5 shadow-[var(--landing-shadow-soft)]">
@@ -81,7 +81,7 @@ function MetricBlock({ label, value }: { label: string; value: string }) {
       <p className="text-xs uppercase tracking-[0.24em] text-(--landing-text-faint)">
         {label}
       </p>
-      <p className="mt-2 text-4xl font-semibold tracking-[-0.06em] text-(--landing-text)">
+        <p className="mt-2 text-3xl font-semibold tracking-[-0.06em] text-(--landing-text) sm:text-4xl">
         {value}
       </p>
     </div>

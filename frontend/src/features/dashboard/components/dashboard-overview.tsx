@@ -44,31 +44,31 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
         <div className="space-y-3">
           <Badge>{copy.badge}</Badge>
           <div className="space-y-2">
-            <h1 className="max-w-3xl text-3xl font-semibold tracking-[-0.045em] text-[var(--landing-text)] sm:text-[2.35rem]">
+            <h1 className="max-w-3xl text-[2rem] font-semibold leading-tight tracking-[-0.045em] text-[var(--landing-text)] sm:text-[2.35rem]">
               {copy.title}
             </h1>
-            <p className="max-w-2xl text-sm leading-7 text-[var(--landing-text-muted)] sm:text-base">
+            <p className="max-w-2xl text-sm leading-6 text-[var(--landing-text-muted)] sm:text-base sm:leading-7">
               {copy.description}
             </p>
           </div>
         </div>
 
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/dashboard/habits">{copy.manageHabits}</Link>
         </Button>
       </section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
         {snapshot.metrics.map((metric) => {
           const metricCopy = copy.metrics[metric.key];
 
           return (
             <Card key={metric.key}>
-              <CardHeader className="pb-3">
-                <CardDescription>{metricCopy.label}</CardDescription>
-                <CardTitle className="text-3xl tracking-[-0.05em]">{metric.value}</CardTitle>
+              <CardHeader className="pb-3 max-sm:space-y-1">
+                <CardDescription className="max-sm:text-xs max-sm:leading-5">{metricCopy.label}</CardDescription>
+                <CardTitle className="text-2xl tracking-[-0.05em] sm:text-3xl">{metric.value}</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0 text-sm leading-6 text-[var(--landing-text-muted)]">
+              <CardContent className="hidden pt-0 text-sm leading-6 text-[var(--landing-text-muted)] sm:block">
                 {metricCopy.detail}
               </CardContent>
             </Card>
@@ -96,7 +96,7 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
               snapshot.recentHabits.map((habit) => (
                 <div
                   key={habit.id}
-                  className="flex items-center justify-between rounded-[1.35rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4 shadow-[var(--landing-chip-inset-shadow)]"
+                  className="flex flex-col gap-3 rounded-[1.35rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4 shadow-[var(--landing-chip-inset-shadow)] sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="space-y-1">
                     <p className="font-medium text-[var(--landing-text)]">{habit.name}</p>

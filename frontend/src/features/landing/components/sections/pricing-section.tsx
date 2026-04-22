@@ -11,7 +11,7 @@ type PricingSectionProps = {
 
 export function PricingSection({ copy }: PricingSectionProps) {
   return (
-    <section className="relative py-22" id="pricing">
+    <section className="relative py-14 sm:py-22" id="pricing">
       <SectionDivider />
       <SectionIntro
         centered
@@ -20,7 +20,7 @@ export function PricingSection({ copy }: PricingSectionProps) {
         title={copy.title}
       />
 
-      <div className="mt-12 grid gap-4 lg:grid-cols-2">
+      <div className="mt-8 grid gap-4 sm:mt-12 lg:grid-cols-2">
         {copy.plans.map((plan, index) => (
           <PricingCard
             key={plan.name}
@@ -56,7 +56,7 @@ function PricingCard({
       <div
         data-card-motion="follow"
         className={cn(
-          "landing-card-strong relative h-full overflow-hidden rounded-[2.2rem] border p-6 shadow-[var(--landing-shadow-soft)]",
+          "landing-card-strong relative h-full overflow-hidden rounded-[1.5rem] border p-5 shadow-[var(--landing-shadow-soft)] sm:rounded-[2.2rem] sm:p-6",
           highlight
             ? "border-(--landing-border-strong) bg-[var(--landing-panel)]"
             : "border-(--landing-border) bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))]",

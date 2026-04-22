@@ -61,6 +61,7 @@ export const focusCopy = {
       archivedTitle: "Canceled and archived",
       emptyTitle: "No sessions match this view",
       emptyDescription: "Adjust filters or create a study block to start building your focus queue.",
+      details: "Details",
       filters: {
         status: "Status",
         difficulty: "Difficulty",
@@ -168,6 +169,7 @@ export const focusCopy = {
       archivedTitle: "Canceladas e arquivadas",
       emptyTitle: "Nenhuma sessao nesta visao",
       emptyDescription: "Ajuste os filtros ou crie um bloco de estudo para montar sua fila de foco.",
+      details: "Detalhes",
       filters: {
         status: "Status",
         difficulty: "Dificuldade",

@@ -10,7 +10,7 @@ type DailyFlowSectionProps = {
 
 export function DailyFlowSection({ copy }: DailyFlowSectionProps) {
   return (
-    <section className="relative py-22" id="daily-flow">
+    <section className="relative py-14 sm:py-22" id="daily-flow">
       <SectionDivider />
       <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr]">
         <div className="space-y-8">
@@ -47,7 +47,7 @@ export function DailyFlowSection({ copy }: DailyFlowSectionProps) {
           <div className="landing-reveal" style={revealStyle(90)}>
             <div
               data-card-motion="panel"
-              className="landing-card-strong overflow-hidden rounded-[2.3rem] border border-(--landing-border) bg-[var(--landing-panel)] p-6 shadow-[var(--landing-shadow)]"
+              className="landing-card-strong overflow-hidden rounded-[1.55rem] border border-(--landing-border) bg-[var(--landing-panel)] p-4 shadow-[var(--landing-shadow)] sm:rounded-[2.3rem] sm:p-6"
             >
               <div className="flex items-center justify-between">
                 <div>

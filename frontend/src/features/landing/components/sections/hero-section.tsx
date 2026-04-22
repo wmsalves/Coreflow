@@ -20,8 +20,8 @@ export function HeroSection({
   const heroStats = [copy.showcase.stats[0], copy.showcase.stats[1]];
 
   return (
-    <section className="relative grid flex-1 items-center gap-16 pb-20 pt-12 lg:grid-cols-[minmax(0,0.98fr)_minmax(480px,1.02fr)] lg:gap-1 lg:pt-6">
-      <div className="relative max-w-[35rem] space-y-10 lg:self-start">
+    <section className="relative grid flex-1 items-center gap-10 pb-14 pt-8 sm:gap-16 sm:pb-20 sm:pt-12 lg:grid-cols-[minmax(0,0.98fr)_minmax(480px,1.02fr)] lg:gap-1 lg:pt-6">
+      <div className="relative max-w-[35rem] space-y-7 sm:space-y-10 lg:self-start">
         <div
           className="landing-reveal inline-flex items-center gap-2 rounded-full border border-(--landing-border-strong) bg-(--landing-surface) px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-(--landing-text-muted) shadow-[var(--landing-shadow-soft)]"
           style={revealStyle(40)}
@@ -30,15 +30,15 @@ export function HeroSection({
           {copy.hero.badge}
         </div>
 
-        <div className="space-y-7">
-          <div className="landing-reveal space-y-6" style={revealStyle(120)}>
+        <div className="space-y-6 sm:space-y-7">
+          <div className="landing-reveal space-y-5 sm:space-y-6" style={revealStyle(120)}>
             <h1
-              className="text-[clamp(3.4rem,8vw,6.9rem)] leading-[0.9] font-semibold tracking-[-0.068em] text-(--landing-text)"
+              className="text-[clamp(2.85rem,14vw,6.9rem)] leading-[0.92] font-semibold tracking-[-0.064em] text-(--landing-text) sm:leading-[0.9] sm:tracking-[-0.068em]"
               style={heroHeadlineStyle}
             >
               {copy.hero.headline}
             </h1>
-            <p className="max-w-[34rem] text-[1.05rem] leading-8 text-(--landing-text-muted) sm:text-[1.14rem]">
+            <p className="max-w-[34rem] text-base leading-7 text-(--landing-text-muted) sm:text-[1.14rem] sm:leading-8">
               {copy.hero.subheadline}
             </p>
           </div>
@@ -64,7 +64,7 @@ export function HeroSection({
         </div>
 
         <div
-          className="landing-reveal grid gap-3 sm:max-w-[34rem] sm:grid-cols-3"
+          className="landing-reveal hidden gap-3 sm:grid sm:max-w-[34rem] sm:grid-cols-3"
           style={revealStyle(280)}
         >
           {copy.hero.principles.map((principle, index) => (
@@ -84,7 +84,7 @@ export function HeroSection({
         </div>
       </div>
 
-      <div className="relative lg:pl-2">
+      <div className="relative hidden sm:block lg:pl-2">
         <div
           ref={previewRef}
           className="landing-preview landing-reveal relative mx-auto max-w-[43rem]"

@@ -17,7 +17,7 @@ type PillarsSectionProps = {
 
 export function PillarsSection({ copy }: PillarsSectionProps) {
   return (
-    <section className="relative py-22" id="pillars">
+    <section className="relative py-14 sm:py-22" id="pillars">
       <SectionDivider />
       <SectionIntro
         centered
@@ -26,7 +26,7 @@ export function PillarsSection({ copy }: PillarsSectionProps) {
         title={copy.title}
       />
 
-      <div className="mt-12 grid gap-4 lg:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:mt-12 lg:grid-cols-3">
         {copy.cards.map((pillar, index) => (
           <PillarCard
             footerLabel={copy.footerLabel}
@@ -65,7 +65,7 @@ function PillarCard({
     <div className="landing-reveal h-full" style={style}>
       <div
         data-card-motion="follow"
-        className="landing-card-strong group relative h-full overflow-hidden rounded-[2.1rem] border border-(--landing-border) bg-[var(--landing-panel)] p-6 shadow-[var(--landing-shadow-soft)]"
+        className="landing-card-strong group relative h-full overflow-hidden rounded-[1.45rem] border border-(--landing-border) bg-[var(--landing-panel)] p-5 shadow-[var(--landing-shadow-soft)] sm:rounded-[2.1rem] sm:p-6"
       >
         <div className="relative flex items-center justify-between">
           <div className="rounded-[1.25rem] border border-(--landing-border) bg-(--landing-surface) p-3 shadow-[var(--landing-shadow-soft)]">

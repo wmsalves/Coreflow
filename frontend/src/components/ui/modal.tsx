@@ -104,7 +104,7 @@ export function Modal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex min-h-dvh items-center justify-center px-4 py-6 sm:px-6"
+      className="fixed inset-0 z-[100] flex min-h-dvh items-end justify-center px-0 pb-0 pt-[calc(3rem+env(safe-area-inset-top))] sm:items-center sm:px-6 sm:py-6"
       data-theme={themeBridge.theme}
       onKeyDown={handleKeyDown}
       style={themeBridge.style}
@@ -120,7 +120,7 @@ export function Modal({
         aria-labelledby={titleId}
         aria-modal="true"
         className={cn(
-          "relative max-h-[min(42rem,calc(100dvh-3rem))] w-full max-w-lg overflow-hidden rounded-[1.65rem]",
+          "relative max-h-[calc(100dvh-4rem-env(safe-area-inset-top))] w-full max-w-lg overflow-hidden rounded-t-[1.65rem] sm:max-h-[min(42rem,calc(100dvh-3rem))] sm:rounded-[1.65rem]",
           "border border-[var(--landing-border-strong)] bg-[var(--landing-panel)] text-[var(--landing-text)] shadow-[var(--landing-shadow)]",
         )}
         ref={dialogRef}
@@ -143,9 +143,9 @@ export function Modal({
             <X className="size-4" />
           </Button>
         </div>
-        <div className="relative px-6 py-5">{children}</div>
+        <div className="relative px-4 py-5 sm:px-6">{children}</div>
         {footer ? (
-          <div className="relative flex flex-col-reverse gap-2 border-t border-[var(--landing-border)] px-6 py-5 sm:flex-row sm:justify-end">
+          <div className="relative flex flex-col-reverse gap-2 border-t border-[var(--landing-border)] px-4 py-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:px-6 sm:pb-5">
             {footer}
           </div>
         ) : null}

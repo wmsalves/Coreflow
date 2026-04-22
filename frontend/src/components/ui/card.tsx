@@ -5,7 +5,7 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "landing-card-soft rounded-[1.8rem] border border-[var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] shadow-[var(--landing-shadow-soft)] backdrop-blur",
+        "landing-card-soft rounded-[1.35rem] border border-[var(--landing-border)] bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] shadow-[var(--landing-shadow-soft)] backdrop-blur sm:rounded-[1.8rem]",
         className,
       )}
       {...props}
@@ -14,7 +14,7 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("space-y-2 px-6 py-6", className)} {...props} />;
+  return <div className={cn("space-y-2 px-4 py-4 sm:px-6 sm:py-6", className)} {...props} />;
 }
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
@@ -31,5 +31,5 @@ export function CardDescription({ className, ...props }: HTMLAttributes<HTMLPara
 }
 
 export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("px-6 pb-6", className)} {...props} />;
+  return <div className={cn("px-4 pb-4 sm:px-6 sm:pb-6", className)} {...props} />;
 }

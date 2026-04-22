@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import type { ComponentType } from "react";
 import { usePathname } from "next/navigation";
+import {
+  Dumbbell,
+  LayoutDashboard,
+  ListChecks,
+  TimerReset,
+} from "lucide-react";
 import { CoreflowLogo } from "@/components/brand/coreflow-logo";
 import { dashboardCopy } from "@/features/dashboard/content/dashboard-copy";
 import { HeaderAccountActions } from "@/features/landing/components/header-account-actions";
@@ -12,11 +19,17 @@ import { useLandingHeaderScroll } from "@/features/landing/hooks/use-landing-hea
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
 import { cn } from "@/lib/utils";
 
-const navItems: Array<{ href: string; key: "overview" | "focus" | "habits" | "fitness" }> = [
-  { href: "/dashboard", key: "overview" },
-  { href: "/dashboard/focus", key: "focus" },
-  { href: "/dashboard/habits", key: "habits" },
-  { href: "/dashboard/fitness", key: "fitness" },
+type DashboardNavKey = "fitness" | "focus" | "habits" | "overview";
+
+const navItems: Array<{
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  key: DashboardNavKey;
+}> = [
+  { href: "/dashboard", icon: LayoutDashboard, key: "overview" },
+  { href: "/dashboard/focus", icon: TimerReset, key: "focus" },
+  { href: "/dashboard/habits", icon: ListChecks, key: "habits" },
+  { href: "/dashboard/fitness", icon: Dumbbell, key: "fitness" },
 ];
 
 type DashboardHeaderProps = {
@@ -30,6 +43,14 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
   const landingControls = landingCopy[locale].controls;
   const landingHeader = landingCopy[locale].header;
   const copy = dashboardCopy[locale].header;
+  const currentNavItem =
+    [...navItems]
+      .sort((first, second) => second.href.length - first.href.length)
+      .find((item) =>
+        item.href === "/dashboard"
+          ? pathname === item.href
+          : pathname.startsWith(item.href),
+      ) ?? navItems[0];
   const accountCopy = {
     ...copy.userMenu,
     dashboard: copy.navLabel,
@@ -38,7 +59,7 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
   };
 
   return (
-    <div className="fixed inset-x-0 top-3 z-40 px-3 sm:top-4 sm:px-4">
+    <div className="fixed inset-x-0 top-[calc(0.75rem+env(safe-area-inset-top))] z-40 px-3 sm:top-4 sm:px-4">
       <header
         className={cn(
           "relative mx-auto max-w-7xl overflow-visible rounded-[1.55rem] border px-4 py-3 backdrop-blur-2xl transition duration-300 sm:px-5 lg:px-6",
@@ -49,7 +70,7 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
       >
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.55rem] bg-[var(--landing-header-gloss)] opacity-90" />
 
-        <div className="relative flex flex-wrap items-center justify-between gap-3 lg:hidden">
+        <div className="relative flex items-center justify-between gap-3 lg:hidden">
           <CoreflowLogo
             className="gap-2.5"
             frameClassName="border-[var(--landing-border)] bg-[var(--landing-logo-frame)]"
@@ -57,6 +78,9 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
             nameClassName="text-[var(--landing-text)]"
             showTagline={false}
           />
+          <span className="min-w-0 truncate text-sm font-semibold tracking-[-0.02em] text-[var(--landing-text)]">
+            {copy.nav[currentNavItem.key]}
+          </span>
 
           <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-1">
             <LanguageSwitcher
@@ -68,19 +92,6 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
             <ThemeToggle labels={landingControls.theme} onThemeChange={setTheme} theme={theme} />
             <HeaderAccountActions copy={accountCopy} userEmail={userEmail} />
           </div>
-
-          <nav aria-label={copy.navLabel} className="w-full overflow-x-auto">
-            <div className="inline-flex min-w-max items-center gap-0.5">
-              {navItems.map((item) => (
-                <DashboardNavLink
-                  active={pathname === item.href}
-                  href={item.href}
-                  key={item.href}
-                  label={copy.nav[item.key]}
-                />
-              ))}
-            </div>
-          </nav>
         </div>
 
         <div className="relative hidden lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center lg:gap-4">
@@ -98,7 +109,7 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
             <div className="inline-flex items-center gap-0.5">
               {navItems.map((item) => (
                 <DashboardNavLink
-                  active={pathname === item.href}
+                  active={isNavItemActive(pathname, item.href)}
                   href={item.href}
                   key={item.href}
                   label={copy.nav[item.key]}
@@ -119,6 +130,24 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
           </div>
         </div>
       </header>
+
+      <nav
+        aria-label={copy.navLabel}
+        className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 rounded-[1.45rem] border border-[var(--landing-border-strong)] bg-[var(--landing-header)] p-1.5 shadow-[var(--landing-header-shadow-scrolled)] backdrop-blur-2xl lg:hidden"
+      >
+        <div className="grid grid-cols-4 gap-1">
+          {navItems.map((item) => (
+            <DashboardNavLink
+              active={isNavItemActive(pathname, item.href)}
+              href={item.href}
+              icon={item.icon}
+              key={item.href}
+              label={copy.nav[item.key]}
+              mobile
+            />
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }
@@ -126,24 +155,37 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
 function DashboardNavLink({
   active,
   href,
+  icon: Icon,
   label,
+  mobile = false,
 }: {
   active: boolean;
   href: string;
+  icon?: ComponentType<{ className?: string }>;
   label: string;
+  mobile?: boolean;
 }) {
   return (
     <Link
       aria-current={active ? "page" : undefined}
       className={cn(
-        "inline-flex h-8 items-center justify-center rounded-full px-3 text-[12.5px] transition",
+        mobile
+          ? "inline-flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-[1rem] px-2 py-1 text-[11px] font-medium transition active:scale-[0.98]"
+          : "inline-flex h-8 items-center justify-center rounded-full px-3 text-[12.5px] transition",
         active
-          ? "text-[var(--landing-text)]"
+          ? mobile
+            ? "bg-[var(--landing-accent-soft)] text-[var(--landing-text)]"
+            : "text-[var(--landing-text)]"
           : "text-[var(--landing-text-faint)] hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)]",
       )}
       href={href}
     >
+      {mobile && Icon ? <Icon className="size-4" /> : null}
       {label}
     </Link>
   );
+}
+
+function isNavItemActive(pathname: string, href: string) {
+  return href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 }

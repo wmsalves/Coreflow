@@ -15,7 +15,9 @@ import { FormEvent, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Disclosure } from "@/components/ui/disclosure";
 import { Input } from "@/components/ui/input";
+import { MobileSheet } from "@/components/ui/mobile-sheet";
 import { dashboardCopy } from "@/features/dashboard/content/dashboard-copy";
 import {
   addExerciseToWorkoutPlanAction,
@@ -102,6 +104,7 @@ export function FitnessWorkspace({
   const [detailState, setDetailState] = useState<LoadState>("idle");
   const [pendingMutation, setPendingMutation] =
     useState<PendingMutation | null>(null);
+  const [createPlanSheetOpen, setCreatePlanSheetOpen] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(
     initialLoadFailed ? { kind: "error", text: copy.initialLoadError } : null,
   );
@@ -183,6 +186,7 @@ export function FitnessWorkspace({
         ...currentPlans.filter((item) => item.id !== plan.id),
       ]);
       setActivePlan(plan);
+      setCreatePlanSheetOpen(false);
       setNotice({ kind: "success", text: copy.planCreated });
     } catch (error) {
       setNotice({
@@ -319,16 +323,16 @@ export function FitnessWorkspace({
         <div className="max-w-3xl space-y-3">
           <Badge>{copy.badge}</Badge>
           <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-[-0.045em] text-[var(--landing-text)] sm:text-[2.35rem]">
+            <h1 className="text-[2rem] font-semibold leading-tight tracking-[-0.045em] text-[var(--landing-text)] sm:text-[2.35rem]">
               {copy.title}
             </h1>
-            <p className="max-w-2xl text-sm leading-7 text-[var(--landing-text-muted)] sm:text-base">
+            <p className="max-w-2xl text-sm leading-6 text-[var(--landing-text-muted)] sm:text-base sm:leading-7">
               {copy.description}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 overflow-hidden rounded-[28px] border border-[var(--landing-border)] bg-[var(--landing-surface)] text-center shadow-[var(--landing-shadow-soft)] sm:min-w-[420px]">
+        <div className="grid grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] text-center shadow-[var(--landing-shadow-soft)] sm:min-w-[420px] sm:rounded-[28px]">
           <Metric label={copy.metrics.results} value={results.length} />
           <Metric label={copy.metrics.plans} value={plans.length} />
           <Metric
@@ -352,8 +356,8 @@ export function FitnessWorkspace({
         </div>
       ) : null}
 
-      <section className="mt-6 grid gap-6 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
-        <div className="space-y-6">
+      <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
+        <div className="space-y-5 sm:space-y-6">
           <Card className="overflow-hidden">
             <CardHeader className="border-b border-[var(--landing-border)] bg-[var(--landing-surface)]">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -364,7 +368,7 @@ export function FitnessWorkspace({
                   </p>
                 </div>
                 <form
-                  className="flex w-full gap-2 lg:max-w-md"
+                  className="grid w-full grid-cols-[minmax(0,1fr)_auto] gap-2 lg:max-w-md"
                   onSubmit={handleSearch}
                 >
                   <Input
@@ -435,6 +439,7 @@ export function FitnessWorkspace({
           planDescription={planDescription}
           planName={planName}
           creatingPlan={pendingMutation?.type === "create-plan"}
+          createPlanSheetOpen={createPlanSheetOpen}
           loggingWorkout={pendingMutation?.type === "log-workout"}
           mutationPending={isMutating}
           pendingRemovalId={
@@ -445,6 +450,7 @@ export function FitnessWorkspace({
           plans={plans}
           sortedPlanExercises={sortedPlanExercises}
           onCreatePlan={handleCreatePlan}
+          onCreatePlanSheetOpenChange={setCreatePlanSheetOpen}
           onLogWorkout={handleLogWorkout}
           onPlanDescriptionChange={setPlanDescription}
           onPlanNameChange={setPlanName}
@@ -459,8 +465,8 @@ export function FitnessWorkspace({
 function Metric({ label, value }: { label: string; value: number }) {
   return (
     <div className="border-r border-[var(--landing-border)] px-4 py-4 last:border-r-0">
-      <p className="text-2xl font-semibold tracking-tight">{value}</p>
-      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--landing-text-muted)]">
+      <p className="text-xl font-semibold tracking-tight sm:text-2xl">{value}</p>
+      <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-muted)] sm:text-[11px] sm:tracking-[0.18em]">
         {label}
       </p>
     </div>
@@ -483,18 +489,18 @@ function ExerciseResultCard({
   return (
     <button
       className={cn(
-        "group flex min-h-[320px] flex-col rounded-[24px] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-4 text-left text-[var(--landing-text)] shadow-[var(--landing-chip-inset-shadow)] backdrop-blur transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-[var(--landing-border-strong)] hover:shadow-[var(--landing-hover-shadow-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--landing-accent-strong)]",
+        "group flex min-h-0 flex-row gap-3 rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-3 text-left text-[var(--landing-text)] shadow-[var(--landing-chip-inset-shadow)] backdrop-blur transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-[var(--landing-border-strong)] hover:shadow-[var(--landing-hover-shadow-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--landing-accent-strong)] sm:min-h-[320px] sm:flex-col sm:gap-0 sm:rounded-[24px] sm:p-4",
         active &&
           "border-[var(--landing-border-strong)] ring-1 ring-inset ring-[var(--landing-border-strong)]",
       )}
       onClick={() => onSelect(exercise)}
       type="button"
     >
-      <ExerciseMedia className="aspect-[4/3]" exercise={exercise} />
-      <div className="mt-4 flex flex-1 flex-col justify-between gap-4">
+      <ExerciseMedia className="h-24 w-24 shrink-0 sm:h-auto sm:w-auto sm:shrink sm:aspect-[4/3]" exercise={exercise} />
+      <div className="flex flex-1 flex-col justify-between gap-3 sm:mt-4 sm:gap-4">
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="text-lg font-semibold leading-tight tracking-tight">
+            <h3 className="text-base font-semibold leading-tight tracking-tight sm:text-lg">
               {exercise.name}
             </h3>
             {!exercise.gifUrl && !exercise.imageUrl && exercise.videoUrl ? (
@@ -565,13 +571,13 @@ function ExerciseInspector({
     <Card className="overflow-hidden">
       <div className="grid gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,0.8fr)]">
         <div className="bg-[var(--landing-surface-alt)] p-4">
-          <ExerciseMedia className="aspect-video" exercise={exercise} large />
+          <ExerciseMedia className="aspect-[4/3] sm:aspect-video" exercise={exercise} large />
         </div>
-        <div className="space-y-6 p-6">
+        <div className="space-y-5 p-4 sm:space-y-6 sm:p-6">
           <div className="space-y-3">
             <Badge>{copy.inspector.selected}</Badge>
             <div className="space-y-2">
-              <h2 className="text-2xl font-semibold tracking-tight">
+              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
                 {exercise.name}
               </h2>
               <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
@@ -592,27 +598,20 @@ function ExerciseInspector({
           ) : null}
 
           {exercise.instructions.length > 0 ? (
-            <div className="space-y-2">
-              <p className="text-sm font-semibold">
-                {copy.inspector.formNotes}
-              </p>
-              <ol className="space-y-2 text-sm leading-6 text-[var(--landing-text-muted)]">
-                {exercise.instructions.slice(0, 3).map((instruction, index) => (
-                  <li
-                    className="flex gap-3"
-                    key={`${exercise.id}-instruction-${index}`}
-                  >
-                    <span className="font-semibold text-[var(--landing-accent)]">
-                      {index + 1}
-                    </span>
-                    <span>{instruction}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            <>
+              <Disclosure className="sm:hidden" summary={copy.inspector.formNotes}>
+                <InstructionList exercise={exercise} />
+              </Disclosure>
+              <div className="hidden space-y-2 sm:block">
+                <p className="text-sm font-semibold">
+                  {copy.inspector.formNotes}
+                </p>
+                <InstructionList exercise={exercise} />
+              </div>
+            </>
           ) : null}
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <NumberField
               label={copy.inspector.sets}
               min={1}
@@ -638,7 +637,7 @@ function ExerciseInspector({
           <label className="block space-y-2 text-sm font-medium">
             <span>{copy.inspector.notes}</span>
             <textarea
-              className="min-h-24 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)]"
+              className="min-h-20 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)] sm:min-h-24"
               onChange={(event) =>
                 onConfigChange({ ...config, notes: event.target.value })
               }
@@ -648,6 +647,7 @@ function ExerciseInspector({
           </label>
 
           <Button
+            className="w-full sm:w-auto"
             disabled={!planReady || !exercise.internalId || mutationPending}
             onClick={onAddExercise}
             size="lg"
@@ -669,11 +669,13 @@ function WorkoutBuilder({
   activePlan,
   commonCopy,
   copy,
+  createPlanSheetOpen,
   creatingPlan,
   loggingWorkout,
   logs,
   mutationPending,
   onCreatePlan,
+  onCreatePlanSheetOpenChange,
   onLogWorkout,
   onPlanDescriptionChange,
   onPlanNameChange,
@@ -688,11 +690,13 @@ function WorkoutBuilder({
   activePlan: WorkoutPlan | null;
   commonCopy: CommonCopy;
   copy: FitnessCopy;
+  createPlanSheetOpen: boolean;
   creatingPlan: boolean;
   loggingWorkout: boolean;
   logs: WorkoutLog[];
   mutationPending: boolean;
   onCreatePlan: (event: FormEvent<HTMLFormElement>) => void;
+  onCreatePlanSheetOpenChange: (open: boolean) => void;
   onLogWorkout: () => void;
   onPlanDescriptionChange: (value: string) => void;
   onPlanNameChange: (value: string) => void;
@@ -705,8 +709,34 @@ function WorkoutBuilder({
   sortedPlanExercises: WorkoutPlan["exercises"];
 }) {
   return (
-    <aside className="space-y-6 2xl:sticky 2xl:top-28 2xl:self-start">
-      <Card>
+    <aside className="space-y-5 sm:space-y-6 2xl:sticky 2xl:top-28 2xl:self-start">
+      <div className="sm:hidden">
+        <MobileSheet
+          description={copy.builder.description}
+          open={createPlanSheetOpen}
+          title={copy.builder.title}
+          trigger={
+            <Button className="w-full" size="lg">
+              <Plus className="size-4" />
+              {copy.builder.savePlan}
+            </Button>
+          }
+          onOpenChange={onCreatePlanSheetOpenChange}
+        >
+          <WorkoutPlanForm
+            copy={copy}
+            creatingPlan={creatingPlan}
+            mutationPending={mutationPending}
+            planDescription={planDescription}
+            planName={planName}
+            onCreatePlan={onCreatePlan}
+            onPlanDescriptionChange={onPlanDescriptionChange}
+            onPlanNameChange={onPlanNameChange}
+          />
+        </MobileSheet>
+      </div>
+
+      <Card className="hidden sm:block">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-2xl bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]">
@@ -721,48 +751,25 @@ function WorkoutBuilder({
           </div>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4" onSubmit={onCreatePlan}>
-            <label className="block space-y-2 text-sm font-medium">
-              <span>{copy.builder.planName}</span>
-              <Input
-                disabled={creatingPlan}
-                onChange={(event) => onPlanNameChange(event.target.value)}
-                required
-                value={planName}
-              />
-            </label>
-            <label className="block space-y-2 text-sm font-medium">
-              <span>{copy.builder.planDescription}</span>
-              <Input
-                disabled={creatingPlan}
-                onChange={(event) =>
-                  onPlanDescriptionChange(event.target.value)
-                }
-                value={planDescription}
-              />
-            </label>
-            <Button
-              className="w-full"
-              disabled={mutationPending}
-              type="submit"
-            >
-              {creatingPlan ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Plus className="size-4" />
-              )}
-              {copy.builder.savePlan}
-            </Button>
-          </form>
+          <WorkoutPlanForm
+            copy={copy}
+            creatingPlan={creatingPlan}
+            mutationPending={mutationPending}
+            planDescription={planDescription}
+            planName={planName}
+            onCreatePlan={onCreatePlan}
+            onPlanDescriptionChange={onPlanDescriptionChange}
+            onPlanNameChange={onPlanNameChange}
+          />
         </CardContent>
       </Card>
 
       {plans.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {plans.map((plan) => (
             <button
               className={cn(
-                "rounded-full border px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60",
+                "min-h-11 shrink-0 rounded-full border px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-0",
                 activePlan?.id === plan.id
                   ? "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]"
                   : "border-[var(--landing-border)] bg-[var(--landing-surface)] text-[var(--landing-text-muted)] hover:bg-[var(--landing-surface-strong)]",
@@ -800,7 +807,7 @@ function WorkoutBuilder({
           ) : (
             sortedPlanExercises.map((item, index) => (
               <div
-                className="rounded-[24px] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4"
+                className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 sm:rounded-[24px]"
                 key={item.id}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -841,13 +848,20 @@ function WorkoutBuilder({
                   />
                 </div>
                 {item.notes ? (
-                  <p className="mt-3 text-sm leading-6 text-[var(--landing-text-muted)]">
-                    {item.notes}
-                  </p>
+                  <>
+                    <Disclosure className="mt-3 sm:hidden" summary={copy.builder.notes}>
+                      <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
+                        {item.notes}
+                      </p>
+                    </Disclosure>
+                    <p className="mt-3 hidden text-sm leading-6 text-[var(--landing-text-muted)] sm:block">
+                      {item.notes}
+                    </p>
+                  </>
                 ) : null}
                 <Button
                   aria-label={`Remove ${item.exercise.name}`}
-                  className="mt-3"
+                  className="mt-3 w-full sm:w-auto"
                   disabled={mutationPending}
                   onClick={() => onRemoveExercise(item.id)}
                   size="sm"
@@ -983,6 +997,24 @@ function NumberField({
   );
 }
 
+function InstructionList({ exercise }: { exercise: ExerciseDetail }) {
+  return (
+    <ol className="space-y-2 text-sm leading-6 text-[var(--landing-text-muted)]">
+      {exercise.instructions.slice(0, 3).map((instruction, index) => (
+        <li
+          className="flex gap-3"
+          key={`${exercise.id}-instruction-${index}`}
+        >
+          <span className="font-semibold text-[var(--landing-accent)]">
+            {index + 1}
+          </span>
+          <span>{instruction}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 function MiniStat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-2xl bg-[var(--landing-surface)] px-3 py-2">
@@ -991,5 +1023,61 @@ function MiniStat({ label, value }: { label: string; value: number | string }) {
       </p>
       <p className="mt-1 font-semibold">{value}</p>
     </div>
+  );
+}
+
+function WorkoutPlanForm({
+  copy,
+  creatingPlan,
+  mutationPending,
+  onCreatePlan,
+  onPlanDescriptionChange,
+  onPlanNameChange,
+  planDescription,
+  planName,
+}: {
+  copy: FitnessCopy;
+  creatingPlan: boolean;
+  mutationPending: boolean;
+  onCreatePlan: (event: FormEvent<HTMLFormElement>) => void;
+  onPlanDescriptionChange: (value: string) => void;
+  onPlanNameChange: (value: string) => void;
+  planDescription: string;
+  planName: string;
+}) {
+  return (
+    <form className="space-y-4" onSubmit={onCreatePlan}>
+      <label className="block space-y-2 text-sm font-medium">
+        <span>{copy.builder.planName}</span>
+        <Input
+          disabled={creatingPlan}
+          onChange={(event) => onPlanNameChange(event.target.value)}
+          required
+          value={planName}
+        />
+      </label>
+      <label className="block space-y-2 text-sm font-medium">
+        <span>{copy.builder.planDescription}</span>
+        <Input
+          disabled={creatingPlan}
+          onChange={(event) =>
+            onPlanDescriptionChange(event.target.value)
+          }
+          value={planDescription}
+        />
+      </label>
+      <Button
+        className="w-full"
+        disabled={mutationPending}
+        type="submit"
+      >
+        {creatingPlan ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <Plus className="size-4" />
+        )}
+        {copy.builder.savePlan}
+      </Button>
+    </form>
   );
 }
