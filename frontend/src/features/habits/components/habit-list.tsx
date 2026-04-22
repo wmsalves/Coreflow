@@ -1,9 +1,16 @@
+"use client";
+
+import { useActionState } from "react";
 import { Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { deleteHabitAction, toggleHabitCompletionAction } from "@/features/habits/actions";
+import { SubmitButton } from "@/components/ui/submit-button";
+import {
+  deleteHabitAction,
+  toggleHabitCompletionAction,
+  type HabitActionState,
+} from "@/features/habits/actions";
 
 type HabitOverviewItem = {
   completedToday: boolean;
@@ -31,6 +38,11 @@ type HabitListCopy = {
 type HabitListProps = {
   copy: HabitListCopy;
   habits: HabitOverviewItem[];
+};
+
+const initialState: HabitActionState = {
+  error: null,
+  success: false,
 };
 
 export function HabitList({ copy, habits }: HabitListProps) {
@@ -75,23 +87,68 @@ export function HabitList({ copy, habits }: HabitListProps) {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <form action={toggleHabitCompletionAction}>
-                <input name="habitId" type="hidden" value={habit.id} />
-                <Button type="submit" variant={habit.completedToday ? "secondary" : "primary"}>
-                  {habit.completedToday ? copy.undoToday : copy.markComplete}
-                </Button>
-              </form>
-
-              <form action={deleteHabitAction}>
-                <input name="habitId" type="hidden" value={habit.id} />
-                <Button aria-label={copy.deleteLabel(habit.name)} type="submit" variant="ghost">
-                  <Trash2 className="size-4" />
-                </Button>
-              </form>
+              <HabitToggleForm copy={copy} habit={habit} />
+              <HabitDeleteForm copy={copy} habit={habit} />
             </div>
           </div>
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+function HabitToggleForm({
+  copy,
+  habit,
+}: {
+  copy: HabitListCopy;
+  habit: HabitOverviewItem;
+}) {
+  const [state, formAction] = useActionState(toggleHabitCompletionAction, initialState);
+  const label = habit.completedToday ? copy.undoToday : copy.markComplete;
+
+  return (
+    <form action={formAction} className="space-y-2">
+      <input name="habitId" type="hidden" value={habit.id} />
+      <SubmitButton
+        pendingLabel={label}
+        variant={habit.completedToday ? "secondary" : "primary"}
+      >
+        {label}
+      </SubmitButton>
+      {state.error ? (
+        <p aria-live="polite" className="max-w-48 text-xs text-[var(--danger)]">
+          {state.error}
+        </p>
+      ) : null}
+    </form>
+  );
+}
+
+function HabitDeleteForm({
+  copy,
+  habit,
+}: {
+  copy: HabitListCopy;
+  habit: HabitOverviewItem;
+}) {
+  const [state, formAction] = useActionState(deleteHabitAction, initialState);
+
+  return (
+    <form action={formAction} className="space-y-2">
+      <input name="habitId" type="hidden" value={habit.id} />
+      <SubmitButton
+        aria-label={copy.deleteLabel(habit.name)}
+        pendingLabel="..."
+        variant="ghost"
+      >
+        <Trash2 className="size-4" />
+      </SubmitButton>
+      {state.error ? (
+        <p aria-live="polite" className="max-w-48 text-xs text-[var(--danger)]">
+          {state.error}
+        </p>
+      ) : null}
+    </form>
   );
 }

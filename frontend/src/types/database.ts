@@ -17,39 +17,69 @@ export type Database = {
     Tables: {
       exercises: {
         Insert: {
+          body_part?: string | null;
+          catalog_id?: string | null;
+          catalog_internal_id?: number | null;
           created_at?: string;
+          equipment?: string | null;
+          gif_url?: string | null;
           id?: string;
+          image_url?: string | null;
           name: string;
+          notes?: string | null;
           order_index?: number;
           plan_id: string;
           reps?: number | null;
+          rest_seconds?: number | null;
           sets?: number | null;
+          target?: string | null;
           updated_at?: string;
           user_id: string;
+          video_url?: string | null;
           weight?: number | null;
         };
         Row: {
+          body_part: string | null;
+          catalog_id: string | null;
+          catalog_internal_id: number | null;
           created_at: string;
+          equipment: string | null;
+          gif_url: string | null;
           id: string;
+          image_url: string | null;
           name: string;
+          notes: string | null;
           order_index: number;
           plan_id: string;
           reps: number | null;
+          rest_seconds: number | null;
           sets: number | null;
+          target: string | null;
           updated_at: string;
           user_id: string;
+          video_url: string | null;
           weight: number | null;
         };
         Update: {
+          body_part?: string | null;
+          catalog_id?: string | null;
+          catalog_internal_id?: number | null;
           created_at?: string;
+          equipment?: string | null;
+          gif_url?: string | null;
           id?: string;
+          image_url?: string | null;
           name?: string;
+          notes?: string | null;
           order_index?: number;
           plan_id?: string;
           reps?: number | null;
+          rest_seconds?: number | null;
           sets?: number | null;
+          target?: string | null;
           updated_at?: string;
           user_id?: string;
+          video_url?: string | null;
           weight?: number | null;
         };
       };
@@ -249,6 +279,47 @@ export type Database = {
           stripe_subscription_id?: string | null;
           updated_at?: string;
           user_id?: string;
+        };
+      };
+      workout_log_exercises: {
+        Insert: {
+          catalog_internal_id?: number | null;
+          created_at?: string;
+          id?: string;
+          name: string;
+          notes?: string | null;
+          order_index?: number;
+          reps_completed?: number | null;
+          sets_completed?: number | null;
+          user_id: string;
+          weight?: number | null;
+          workout_log_id: string;
+        };
+        Row: {
+          catalog_internal_id: number | null;
+          created_at: string;
+          id: string;
+          name: string;
+          notes: string | null;
+          order_index: number;
+          reps_completed: number | null;
+          sets_completed: number | null;
+          user_id: string;
+          weight: number | null;
+          workout_log_id: string;
+        };
+        Update: {
+          catalog_internal_id?: number | null;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          notes?: string | null;
+          order_index?: number;
+          reps_completed?: number | null;
+          sets_completed?: number | null;
+          user_id?: string;
+          weight?: number | null;
+          workout_log_id?: string;
         };
       };
       workout_logs: {

@@ -1,29 +1,17 @@
 import { FitnessWorkspace } from "@/features/fitness/components/fitness-workspace";
-import { getWorkoutLogs, getWorkoutPlans, listExercises } from "@/lib/api/fitness";
-import { requireAccessToken } from "@/lib/auth";
+import { getFitnessWorkspaceData } from "@/features/fitness/queries";
+import { requireAccessToken, requireUser } from "@/lib/auth";
 
 export default async function FitnessPage() {
-  const accessToken = await requireAccessToken();
-  const [exercisesResult, plansResult, logsResult] = await Promise.allSettled([
-    listExercises({ accessToken }),
-    getWorkoutPlans({ accessToken }),
-    getWorkoutLogs({ accessToken }),
-  ]);
-
-  const initialExercises = exercisesResult.status === "fulfilled" ? exercisesResult.value : [];
-  const initialPlans = plansResult.status === "fulfilled" ? plansResult.value : [];
-  const initialLogs = logsResult.status === "fulfilled" ? logsResult.value : [];
-  const initialLoadFailed =
-    exercisesResult.status === "rejected" ||
-    plansResult.status === "rejected" ||
-    logsResult.status === "rejected";
+  const [user, accessToken] = await Promise.all([requireUser(), requireAccessToken()]);
+  const fitnessData = await getFitnessWorkspaceData(user.id, accessToken);
 
   return (
     <FitnessWorkspace
-      initialExercises={initialExercises}
-      initialLoadFailed={initialLoadFailed}
-      initialLogs={initialLogs}
-      initialPlans={initialPlans}
+      initialExercises={fitnessData.initialExercises}
+      initialLoadFailed={fitnessData.initialLoadFailed}
+      initialLogs={fitnessData.initialLogs}
+      initialPlans={fitnessData.initialPlans}
     />
   );
 }

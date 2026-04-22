@@ -78,10 +78,20 @@ create table if not exists public.exercises (
   id uuid primary key default gen_random_uuid(),
   plan_id uuid not null references public.workout_plans(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
+  catalog_id text,
+  catalog_internal_id bigint,
   name text not null,
+  gif_url text,
+  image_url text,
+  video_url text,
+  body_part text,
+  target text,
+  equipment text,
   sets integer,
   reps integer,
+  rest_seconds integer,
   weight numeric(8, 2),
+  notes text,
   order_index integer not null default 0,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
@@ -96,6 +106,20 @@ create table if not exists public.workout_logs (
   notes text,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.workout_log_exercises (
+  id uuid primary key default gen_random_uuid(),
+  workout_log_id uuid not null references public.workout_logs(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  catalog_internal_id bigint,
+  name text not null,
+  sets_completed integer,
+  reps_completed integer,
+  weight numeric(8, 2),
+  order_index integer not null default 0,
+  notes text,
+  created_at timestamptz not null default timezone('utc', now())
 );
 
 create or replace function public.handle_new_user()
@@ -158,6 +182,7 @@ alter table public.study_sessions enable row level security;
 alter table public.workout_plans enable row level security;
 alter table public.exercises enable row level security;
 alter table public.workout_logs enable row level security;
+alter table public.workout_log_exercises enable row level security;
 
 create policy "profiles owner access" on public.profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
@@ -243,5 +268,27 @@ create policy "workout logs owner access" on public.workout_logs
         where workout_plans.id = workout_logs.plan_id
           and workout_plans.user_id = auth.uid()
       )
+    )
+  );
+
+drop policy if exists "workout log exercises owner access" on public.workout_log_exercises;
+create policy "workout log exercises owner access" on public.workout_log_exercises
+  for all
+  using (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.workout_logs
+      where workout_logs.id = workout_log_exercises.workout_log_id
+        and workout_logs.user_id = auth.uid()
+    )
+  )
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1
+      from public.workout_logs
+      where workout_logs.id = workout_log_exercises.workout_log_id
+        and workout_logs.user_id = auth.uid()
     )
   );

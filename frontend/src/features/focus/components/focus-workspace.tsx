@@ -172,19 +172,14 @@ export function FocusWorkspace({
     }
   }
 
-  function startSession(id: string) {
+  async function startSession(id: string) {
     setSelectedSessionId(id);
-    setSessions((current) =>
-      current.map((session) =>
-        session.id === id && session.status === "pending"
-          ? { ...session, status: "in_progress" }
-          : session,
-      ),
-    );
     const session = sessions.find((item) => item.id === id);
     if (session && session.status === "pending") {
-      void persistStatus(id, "in_progress");
+      return persistStatus(id, "in_progress");
     }
+
+    return session ?? null;
   }
 
   async function logFocusRun(studySessionId: string | null, focusSeconds: number) {
@@ -209,39 +204,19 @@ export function FocusWorkspace({
     }
   }
 
-  function completeSession(id: string) {
-    setSessions((current) =>
-      current.map((session) =>
-        session.id === id
-          ? {
-              ...session,
-              status: "completed",
-            }
-          : session,
-      ),
-    );
-    void persistStatus(id, "completed");
+  async function completeSession(id: string) {
+    await persistStatus(id, "completed");
   }
 
-  function cancelSession(id: string) {
-    setSessions((current) =>
-      current.map((session) =>
-        session.id === id ? { ...session, status: "canceled" } : session,
-      ),
-    );
-    void persistStatus(id, "canceled");
+  async function cancelSession(id: string) {
+    await persistStatus(id, "canceled");
   }
 
-  function archiveSession(id: string) {
-    setSessions((current) =>
-      current.map((session) =>
-        session.id === id ? { ...session, status: "archived" } : session,
-      ),
-    );
-    if (selectedSessionId === id) {
+  async function archiveSession(id: string) {
+    const updatedSession = await persistStatus(id, "archived");
+    if (updatedSession && selectedSessionId === id) {
       setSelectedSessionId(null);
     }
-    void persistStatus(id, "archived");
   }
 
   function requestDeleteSession(id: string) {

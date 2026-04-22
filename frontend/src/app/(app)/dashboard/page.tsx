@@ -1,10 +1,10 @@
 import { DashboardOverview } from "@/features/dashboard/components/dashboard-overview";
 import { getDashboardSnapshot } from "@/features/dashboard/queries";
-import { requireAccessToken, requireUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 
 export default async function DashboardPage() {
-  const [user, accessToken] = await Promise.all([requireUser(), requireAccessToken()]);
-  const snapshot = await getDashboardSnapshot(user.id, accessToken);
+  const user = await requireUser();
+  const snapshot = await getDashboardSnapshot(user.id);
 
   return <DashboardOverview snapshot={snapshot} />;
 }

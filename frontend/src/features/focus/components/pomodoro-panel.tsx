@@ -28,7 +28,7 @@ type PomodoroPanelProps = {
   onClearSession: () => void;
   onCompleteSession: (id: string) => Promise<void> | void;
   onLogFocusRun: (studySessionId: string | null, focusSeconds: number) => Promise<void> | void;
-  onStartSession: (id: string) => void;
+  onStartSession: (id: string) => Promise<StudySession | null> | StudySession | null;
   selectedSession: StudySession | null;
   standaloneFocusSeconds: number;
 };
@@ -44,6 +44,7 @@ export function PomodoroPanel({
 }: PomodoroPanelProps) {
   const timer = usePomodoro();
   const [isSavingFocusRun, setIsSavingFocusRun] = useState(false);
+  const [isStartingSession, setIsStartingSession] = useState(false);
   const selectedSessionCanRun = Boolean(
     selectedSession &&
       selectedSession.status !== "completed" &&
@@ -58,7 +59,7 @@ export function PomodoroPanel({
       ? copy.actions.resume
       : copy.actions.start;
 
-  function handlePrimaryAction() {
+  async function handlePrimaryAction() {
     if (!canRun) {
       return;
     }
@@ -69,7 +70,15 @@ export function PomodoroPanel({
     }
 
     if (selectedSession) {
-      onStartSession(selectedSession.id);
+      setIsStartingSession(true);
+      try {
+        const startedSession = await onStartSession(selectedSession.id);
+        if (!startedSession) {
+          return;
+        }
+      } finally {
+        setIsStartingSession(false);
+      }
     }
     timer.start();
   }
@@ -186,13 +195,13 @@ export function PomodoroPanel({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button disabled={!canRun} onClick={handlePrimaryAction}>
+          <Button disabled={!canRun || isStartingSession} onClick={handlePrimaryAction}>
             {timer.isRunning ? (
               <Pause className="size-4" />
             ) : (
               <Play className="size-4" />
             )}
-            {primaryLabel}
+            {isStartingSession ? copy.actions.saving : primaryLabel}
           </Button>
           <Button onClick={timer.reset} variant="secondary">
             <RotateCcw className="size-4" />

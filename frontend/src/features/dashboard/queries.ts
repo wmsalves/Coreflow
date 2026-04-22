@@ -1,17 +1,17 @@
 import "server-only";
+import { getFitnessSnapshot } from "@/features/fitness/queries";
 import { getStudySessionsOverview } from "@/features/focus/queries";
 import { getHabitsOverview } from "@/features/habits/queries";
-import { getWorkoutLogs, getWorkoutPlans } from "@/lib/api/fitness";
 import { formatPercentage } from "@/lib/utils";
 
 export type DashboardMetricKey = "habitsToday" | "completionRate" | "longestStreak" | "modulesInProgress";
 export type DashboardNextStepKey = "studySessions" | "workoutTracking" | "stripePlans";
 
-export async function getDashboardSnapshot(userId: string, accessToken: string) {
+export async function getDashboardSnapshot(userId: string) {
   const [habitsOverview, studySessions, fitnessSnapshot] = await Promise.all([
     getHabitsOverview(userId),
     getStudySessionsOverview(userId),
-    getFitnessSnapshot(accessToken),
+    getFitnessSnapshot(userId),
   ]);
 
   const modulesInProgress = [
@@ -45,17 +45,5 @@ export async function getDashboardSnapshot(userId: string, accessToken: string) 
       { href: "/dashboard/fitness", key: "workoutTracking" as const },
       { href: "/dashboard", key: "stripePlans" as const },
     ],
-  };
-}
-
-async function getFitnessSnapshot(accessToken: string) {
-  const [plansResult, logsResult] = await Promise.allSettled([
-    getWorkoutPlans({ accessToken }),
-    getWorkoutLogs({ accessToken }),
-  ]);
-
-  return {
-    logCount: logsResult.status === "fulfilled" ? logsResult.value.length : 0,
-    planCount: plansResult.status === "fulfilled" ? plansResult.value.length : 0,
   };
 }

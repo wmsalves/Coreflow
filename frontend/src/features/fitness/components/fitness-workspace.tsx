@@ -16,27 +16,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { dashboardCopy } from "@/features/dashboard/content/dashboard-copy";
-import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
 import {
-  addExerciseToWorkoutPlan,
-  createWorkoutPlan,
-  getExerciseDetail,
-  listExercises,
-  logWorkout,
-  searchExercises,
-  type ExerciseDetail,
-  type ExerciseSummary,
-  type WorkoutLog,
-  type WorkoutPlan,
-} from "@/lib/api/fitness";
+  addExerciseToWorkoutPlanAction,
+  createWorkoutPlanAction,
+  getExerciseDetailAction,
+  listExerciseCatalogAction,
+  logWorkoutAction,
+  searchExerciseCatalogAction,
+} from "@/features/fitness/actions";
+import type {
+  ExerciseConfig,
+  ExerciseDetail,
+  ExerciseSummary,
+  WorkoutLog,
+  WorkoutPlan,
+} from "@/features/fitness/types";
+import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
 import { cn } from "@/lib/utils";
-
-type ExerciseConfig = {
-  sets: number;
-  reps: number;
-  restSeconds: number;
-  notes: string;
-};
 
 type LoadState = "idle" | "loading" | "error";
 type FitnessCopy = (typeof dashboardCopy)["en"]["fitness"];
@@ -110,8 +106,8 @@ export function FitnessWorkspace({
 
     try {
       const loadedExercises = searchQuery.trim()
-        ? await searchExercises(searchQuery.trim())
-        : await listExercises();
+        ? await searchExerciseCatalogAction(searchQuery.trim())
+        : await listExerciseCatalogAction();
 
       setResults(loadedExercises);
       setCatalogState("idle");
@@ -139,7 +135,7 @@ export function FitnessWorkspace({
     setMessage(null);
 
     try {
-      const detail = await getExerciseDetail(exercise.id);
+      const detail = await getExerciseDetailAction(exercise.id);
       setSelectedExercise(detail);
       setExerciseConfig(defaultConfig);
       setDetailState("idle");
@@ -155,7 +151,7 @@ export function FitnessWorkspace({
     setMessage(null);
 
     try {
-      const plan = await createWorkoutPlan({
+      const plan = await createWorkoutPlanAction({
         description: planDescription,
         name: planName,
       });
@@ -182,14 +178,12 @@ export function FitnessWorkspace({
     setMessage(null);
 
     try {
-      const updatedPlan = await addExerciseToWorkoutPlan(activePlan.id, {
-        exerciseId: selectedInternalId,
-        notes: exerciseConfig.notes,
-        reps: exerciseConfig.reps,
-        restSeconds: exerciseConfig.restSeconds,
-        sets: exerciseConfig.sets,
-        sortOrder: activePlanExercises.length + 1,
-      });
+      const updatedPlan = await addExerciseToWorkoutPlanAction(
+        activePlan.id,
+        selectedExercise,
+        exerciseConfig,
+        activePlanExercises.length + 1,
+      );
 
       setActivePlan(updatedPlan);
       setPlans((currentPlans) =>
@@ -220,16 +214,7 @@ export function FitnessWorkspace({
     setMessage(null);
 
     try {
-      const workoutLog = await logWorkout({
-        exercises: activePlanExercises.map((exercise, index) => ({
-          exerciseId: exercise.exerciseId,
-          notes: exercise.notes ?? undefined,
-          repsCompleted: exercise.reps ?? undefined,
-          setsCompleted: exercise.sets ?? undefined,
-          sortOrder: exercise.sortOrder ?? index + 1,
-        })),
-        workoutPlanId: activePlan.id,
-      });
+      const workoutLog = await logWorkoutAction(activePlan.id);
 
       setLogs((currentLogs) => [workoutLog, ...currentLogs]);
       setPlanState("idle");
