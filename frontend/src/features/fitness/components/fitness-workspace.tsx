@@ -726,6 +726,7 @@ function WorkoutBuilder({
           <WorkoutPlanForm
             copy={copy}
             creatingPlan={creatingPlan}
+            guided
             mutationPending={mutationPending}
             planDescription={planDescription}
             planName={planName}
@@ -1029,6 +1030,7 @@ function MiniStat({ label, value }: { label: string; value: number | string }) {
 function WorkoutPlanForm({
   copy,
   creatingPlan,
+  guided = false,
   mutationPending,
   onCreatePlan,
   onPlanDescriptionChange,
@@ -1038,6 +1040,7 @@ function WorkoutPlanForm({
 }: {
   copy: FitnessCopy;
   creatingPlan: boolean;
+  guided?: boolean;
   mutationPending: boolean;
   onCreatePlan: (event: FormEvent<HTMLFormElement>) => void;
   onPlanDescriptionChange: (value: string) => void;
@@ -1047,25 +1050,28 @@ function WorkoutPlanForm({
 }) {
   return (
     <form className="space-y-4" onSubmit={onCreatePlan}>
-      <label className="block space-y-2 text-sm font-medium">
-        <span>{copy.builder.planName}</span>
-        <Input
-          disabled={creatingPlan}
-          onChange={(event) => onPlanNameChange(event.target.value)}
-          required
-          value={planName}
-        />
-      </label>
-      <label className="block space-y-2 text-sm font-medium">
-        <span>{copy.builder.planDescription}</span>
-        <Input
-          disabled={creatingPlan}
-          onChange={(event) =>
-            onPlanDescriptionChange(event.target.value)
-          }
-          value={planDescription}
-        />
-      </label>
+      <div className={guided ? "space-y-4 rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3" : "space-y-4"}>
+        {guided ? <StepLabel index={1} title={copy.builder.planName} /> : null}
+        <label className="block space-y-2 text-sm font-medium">
+          <span>{copy.builder.planName}</span>
+          <Input
+            disabled={creatingPlan}
+            onChange={(event) => onPlanNameChange(event.target.value)}
+            required
+            value={planName}
+          />
+        </label>
+        <label className="block space-y-2 text-sm font-medium">
+          <span>{copy.builder.planDescription}</span>
+          <Input
+            disabled={creatingPlan}
+            onChange={(event) =>
+              onPlanDescriptionChange(event.target.value)
+            }
+            value={planDescription}
+          />
+        </label>
+      </div>
       <Button
         className="w-full"
         disabled={mutationPending}
@@ -1079,5 +1085,13 @@ function WorkoutPlanForm({
         {copy.builder.savePlan}
       </Button>
     </form>
+  );
+}
+
+function StepLabel({ index, title }: { index: number; title: string }) {
+  return (
+    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-faint)]">
+      {index.toString().padStart(2, "0")} / {title}
+    </p>
   );
 }

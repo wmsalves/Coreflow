@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import type { LandingCopy } from "@/features/landing/content/landing-copy";
 
 type LandingFooterProps = {
@@ -8,15 +8,19 @@ type LandingFooterProps = {
 
 export function LandingFooter({ copy }: LandingFooterProps) {
   return (
-    <footer className="relative mt-8 border-t border-(--landing-border) py-14 sm:mt-12 sm:py-16 lg:py-18">
+    <footer className="relative mt-6 border-t border-(--landing-border) py-10 sm:mt-12 sm:py-16 lg:py-18">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--landing-accent-ember),transparent)] opacity-70" />
 
-      <div className="grid gap-12lg:gap-16">
-        <div className="max-w-md space-y-5"></div>
+      <div className="grid gap-8 lg:gap-16">
+        <nav aria-label="Footer" className="grid gap-2 sm:hidden">
+          {copy.groups.map((group) => (
+            <FooterLinkAccordion key={group.title} group={group} />
+          ))}
+        </nav>
 
         <nav
           aria-label="Footer"
-          className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10"
+          className="hidden gap-8 sm:grid sm:grid-cols-2 lg:grid-cols-4 lg:gap-10"
         >
           {copy.groups.map((group) => (
             <div key={group.title} className="space-y-4">
@@ -41,8 +45,8 @@ export function LandingFooter({ copy }: LandingFooterProps) {
         </nav>
       </div>
 
-      <div className="mt-12 border-t border-(--landing-border) pt-8 sm:mt-14 sm:pt-10">
-        <div className="grid gap-6 rounded-[2rem] border border-(--landing-border) bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-5 shadow-[var(--landing-shadow-soft)] lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.78fr)] lg:items-center lg:p-6">
+      <div className="mt-8 border-t border-(--landing-border) pt-6 sm:mt-14 sm:pt-10">
+        <div className="grid gap-5 rounded-[1.45rem] border border-(--landing-border) bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-4 shadow-[var(--landing-shadow-soft)] sm:rounded-[2rem] sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.78fr)] lg:items-center lg:p-6">
           <div className="max-w-xl space-y-2">
             <p className="text-lg font-medium tracking-[-0.03em] text-(--landing-text)">
               {copy.newsletter.title}
@@ -82,3 +86,29 @@ export function LandingFooter({ copy }: LandingFooterProps) {
   );
 }
 
+function FooterLinkAccordion({
+  group,
+}: {
+  group: LandingCopy["footer"]["groups"][number];
+}) {
+  return (
+    <details className="group rounded-[1rem] border border-(--landing-border) bg-(--landing-surface) px-4 py-2">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-(--landing-text) [&::-webkit-details-marker]:hidden">
+        <span>{group.title}</span>
+        <ChevronDown className="size-4 text-(--landing-text-faint) transition group-open:rotate-180" />
+      </summary>
+      <ul className="space-y-3 pb-3 pt-2">
+        {group.links.map((link) => (
+          <li key={`${group.title}-${link.label}`}>
+            <Link
+              className="text-sm text-(--landing-text-muted) transition hover:text-(--landing-text)"
+              href={link.href}
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}

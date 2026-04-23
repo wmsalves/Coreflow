@@ -55,7 +55,7 @@ export function HeroSection({
               <ArrowRight className="size-4 transition duration-300 group-hover:translate-x-0.5" />
             </Link>
             <Link
-              className="inline-flex h-12 items-center justify-center rounded-full border border-(--landing-border) bg-(--landing-button-secondary) px-5 text-sm font-medium text-(--landing-text-soft) transition duration-300 hover:-translate-y-0.5 hover:border-(--landing-border-strong) hover:bg-(--landing-button-secondary-hover) hover:text-(--landing-text)"
+              className="hidden h-12 items-center justify-center rounded-full border border-(--landing-border) bg-(--landing-button-secondary) px-5 text-sm font-medium text-(--landing-text-soft) transition duration-300 hover:-translate-y-0.5 hover:border-(--landing-border-strong) hover:bg-(--landing-button-secondary-hover) hover:text-(--landing-text) sm:inline-flex"
               href="#showcase"
             >
               {copy.hero.ctaSecondary}

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { LayoutDashboard, LogOut } from "lucide-react";
 import Link from "next/link";
 import { signOutAction } from "@/features/auth/actions";
@@ -18,11 +19,13 @@ export type HeaderAccountCopy = {
 
 type HeaderAccountActionsProps = {
   copy: HeaderAccountCopy;
+  menuContent?: ReactNode;
   userEmail: string | null;
 };
 
 export function HeaderAccountActions({
   copy,
+  menuContent,
   userEmail,
 }: HeaderAccountActionsProps) {
   return (
@@ -37,7 +40,7 @@ export function HeaderAccountActions({
               {copy.accountCta}
             </Link>
           ) : null}
-          <UserMenu copy={copy} userEmail={userEmail} />
+          <UserMenu copy={copy} menuContent={menuContent} userEmail={userEmail} />
         </>
       ) : (
         <>
@@ -61,9 +64,11 @@ export function HeaderAccountActions({
 
 function UserMenu({
   copy,
+  menuContent,
   userEmail,
 }: {
   copy: HeaderAccountCopy;
+  menuContent?: ReactNode;
   userEmail: string;
 }) {
   const displayUser = userEmail || copy.fallbackUser;
@@ -113,6 +118,8 @@ function UserMenu({
           <LayoutDashboard className="size-4 text-[var(--landing-text-faint)]" />
           {copy.dashboard}
         </Link>
+
+        {menuContent}
 
         <form action={signOutAction} className="relative z-10">
           <button

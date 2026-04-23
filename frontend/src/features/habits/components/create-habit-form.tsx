@@ -64,6 +64,7 @@ export function CreateHabitForm({ copy }: CreateHabitFormProps) {
             copy={copy}
             formAction={formAction}
             formRef={mobileFormRef}
+            guided
             state={state}
           />
         </MobileSheet>
@@ -91,29 +92,37 @@ function HabitForm({
   copy,
   formAction,
   formRef,
+  guided = false,
   state,
 }: {
   copy: CreateHabitFormCopy;
   formAction: (payload: FormData) => void;
   formRef: RefObject<HTMLFormElement | null>;
+  guided?: boolean;
   state: HabitActionState;
 }) {
   return (
     <form action={formAction} className="space-y-4" ref={formRef}>
-      <label className="block space-y-2 text-sm font-medium">
-        <span>{copy.name}</span>
-        <Input name="name" placeholder={copy.namePlaceholder} required />
-      </label>
+      <div className={guided ? "space-y-4 rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3" : "space-y-4"}>
+        {guided ? <StepLabel index={1} title={copy.name} /> : null}
+        <label className="block space-y-2 text-sm font-medium">
+          <span>{copy.name}</span>
+          <Input name="name" placeholder={copy.namePlaceholder} required />
+        </label>
 
-      <label className="block space-y-2 text-sm font-medium">
-        <span>{copy.descriptionLabel}</span>
-        <Input name="description" placeholder={copy.descriptionPlaceholder} />
-      </label>
+        <label className="block space-y-2 text-sm font-medium">
+          <span>{copy.descriptionLabel}</span>
+          <Input name="description" placeholder={copy.descriptionPlaceholder} />
+        </label>
+      </div>
 
-      <label className="block space-y-2 text-sm font-medium">
-        <span>{copy.targetDays}</span>
-        <Input defaultValue={7} max={7} min={1} name="frequencyPerWeek" required type="number" />
-      </label>
+      <div className={guided ? "space-y-4 rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3" : "space-y-4"}>
+        {guided ? <StepLabel index={2} title={copy.targetDays} /> : null}
+        <label className="block space-y-2 text-sm font-medium">
+          <span>{copy.targetDays}</span>
+          <Input defaultValue={7} max={7} min={1} name="frequencyPerWeek" required type="number" />
+        </label>
+      </div>
 
       <SubmitButton className="w-full" pendingLabel={copy.pending}>
         {copy.submit}
@@ -125,5 +134,13 @@ function HabitForm({
         </p>
       ) : null}
     </form>
+  );
+}
+
+function StepLabel({ index, title }: { index: number; title: string }) {
+  return (
+    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-faint)]">
+      {index.toString().padStart(2, "0")} / {title}
+    </p>
   );
 }

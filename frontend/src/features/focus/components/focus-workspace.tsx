@@ -289,7 +289,7 @@ export function FocusWorkspace({
       ) : null}
 
       <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
-        <div className="h-full space-y-5 sm:space-y-6">
+        <div className="order-2 h-full space-y-5 sm:space-y-6 xl:order-1">
           <div className="sm:hidden">
             <MobileSheet
               description={copy.planner.description}
@@ -305,6 +305,7 @@ export function FocusWorkspace({
             >
               <StudySessionPlannerForm
                 copy={copy}
+                guided
                 input={input}
                 isSavingSession={isSavingSession}
                 onCreateSession={createSession}
@@ -336,7 +337,7 @@ export function FocusWorkspace({
           </Card>
         </div>
 
-        <aside className="xl:self-start">
+        <aside className="order-1 xl:order-2 xl:self-start">
           <PomodoroPanel
             copy={copy}
             onClearSession={() => setSelectedSessionId(null)}
@@ -404,6 +405,7 @@ function StudySessionPlannerForm({
   copy,
   input,
   isSavingSession,
+  guided = false,
   onCreateSession,
   onInputChange,
   showSummary = false,
@@ -411,6 +413,7 @@ function StudySessionPlannerForm({
   copy: typeof focusCopy.en;
   input: StudySessionInput;
   isSavingSession: boolean;
+  guided?: boolean;
   onCreateSession: (event: FormEvent<HTMLFormElement>) => void;
   onInputChange: Dispatch<SetStateAction<StudySessionInput>>;
   showSummary?: boolean;
@@ -421,102 +424,111 @@ function StudySessionPlannerForm({
         className="grid gap-4 sm:grid-cols-2"
         onSubmit={onCreateSession}
       >
-        <Field label={copy.planner.titleLabel}>
-          <Input
-            onChange={(event) =>
-              onInputChange((current) => ({
-                ...current,
-                title: event.target.value,
-              }))
-            }
-            placeholder={copy.planner.titlePlaceholder}
-            required
-            value={input.title}
-          />
-        </Field>
-        <Field label={copy.planner.subjectLabel}>
-          <Input
-            onChange={(event) =>
-              onInputChange((current) => ({
-                ...current,
-                subject: event.target.value,
-              }))
-            }
-            placeholder={copy.planner.subjectPlaceholder}
-            value={input.subject}
-          />
-        </Field>
-        <Field
-          className="sm:col-span-2"
-          label={copy.planner.descriptionLabel}
-        >
-          <textarea
-            className="min-h-24 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm text-[var(--landing-text)] outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)]"
-            onChange={(event) =>
-              onInputChange((current) => ({
-                ...current,
-                description: event.target.value,
-              }))
-            }
-            placeholder={copy.planner.descriptionPlaceholder}
-            value={input.description}
-          />
-        </Field>
-        <Field label={copy.planner.estimatedLabel}>
-          <Input
-            min={5}
-            onChange={(event) =>
-              onInputChange((current) => ({
-                ...current,
-                estimatedMinutes: Number(event.target.value) || 5,
-              }))
-            }
-            type="number"
-            value={input.estimatedMinutes}
-          />
-        </Field>
-        <Field label={copy.planner.startLabel}>
-          <Input
-            onChange={(event) =>
-              onInputChange((current) => ({
-                ...current,
-                startDate: event.target.value,
-              }))
-            }
-            type="date"
-            value={input.startDate}
-          />
-        </Field>
-        <Field label={copy.planner.dueLabel}>
-          <Input
-            onChange={(event) =>
-              onInputChange((current) => ({
-                ...current,
-                dueDate: event.target.value,
-              }))
-            }
-            type="date"
-            value={input.dueDate}
-          />
-        </Field>
-        <Field label={copy.planner.difficultyLabel}>
-          <LevelSelect
-            copy={copy}
-            onChange={(difficulty) =>
-              onInputChange((current) => ({ ...current, difficulty }))
-            }
-            value={input.difficulty}
-          />
-        </Field>
-        <Field label={copy.planner.importanceLabel}>
-          <LevelSelect
-            copy={copy}
-            onChange={(importance) =>
-              onInputChange((current) => ({ ...current, importance }))
-            }
-            value={input.importance}
-          />
-        </Field>
+        <div className={guided ? "space-y-4 rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3 sm:contents" : "contents"}>
+          {guided ? <StepLabel index={1} title={copy.planner.titleLabel} /> : null}
+          <Field label={copy.planner.titleLabel}>
+            <Input
+              onChange={(event) =>
+                onInputChange((current) => ({
+                  ...current,
+                  title: event.target.value,
+                }))
+              }
+              placeholder={copy.planner.titlePlaceholder}
+              required
+              value={input.title}
+            />
+          </Field>
+          <Field label={copy.planner.subjectLabel}>
+            <Input
+              onChange={(event) =>
+                onInputChange((current) => ({
+                  ...current,
+                  subject: event.target.value,
+                }))
+              }
+              placeholder={copy.planner.subjectPlaceholder}
+              value={input.subject}
+            />
+          </Field>
+          <Field
+            className="sm:col-span-2"
+            label={copy.planner.descriptionLabel}
+          >
+            <textarea
+              className="min-h-24 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm text-[var(--landing-text)] outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)]"
+              onChange={(event) =>
+                onInputChange((current) => ({
+                  ...current,
+                  description: event.target.value,
+                }))
+              }
+              placeholder={copy.planner.descriptionPlaceholder}
+              value={input.description}
+            />
+          </Field>
+        </div>
+        <div className={guided ? "space-y-4 rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3 sm:contents" : "contents"}>
+          {guided ? <StepLabel index={2} title={copy.planner.dueLabel} /> : null}
+          <Field label={copy.planner.estimatedLabel}>
+            <Input
+              min={5}
+              onChange={(event) =>
+                onInputChange((current) => ({
+                  ...current,
+                  estimatedMinutes: Number(event.target.value) || 5,
+                }))
+              }
+              type="number"
+              value={input.estimatedMinutes}
+            />
+          </Field>
+          <Field label={copy.planner.startLabel}>
+            <Input
+              onChange={(event) =>
+                onInputChange((current) => ({
+                  ...current,
+                  startDate: event.target.value,
+                }))
+              }
+              type="date"
+              value={input.startDate}
+            />
+          </Field>
+          <Field label={copy.planner.dueLabel}>
+            <Input
+              onChange={(event) =>
+                onInputChange((current) => ({
+                  ...current,
+                  dueDate: event.target.value,
+                }))
+              }
+              type="date"
+              value={input.dueDate}
+            />
+          </Field>
+        </div>
+        <div className={guided ? "space-y-4 rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3 sm:contents" : "contents"}>
+          {guided ? <StepLabel index={3} title={copy.planner.importanceLabel} /> : null}
+          <Field label={copy.planner.difficultyLabel}>
+            <LevelSelect
+              copy={copy}
+              onChange={(difficulty) =>
+                onInputChange((current) => ({ ...current, difficulty }))
+              }
+              value={input.difficulty}
+            />
+          </Field>
+          <Field label={copy.planner.importanceLabel}>
+            <LevelSelect
+              copy={copy}
+              onChange={(importance) =>
+                onInputChange((current) => ({ ...current, importance }))
+              }
+              value={input.importance}
+            />
+          </Field>
+        </div>
         <div className="sm:col-span-2">
           <Button className="w-full sm:w-auto" disabled={isSavingSession} type="submit">
             <Plus className="size-4" />
@@ -546,6 +558,14 @@ function StudySessionPlannerForm({
         </div>
       ) : null}
     </>
+  );
+}
+
+function StepLabel({ index, title }: { index: number; title: string }) {
+  return (
+    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-faint)] sm:hidden">
+      {index.toString().padStart(2, "0")} / {title}
+    </p>
   );
 }
 

@@ -70,27 +70,32 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
       >
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.55rem] bg-[var(--landing-header-gloss)] opacity-90" />
 
-        <div className="relative flex items-center justify-between gap-3 lg:hidden">
+        <div className="relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 lg:hidden">
           <CoreflowLogo
-            className="gap-2.5"
+            className="gap-0 sm:gap-2.5"
             frameClassName="border-[var(--landing-border)] bg-[var(--landing-logo-frame)]"
             href="/dashboard"
-            nameClassName="text-[var(--landing-text)]"
+            nameClassName="sr-only text-[var(--landing-text)] sm:not-sr-only"
             showTagline={false}
           />
-          <span className="min-w-0 truncate text-sm font-semibold tracking-[-0.02em] text-[var(--landing-text)]">
+          <span className="min-w-0 justify-self-start truncate px-1 text-sm font-semibold tracking-[-0.02em] text-[var(--landing-text)]">
             {copy.nav[currentNavItem.key]}
           </span>
 
-          <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-1">
-            <LanguageSwitcher
-              labels={landingControls.languages}
-              locale={locale}
-              localeLabel={landingControls.localeLabel}
-              onLocaleChange={setLocale}
+          <div className="flex min-w-0 shrink-0 items-center justify-end gap-1">
+            <HeaderAccountActions
+              copy={accountCopy}
+              menuContent={
+                <DashboardMobileMenuControls
+                  landingControls={landingControls}
+                  locale={locale}
+                  setLocale={setLocale}
+                  setTheme={setTheme}
+                  theme={theme}
+                />
+              }
+              userEmail={userEmail}
             />
-            <ThemeToggle labels={landingControls.theme} onThemeChange={setTheme} theme={theme} />
-            <HeaderAccountActions copy={accountCopy} userEmail={userEmail} />
           </div>
         </div>
 
@@ -174,15 +179,66 @@ function DashboardNavLink({
           : "inline-flex h-8 items-center justify-center rounded-full px-3 text-[12.5px] transition",
         active
           ? mobile
-            ? "bg-[var(--landing-accent-soft)] text-[var(--landing-text)]"
-            : "text-[var(--landing-text)]"
+            ? "bg-[var(--landing-accent-soft)] text-[var(--landing-text)] shadow-[var(--landing-chip-inset-shadow)]"
+            : "bg-[var(--landing-surface)] text-[var(--landing-text)] shadow-[var(--landing-chip-inset-shadow)]"
           : "text-[var(--landing-text-faint)] hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)]",
       )}
       href={href}
     >
-      {mobile && Icon ? <Icon className="size-4" /> : null}
-      {label}
+      {mobile && Icon ? (
+        <span
+          className={cn(
+            "flex size-7 items-center justify-center rounded-full border transition",
+            active
+              ? "border-[var(--landing-accent-strong)] bg-[var(--landing-surface-strong)] text-[var(--landing-accent)]"
+              : "border-transparent text-[var(--landing-text-faint)]",
+          )}
+        >
+          <Icon className="size-4" />
+        </span>
+      ) : null}
+      <span className="truncate">{label}</span>
     </Link>
+  );
+}
+
+function DashboardMobileMenuControls({
+  landingControls,
+  locale,
+  setLocale,
+  setTheme,
+  theme,
+}: {
+  landingControls: typeof landingCopy.en.controls;
+  locale: keyof typeof landingCopy;
+  setLocale: (locale: keyof typeof landingCopy) => void;
+  setTheme: (theme: "dark" | "light") => void;
+  theme: "dark" | "light";
+}) {
+  return (
+    <div className="relative z-10">
+      <div className="my-1 h-px bg-[var(--landing-border)]" />
+      <div className="space-y-1 rounded-[0.9rem] px-2.5 py-2">
+        <div className="flex min-h-11 items-center justify-between gap-3">
+          <span className="text-[13px] font-medium text-[var(--landing-text-muted)]">
+            {landingControls.localeLabel}
+          </span>
+          <LanguageSwitcher
+            labels={landingControls.languages}
+            locale={locale}
+            localeLabel={landingControls.localeLabel}
+            onLocaleChange={setLocale}
+          />
+        </div>
+        <div className="flex min-h-11 items-center justify-between gap-3">
+          <span className="text-[13px] font-medium text-[var(--landing-text-muted)]">
+            {landingControls.theme.label}
+          </span>
+          <ThemeToggle labels={landingControls.theme} onThemeChange={setTheme} theme={theme} />
+        </div>
+      </div>
+      <div className="my-1 h-px bg-[var(--landing-border)]" />
+    </div>
   );
 }
 
