@@ -53,6 +53,7 @@ export function PomodoroPanel({
   );
   const canRun = !selectedSession || selectedSessionCanRun;
   const hasFocusTimeToSave = timer.focusSecondsLogged > 0;
+  const controlsBusy = isSavingFocusRun || isStartingSession;
   const primaryLabel = timer.isRunning
     ? copy.actions.pause
     : timer.remainingSeconds < timer.settings.focusMinutes * 60
@@ -195,7 +196,7 @@ export function PomodoroPanel({
         </div>
 
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-          <Button className="w-full sm:w-auto" disabled={!canRun || isStartingSession} onClick={handlePrimaryAction}>
+          <Button className="w-full sm:w-auto" disabled={!canRun || controlsBusy} onClick={handlePrimaryAction}>
             {timer.isRunning ? (
               <Pause className="size-4" />
             ) : (
@@ -203,13 +204,13 @@ export function PomodoroPanel({
             )}
             {isStartingSession ? copy.actions.saving : primaryLabel}
           </Button>
-          <Button className="w-full sm:w-auto" onClick={timer.reset} variant="secondary">
+          <Button className="w-full sm:w-auto" disabled={controlsBusy} onClick={timer.reset} variant="secondary">
             <RotateCcw className="size-4" />
             {copy.actions.reset}
           </Button>
           <Button
             className="w-full sm:w-auto"
-            disabled={!hasFocusTimeToSave || isSavingFocusRun}
+            disabled={!hasFocusTimeToSave || controlsBusy}
             onClick={saveFocusTime}
             variant="secondary"
           >
@@ -223,7 +224,7 @@ export function PomodoroPanel({
               selectedSession.status === "completed" ||
               selectedSession.status === "canceled" ||
               selectedSession.status === "archived" ||
-              isSavingFocusRun
+              controlsBusy
             }
             onClick={handleComplete}
             variant="ghost"

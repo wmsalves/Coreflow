@@ -56,7 +56,44 @@ export async function createStudySessionAction(input: StudySessionInput): Promis
   }
 
   revalidatePath("/dashboard/focus");
+  revalidatePath("/dashboard");
   return toStudySession(data, 0);
+}
+
+export async function updateStudySessionAction(
+  sessionId: string,
+  input: StudySessionInput,
+): Promise<StudySession> {
+  const user = await requireUser();
+  const supabase = await createServerSupabaseClient();
+  const normalizedInput = normalizeStudySessionInput(input);
+
+  const { data, error } = await supabase
+    .from("study_sessions")
+    .update({
+      difficulty: normalizedInput.difficulty,
+      due_date: normalizedInput.dueDate,
+      estimated_minutes: normalizedInput.estimatedMinutes,
+      importance: normalizedInput.importance,
+      notes: normalizedInput.description || null,
+      started_at: new Date(`${normalizedInput.startDate}T00:00:00.000Z`).toISOString(),
+      subject: normalizedInput.subject,
+      title: normalizedInput.title,
+    })
+    .eq("id", sessionId)
+    .eq("user_id", user.id)
+    .select(studySessionSelect)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const totalSeconds = await getSessionFocusSeconds(supabase, user.id, sessionId);
+
+  revalidatePath("/dashboard/focus");
+  revalidatePath("/dashboard");
+  return toStudySession(data, totalSeconds);
 }
 
 export async function updateStudySessionStatusAction(
@@ -106,6 +143,7 @@ export async function updateStudySessionStatusAction(
   const totalSeconds = await getSessionFocusSeconds(supabase, user.id, sessionId);
 
   revalidatePath("/dashboard/focus");
+  revalidatePath("/dashboard");
   return toStudySession(data, totalSeconds);
 }
 
@@ -147,6 +185,7 @@ export async function logFocusRunAction(input: LogFocusRunInput): Promise<LogFoc
   }
 
   revalidatePath("/dashboard/focus");
+  revalidatePath("/dashboard");
 
   if (!input.studySessionId) {
     return {
@@ -254,13 +293,20 @@ async function getStandaloneFocusSeconds(
 }
 
 function normalizeStudySessionInput(input: StudySessionInput): StudySessionInput {
+  const startDate = normalizeDate(input.startDate);
+  const dueDate = normalizeDate(input.dueDate);
+
+  if (dueDate < startDate) {
+    throw new Error("Due date cannot be earlier than start date.");
+  }
+
   return {
     description: limit(input.description?.trim() ?? "", maxDescriptionLength),
     difficulty: input.difficulty,
-    dueDate: normalizeDate(input.dueDate),
+    dueDate,
     estimatedMinutes: clampInteger(input.estimatedMinutes, 5, 600),
     importance: input.importance,
-    startDate: normalizeDate(input.startDate),
+    startDate,
     subject: limit(input.subject?.trim() || "Focus", maxSubjectLength),
     title: limit(requireText(input.title, "Study session title"), maxTitleLength),
   };

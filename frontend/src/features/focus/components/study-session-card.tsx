@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { CalendarDays, CheckCircle2, CircleDot, Timer, Trash2, Zap } from "lucide-react";
+import { CalendarDays, CheckCircle2, CircleDot, PencilLine, Timer, Trash2, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Disclosure } from "@/components/ui/disclosure";
@@ -14,8 +14,10 @@ type StudySessionCardProps = {
   onCancel: (id: string) => void;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
   onSelect: (id: string) => void;
   onStart: (id: string) => void;
+  pendingAction?: { id: string; type: string } | null;
   session: StudySession;
 };
 
@@ -34,13 +36,16 @@ export function StudySessionCard({
   onCancel,
   onComplete,
   onDelete,
+  onEdit,
   onSelect,
   onStart,
+  pendingAction,
   session,
 }: StudySessionCardProps) {
   const isCompleted = session.status === "completed";
   const isInactive = session.status === "canceled" || session.status === "archived";
   const canStart = session.status === "pending" || session.status === "in_progress";
+  const canEdit = session.status !== "archived";
   const primaryAction = canStart ? onStart : onSelect;
   const primaryLabel =
     session.status === "pending"
@@ -48,6 +53,7 @@ export function StudySessionCard({
       : session.status === "in_progress"
         ? copy.actions.resume
         : copy.actions.select;
+  const isPending = pendingAction?.id === session.id;
 
   return (
     <article
@@ -79,15 +85,28 @@ export function StudySessionCard({
         <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
           <Button
             className="w-full sm:w-auto"
+            disabled={isPending}
             onClick={() => primaryAction(session.id)}
             size="sm"
             variant={active && canStart ? "primary" : "secondary"}
           >
             {primaryLabel}
           </Button>
+          {canEdit ? (
+            <Button
+              className="w-full sm:w-auto"
+              disabled={isPending}
+              onClick={() => onEdit(session.id)}
+              size="sm"
+              variant="ghost"
+            >
+              <PencilLine className="size-4" />
+              {copy.actions.edit}
+            </Button>
+          ) : null}
           <Button
             className="w-full sm:w-auto"
-            disabled={isCompleted || isInactive}
+            disabled={isCompleted || isInactive || isPending}
             onClick={() => onComplete(session.id)}
             size="sm"
             variant="ghost"
@@ -95,16 +114,16 @@ export function StudySessionCard({
             {copy.actions.complete}
           </Button>
           {canStart ? (
-            <Button className="w-full sm:w-auto" onClick={() => onCancel(session.id)} size="sm" variant="ghost">
+            <Button className="w-full sm:w-auto" disabled={isPending} onClick={() => onCancel(session.id)} size="sm" variant="ghost">
               {copy.actions.cancel}
             </Button>
           ) : null}
           {session.status !== "archived" ? (
-            <Button className="w-full sm:w-auto" onClick={() => onArchive(session.id)} size="sm" variant="ghost">
+            <Button className="w-full sm:w-auto" disabled={isPending} onClick={() => onArchive(session.id)} size="sm" variant="ghost">
               {copy.actions.archive}
             </Button>
           ) : null}
-          <Button className="w-full sm:w-auto" onClick={() => onDelete(session.id)} size="sm" variant="danger">
+          <Button className="w-full sm:w-auto" disabled={isPending} onClick={() => onDelete(session.id)} size="sm" variant="danger">
             <Trash2 className="size-4" />
             {copy.actions.delete}
           </Button>

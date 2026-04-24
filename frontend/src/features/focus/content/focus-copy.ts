@@ -6,6 +6,7 @@ export const focusCopy = {
       "A structured study system for choosing what matters, protecting time, and closing the loop when the work is done.",
     actions: {
       create: "Create session",
+      edit: "Edit",
       start: "Start",
       select: "Select",
       cancel: "Cancel",
@@ -20,6 +21,9 @@ export const focusCopy = {
       useStandalone: "Use free focus",
       save: "Save session",
       saving: "Saving...",
+      update: "Update session",
+      updating: "Updating...",
+      stopEditing: "Cancel edit",
     },
     deleteDialog: {
       cancelLabel: "Keep session",
@@ -29,6 +33,16 @@ export const focusCopy = {
       title: "Delete study session?",
     },
     fallbackError: "Study session could not be saved.",
+    notices: {
+      sessionCreated: "Study session created.",
+      sessionUpdated: "Study session updated.",
+      sessionCompleted: "Study session completed.",
+      sessionCanceled: "Study session canceled.",
+      sessionArchived: "Study session archived.",
+      sessionDeleted: "Study session deleted.",
+      focusSaved: "Focus time saved.",
+      editingSession: "Editing session",
+    },
     overview: {
       totalFocus: "Focus time",
       completed: "Completed",
@@ -41,6 +55,8 @@ export const focusCopy = {
     planner: {
       title: "Plan next study block",
       description: "Capture the next unit of work before starting the timer.",
+      editTitle: "Update study block",
+      editDescription: "Adjust the plan, dates, or priority without losing saved focus time.",
       titleLabel: "Title",
       titlePlaceholder: "Review cellular respiration",
       descriptionLabel: "Description",
@@ -114,6 +130,7 @@ export const focusCopy = {
       "Um sistema de estudo estruturado para escolher o que importa, proteger tempo e fechar o ciclo quando o trabalho termina.",
     actions: {
       create: "Criar sessao",
+      edit: "Editar",
       start: "Iniciar",
       select: "Selecionar",
       cancel: "Cancelar",
@@ -128,6 +145,9 @@ export const focusCopy = {
       useStandalone: "Usar foco livre",
       save: "Salvar sessao",
       saving: "Salvando...",
+      update: "Atualizar sessao",
+      updating: "Atualizando...",
+      stopEditing: "Cancelar edicao",
     },
     deleteDialog: {
       cancelLabel: "Manter sessao",
@@ -137,6 +157,16 @@ export const focusCopy = {
       title: "Excluir sessao de estudo?",
     },
     fallbackError: "Nao foi possivel salvar a sessao de estudo.",
+    notices: {
+      sessionCreated: "Sessao de estudo criada.",
+      sessionUpdated: "Sessao de estudo atualizada.",
+      sessionCompleted: "Sessao de estudo concluida.",
+      sessionCanceled: "Sessao de estudo cancelada.",
+      sessionArchived: "Sessao de estudo arquivada.",
+      sessionDeleted: "Sessao de estudo excluida.",
+      focusSaved: "Tempo de foco salvo.",
+      editingSession: "Editando sessao",
+    },
     overview: {
       totalFocus: "Tempo focado",
       completed: "Concluidas",
@@ -149,6 +179,8 @@ export const focusCopy = {
     planner: {
       title: "Planejar proximo bloco",
       description: "Registre a proxima unidade de estudo antes de iniciar o timer.",
+      editTitle: "Atualizar bloco de estudo",
+      editDescription: "Ajuste o plano, as datas ou a prioridade sem perder o foco ja salvo.",
       titleLabel: "Titulo",
       titlePlaceholder: "Revisar respiracao celular",
       descriptionLabel: "Descricao",

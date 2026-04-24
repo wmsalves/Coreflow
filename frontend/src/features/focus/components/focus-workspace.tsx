@@ -20,6 +20,7 @@ import {
   createStudySessionAction,
   deleteStudySessionAction,
   logFocusRunAction,
+  updateStudySessionAction,
   updateStudySessionStatusAction,
 } from "@/features/focus/actions";
 import { FocusOverview } from "@/features/focus/components/focus-overview";
@@ -41,6 +42,13 @@ const defaultFilters: FocusFilters = {
 };
 
 const levelOptions: FocusLevel[] = ["low", "medium", "high"];
+type Notice = {
+  kind: "error" | "info" | "success";
+  text: string;
+};
+type PendingSessionAction =
+  | { id: string; type: "archive" | "cancel" | "complete" | "start" }
+  | null;
 
 type FocusWorkspaceProps = {
   initialSessions: StudySession[];
@@ -68,6 +76,19 @@ function createDefaultInput(): StudySessionInput {
   };
 }
 
+function toStudySessionInput(session: StudySession): StudySessionInput {
+  return {
+    description: session.description,
+    difficulty: session.difficulty,
+    dueDate: session.dueDate,
+    estimatedMinutes: session.estimatedMinutes,
+    importance: session.importance,
+    startDate: session.startDate,
+    subject: session.subject,
+    title: session.title,
+  };
+}
+
 export function FocusWorkspace({
   initialSessions,
   initialStandaloneFocusSeconds,
@@ -82,10 +103,12 @@ export function FocusWorkspace({
   const [standaloneFocusSeconds, setStandaloneFocusSeconds] = useState(initialStandaloneFocusSeconds);
   const [filters, setFilters] = useState<FocusFilters>(defaultFilters);
   const [input, setInput] = useState<StudySessionInput>(() => createDefaultInput());
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [isSavingSession, setIsSavingSession] = useState(false);
   const [isDeletingSession, setIsDeletingSession] = useState(false);
+  const [pendingSessionAction, setPendingSessionAction] = useState<PendingSessionAction>(null);
   const [createSheetOpen, setCreateSheetOpen] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [sessionPendingDeleteId, setSessionPendingDeleteId] = useState<string | null>(null);
 
   const selectedSession =
@@ -93,6 +116,8 @@ export function FocusWorkspace({
     null;
   const sessionPendingDelete =
     sessions.find((session) => session.id === sessionPendingDeleteId) ?? null;
+  const editingSession =
+    sessions.find((session) => session.id === editingSessionId) ?? null;
 
   const filteredSessions = useMemo(() => {
     return sessions
@@ -132,8 +157,36 @@ export function FocusWorkspace({
     visibleSessionCount === 0
       ? 0
       : Math.round((completedCount / visibleSessionCount) * 100);
+  const plannerTitle = editingSession ? copy.planner.editTitle : copy.planner.title;
+  const plannerDescription = editingSession ? copy.planner.editDescription : copy.planner.description;
 
-  async function createSession(event: FormEvent<HTMLFormElement>) {
+  function clearEditingSession() {
+    setEditingSessionId(null);
+    setInput(createDefaultInput());
+  }
+
+  function handleCreateSheetOpenChange(open: boolean) {
+    setCreateSheetOpen(open);
+
+    if (!open && editingSessionId) {
+      clearEditingSession();
+    }
+  }
+
+  function beginEditingSession(id: string) {
+    const session = sessions.find((item) => item.id === id);
+    if (!session) {
+      return;
+    }
+
+    setEditingSessionId(session.id);
+    setInput(toStudySessionInput(session));
+    setSelectedSessionId(session.id);
+    setNotice({ kind: "info", text: copy.notices.editingSession });
+    setCreateSheetOpen(true);
+  }
+
+  async function submitSession(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!input.title.trim()) {
@@ -141,16 +194,31 @@ export function FocusWorkspace({
     }
 
     setIsSavingSession(true);
-    setMessage(null);
+    setNotice(null);
 
     try {
-      const session = await createStudySessionAction(input);
-      setSessions((current) => [session, ...current]);
+      const session = editingSessionId
+        ? await updateStudySessionAction(editingSessionId, input)
+        : await createStudySessionAction(input);
+
+      setSessions((current) => {
+        const nextSessions = editingSessionId
+          ? current.map((item) => (item.id === session.id ? session : item))
+          : [session, ...current];
+        return nextSessions;
+      });
       setSelectedSessionId(session.id);
-      setInput(createDefaultInput());
+      clearEditingSession();
       setCreateSheetOpen(false);
+      setNotice({
+        kind: "success",
+        text: editingSessionId ? copy.notices.sessionUpdated : copy.notices.sessionCreated,
+      });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : copy.fallbackError);
+      setNotice({
+        kind: "error",
+        text: error instanceof Error ? error.message : copy.fallbackError,
+      });
     } finally {
       setIsSavingSession(false);
     }
@@ -161,7 +229,18 @@ export function FocusWorkspace({
   }
 
   async function persistStatus(id: string, status: FocusStatus) {
-    setMessage(null);
+    setPendingSessionAction({
+      id,
+      type:
+        status === "in_progress"
+          ? "start"
+          : status === "completed"
+            ? "complete"
+            : status === "canceled"
+              ? "cancel"
+              : "archive",
+    });
+    setNotice(null);
 
     try {
       const updatedSession = await updateStudySessionStatusAction(id, status);
@@ -170,8 +249,13 @@ export function FocusWorkspace({
       );
       return updatedSession;
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : copy.fallbackError);
+      setNotice({
+        kind: "error",
+        text: error instanceof Error ? error.message : copy.fallbackError,
+      });
       return null;
+    } finally {
+      setPendingSessionAction(null);
     }
   }
 
@@ -186,7 +270,7 @@ export function FocusWorkspace({
   }
 
   async function logFocusRun(studySessionId: string | null, focusSeconds: number) {
-    setMessage(null);
+    setNotice(null);
 
     try {
       const result = await logFocusRunAction({ durationSeconds: focusSeconds, studySessionId });
@@ -201,18 +285,40 @@ export function FocusWorkspace({
       if (result.standaloneFocusSeconds !== undefined) {
         setStandaloneFocusSeconds(result.standaloneFocusSeconds);
       }
+      setNotice({ kind: "success", text: copy.notices.focusSaved });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : copy.fallbackError);
+      setNotice({
+        kind: "error",
+        text: error instanceof Error ? error.message : copy.fallbackError,
+      });
       throw error;
     }
   }
 
   async function completeSession(id: string) {
-    await persistStatus(id, "completed");
+    const updatedSession = await persistStatus(id, "completed");
+    if (updatedSession) {
+      if (selectedSessionId === id) {
+        setSelectedSessionId(null);
+      }
+      if (editingSessionId === id) {
+        clearEditingSession();
+      }
+      setNotice({ kind: "success", text: copy.notices.sessionCompleted });
+    }
   }
 
   async function cancelSession(id: string) {
-    await persistStatus(id, "canceled");
+    const updatedSession = await persistStatus(id, "canceled");
+    if (updatedSession) {
+      if (selectedSessionId === id) {
+        setSelectedSessionId(null);
+      }
+      if (editingSessionId === id) {
+        clearEditingSession();
+      }
+      setNotice({ kind: "success", text: copy.notices.sessionCanceled });
+    }
   }
 
   async function archiveSession(id: string) {
@@ -220,10 +326,16 @@ export function FocusWorkspace({
     if (updatedSession && selectedSessionId === id) {
       setSelectedSessionId(null);
     }
+    if (updatedSession && editingSessionId === id) {
+      clearEditingSession();
+    }
+    if (updatedSession) {
+      setNotice({ kind: "success", text: copy.notices.sessionArchived });
+    }
   }
 
   function requestDeleteSession(id: string) {
-    setMessage(null);
+    setNotice(null);
     setSessionPendingDeleteId(id);
   }
 
@@ -233,7 +345,7 @@ export function FocusWorkspace({
     }
 
     setIsDeletingSession(true);
-    setMessage(null);
+    setNotice(null);
 
     try {
       const deletedSessionId = await deleteStudySessionAction(sessionPendingDeleteId);
@@ -241,9 +353,16 @@ export function FocusWorkspace({
       if (selectedSessionId === deletedSessionId) {
         setSelectedSessionId(null);
       }
+      if (editingSessionId === deletedSessionId) {
+        clearEditingSession();
+      }
       setSessionPendingDeleteId(null);
+      setNotice({ kind: "success", text: copy.notices.sessionDeleted });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : copy.fallbackError);
+      setNotice({
+        kind: "error",
+        text: error instanceof Error ? error.message : copy.fallbackError,
+      });
     } finally {
       setIsDeletingSession(false);
     }
@@ -282,9 +401,17 @@ export function FocusWorkspace({
         />
       </section>
 
-      {message ? (
-        <div className="mt-6 rounded-[1.5rem] border border-[rgba(204,90,67,0.3)] bg-[rgba(204,90,67,0.08)] px-4 py-3 text-sm text-[var(--danger)]">
-          {message}
+      {notice ? (
+        <div
+          className={`mt-6 rounded-[1.5rem] border px-4 py-3 text-sm ${
+            notice.kind === "success"
+              ? "border-[var(--landing-border-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-text)]"
+              : notice.kind === "info"
+                ? "border-[var(--landing-border)] bg-[var(--landing-surface)] text-[var(--landing-text-muted)]"
+                : "border-[rgba(204,90,67,0.3)] bg-[rgba(204,90,67,0.08)] text-[var(--danger)]"
+          }`}
+        >
+          {notice.text}
         </div>
       ) : null}
 
@@ -292,24 +419,26 @@ export function FocusWorkspace({
         <div className="order-2 h-full space-y-5 sm:space-y-6 xl:order-1">
           <div className="sm:hidden">
             <MobileSheet
-              description={copy.planner.description}
+              description={plannerDescription}
               open={createSheetOpen}
-              title={copy.planner.title}
+              title={plannerTitle}
               trigger={
                 <Button className="w-full" size="lg">
                   <Plus className="size-4" />
                   {copy.actions.create}
                 </Button>
               }
-              onOpenChange={setCreateSheetOpen}
+              onOpenChange={handleCreateSheetOpenChange}
             >
               <StudySessionPlannerForm
                 copy={copy}
                 guided
                 input={input}
                 isSavingSession={isSavingSession}
-                onCreateSession={createSession}
+                isEditing={Boolean(editingSession)}
+                onCancelEdit={clearEditingSession}
                 onInputChange={setInput}
+                onSubmitSession={submitSession}
               />
             </MobileSheet>
           </div>
@@ -317,8 +446,8 @@ export function FocusWorkspace({
           <Card className="hidden h-full flex-col sm:flex">
             <CardHeader className="gap-4 sm:flex sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
               <div>
-                <CardTitle>{copy.planner.title}</CardTitle>
-                <CardDescription>{copy.planner.description}</CardDescription>
+                <CardTitle>{plannerTitle}</CardTitle>
+                <CardDescription>{plannerDescription}</CardDescription>
               </div>
               <span className="flex size-10 items-center justify-center rounded-full border border-[var(--landing-border)] bg-[var(--landing-surface)] text-[var(--landing-accent)] shadow-[var(--landing-chip-inset-shadow)]">
                 <BookOpenCheck className="size-5" />
@@ -329,8 +458,10 @@ export function FocusWorkspace({
                 copy={copy}
                 input={input}
                 isSavingSession={isSavingSession}
-                onCreateSession={createSession}
+                isEditing={Boolean(editingSession)}
+                onCancelEdit={clearEditingSession}
                 onInputChange={setInput}
+                onSubmitSession={submitSession}
                 showSummary
               />
             </CardContent>
@@ -359,9 +490,11 @@ export function FocusWorkspace({
           onCancel={cancelSession}
           onComplete={completeSession}
           onDelete={requestDeleteSession}
+          onEdit={beginEditingSession}
           onFilterChange={setFilters}
           onSelect={selectSession}
           onStart={startSession}
+          pendingAction={pendingSessionAction}
           sessions={filteredSessions}
         />
       </section>
@@ -405,24 +538,28 @@ function StudySessionPlannerForm({
   copy,
   input,
   isSavingSession,
+  isEditing = false,
   guided = false,
-  onCreateSession,
+  onCancelEdit,
   onInputChange,
+  onSubmitSession,
   showSummary = false,
 }: {
   copy: typeof focusCopy.en;
   input: StudySessionInput;
   isSavingSession: boolean;
+  isEditing?: boolean;
   guided?: boolean;
-  onCreateSession: (event: FormEvent<HTMLFormElement>) => void;
+  onCancelEdit?: () => void;
   onInputChange: Dispatch<SetStateAction<StudySessionInput>>;
+  onSubmitSession: (event: FormEvent<HTMLFormElement>) => void;
   showSummary?: boolean;
 }) {
   return (
     <>
       <form
         className="grid gap-4 sm:grid-cols-2"
-        onSubmit={onCreateSession}
+        onSubmit={onSubmitSession}
       >
         <div className={guided ? "space-y-4 rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3 sm:contents" : "contents"}>
           {guided ? <StepLabel index={1} title={copy.planner.titleLabel} /> : null}
@@ -530,10 +667,23 @@ function StudySessionPlannerForm({
           </Field>
         </div>
         <div className="sm:col-span-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Button className="w-full sm:w-auto" disabled={isSavingSession} type="submit">
             <Plus className="size-4" />
-            {isSavingSession ? copy.actions.saving : copy.actions.save}
+            {isSavingSession
+              ? isEditing
+                ? copy.actions.updating
+                : copy.actions.saving
+              : isEditing
+                ? copy.actions.update
+                : copy.actions.save}
           </Button>
+          {isEditing ? (
+            <Button className="w-full sm:w-auto" disabled={isSavingSession} onClick={onCancelEdit} type="button" variant="ghost">
+              {copy.actions.stopEditing}
+            </Button>
+          ) : null}
+          </div>
         </div>
       </form>
 

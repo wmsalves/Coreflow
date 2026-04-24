@@ -13,9 +13,11 @@ type StudySessionListProps = {
   onCancel: (id: string) => void;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
   onFilterChange: (filters: FocusFilters) => void;
   onSelect: (id: string) => void;
   onStart: (id: string) => void;
+  pendingAction?: { id: string; type: string } | null;
   sessions: StudySession[];
 };
 
@@ -37,9 +39,11 @@ export function StudySessionList({
   onCancel,
   onComplete,
   onDelete,
+  onEdit,
   onFilterChange,
   onSelect,
   onStart,
+  pendingAction,
   sessions,
 }: StudySessionListProps) {
   const upcomingSessions = sessions.filter(
@@ -109,8 +113,10 @@ export function StudySessionList({
               onCancel={onCancel}
               onComplete={onComplete}
               onDelete={onDelete}
+              onEdit={onEdit}
               onSelect={onSelect}
               onStart={onStart}
+              pendingAction={pendingAction}
               sessions={upcomingSessions}
               title={copy.list.upcomingTitle}
             />
@@ -121,8 +127,10 @@ export function StudySessionList({
               onCancel={onCancel}
               onComplete={onComplete}
               onDelete={onDelete}
+              onEdit={onEdit}
               onSelect={onSelect}
               onStart={onStart}
+              pendingAction={pendingAction}
               sessions={completedSessions}
               title={copy.list.completedTitle}
             />
@@ -133,8 +141,10 @@ export function StudySessionList({
               onCancel={onCancel}
               onComplete={onComplete}
               onDelete={onDelete}
+              onEdit={onEdit}
               onSelect={onSelect}
               onStart={onStart}
+              pendingAction={pendingAction}
               sessions={inactiveSessions}
               title={copy.list.archivedTitle}
             />
@@ -152,8 +162,10 @@ function SessionSection({
   onCancel,
   onComplete,
   onDelete,
+  onEdit,
   onSelect,
   onStart,
+  pendingAction,
   sessions,
   title,
 }: {
@@ -163,8 +175,10 @@ function SessionSection({
   onCancel: (id: string) => void;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
   onSelect: (id: string) => void;
   onStart: (id: string) => void;
+  pendingAction?: { id: string; type: string } | null;
   sessions: StudySession[];
   title: string;
 }) {
@@ -191,8 +205,10 @@ function SessionSection({
           onCancel={onCancel}
           onComplete={onComplete}
           onDelete={onDelete}
+          onEdit={onEdit}
           onSelect={onSelect}
           onStart={onStart}
+          pendingAction={pendingAction}
           session={session}
         />
       ))}
