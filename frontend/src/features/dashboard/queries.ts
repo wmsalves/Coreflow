@@ -45,7 +45,9 @@ export async function getDashboardSnapshot(userId: string) {
       {
         href: "/dashboard/fitness",
         key: "workoutTracking" as const,
+        active: Boolean(fitnessSnapshot.activeWorkoutProgress),
         progress: fitnessSnapshot.latestWorkoutProgress,
+        sessionProgress: fitnessSnapshot.activeWorkoutProgress,
       },
       { href: "/dashboard", key: "stripePlans" as const },
     ],

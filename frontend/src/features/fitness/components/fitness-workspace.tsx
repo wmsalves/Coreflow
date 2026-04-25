@@ -4,6 +4,7 @@ import {
   Activity,
   CheckCircle2,
   Circle,
+  Clock3,
   Dumbbell,
   Loader2,
   Play,
@@ -13,7 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,12 +24,16 @@ import { MobileSheet } from "@/components/ui/mobile-sheet";
 import { dashboardCopy } from "@/features/dashboard/content/dashboard-copy";
 import {
   addExerciseToWorkoutPlanAction,
+  cancelWorkoutSessionAction,
   createWorkoutPlanAction,
+  finishWorkoutSessionAction,
   getExerciseDetailAction,
   listExerciseCatalogAction,
-  logWorkoutExecutionAction,
   removeExerciseFromWorkoutPlanAction,
   searchExerciseCatalogAction,
+  startWorkoutSessionAction,
+  updateWorkoutSessionExerciseCompletionAction,
+  updateWorkoutSessionExerciseDetailsAction,
 } from "@/features/fitness/actions";
 import type {
   ExerciseConfig,
@@ -36,6 +41,7 @@ import type {
   ExerciseSummary,
   WorkoutLog,
   WorkoutPlan,
+  WorkoutSession,
 } from "@/features/fitness/types";
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
 import { cn } from "@/lib/utils";
@@ -47,12 +53,19 @@ type Notice = {
 };
 type PendingMutation =
   | { type: "add-exercise" }
+  | { type: "cancel-workout" }
   | { type: "create-plan" }
+  | { type: "finish-workout" }
   | { exerciseId: string; type: "remove-exercise" }
-  | { type: "log-workout" };
+  | { type: "start-workout" };
 type FitnessCopy = (typeof dashboardCopy)["en"]["fitness"];
 type CommonCopy = (typeof dashboardCopy)["en"]["common"];
-type ExecutionDrafts = Record<string, Record<string, boolean>>;
+type SessionExerciseDraft = {
+  reps: number;
+  restSeconds: number;
+  sets: number;
+  weight: string;
+};
 
 const defaultConfig: ExerciseConfig = {
   notes: "",
@@ -73,7 +86,33 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+function formatWeightDraft(value: number | null) {
+  return value === null || value === undefined ? "" : String(value);
+}
+
+function toSessionExerciseDraft(
+  exercise: WorkoutSession["exercises"][number],
+): SessionExerciseDraft {
+  return {
+    reps: exercise.reps ?? 1,
+    restSeconds: exercise.restSeconds ?? 0,
+    sets: exercise.sets ?? 1,
+    weight: formatWeightDraft(exercise.weight),
+  };
+}
+
+function parseWeightDraft(value: string) {
+  const normalized = value.trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized.replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 type FitnessWorkspaceProps = {
+  initialActiveSession: WorkoutSession | null;
   initialExercises: ExerciseSummary[];
   initialLoadFailed: boolean;
   initialLogs: WorkoutLog[];
@@ -81,6 +120,7 @@ type FitnessWorkspaceProps = {
 };
 
 export function FitnessWorkspace({
+  initialActiveSession,
   initialExercises,
   initialLoadFailed,
   initialLogs,
@@ -93,8 +133,13 @@ export function FitnessWorkspace({
   const [results, setResults] = useState<ExerciseSummary[]>(initialExercises);
   const [plans, setPlans] = useState<WorkoutPlan[]>(initialPlans);
   const [logs, setLogs] = useState<WorkoutLog[]>(initialLogs);
+  const [activeSession, setActiveSession] = useState<WorkoutSession | null>(
+    initialActiveSession,
+  );
   const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(
-    initialPlans[0] ?? null,
+    initialPlans.find((plan) => plan.id === initialActiveSession?.workoutPlanId) ??
+      initialPlans[0] ??
+      null,
   );
   const [selectedExercise, setSelectedExercise] =
     useState<ExerciseDetail | null>(null);
@@ -107,11 +152,18 @@ export function FitnessWorkspace({
   const [detailState, setDetailState] = useState<LoadState>("idle");
   const [pendingMutation, setPendingMutation] =
     useState<PendingMutation | null>(null);
-  const [executionDrafts, setExecutionDrafts] = useState<ExecutionDrafts>({});
+  const [savingSessionExerciseIds, setSavingSessionExerciseIds] = useState<string[]>([]);
+  const [sessionExerciseDrafts, setSessionExerciseDrafts] = useState<
+    Record<string, SessionExerciseDraft>
+  >({});
   const [createPlanSheetOpen, setCreatePlanSheetOpen] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(
     initialLoadFailed ? { kind: "error", text: copy.initialLoadError } : null,
   );
+  const editTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const rollbackSnapshotRef = useRef<
+    Record<string, WorkoutSession["exercises"][number]>
+  >({});
 
   const activePlanExercises = useMemo(
     () => activePlan?.exercises ?? [],
@@ -147,24 +199,48 @@ export function FitnessWorkspace({
       ),
     [activePlanExercises],
   );
-  const activeExecutionDraft = useMemo(() => {
-    if (!activePlan) {
-      return {};
-    }
-
-    const currentDraft = executionDrafts[activePlan.id] ?? {};
-    return sortedPlanExercises.reduce<Record<string, boolean>>((draft, exercise) => {
-      draft[exercise.id] = currentDraft[exercise.id] ?? false;
-      return draft;
-    }, {});
-  }, [activePlan, executionDrafts, sortedPlanExercises]);
-  const completedExerciseCount = sortedPlanExercises.filter(
-    (exercise) => activeExecutionDraft[exercise.id],
+  const activeSessionExercises = useMemo(
+    () =>
+      [...(activeSession?.exercises ?? [])].sort(
+        (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
+      ),
+    [activeSession],
+  );
+  const completedExerciseCount = activeSessionExercises.filter(
+    (exercise) => exercise.completed,
   ).length;
   const remainingExerciseCount = Math.max(
-    sortedPlanExercises.length - completedExerciseCount,
+    (activeSession
+      ? activeSessionExercises.length
+      : sortedPlanExercises.length) - completedExerciseCount,
     0,
   );
+  useEffect(() => {
+    if (!activeSession) {
+      setSessionExerciseDrafts({});
+      return;
+    }
+
+    setSessionExerciseDrafts(
+      Object.fromEntries(
+        activeSession.exercises.map((exercise) => [
+          exercise.id,
+          toSessionExerciseDraft(exercise),
+        ]),
+      ),
+    );
+  }, [activeSession]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(editTimersRef.current).forEach((timer) => clearTimeout(timer));
+    };
+  }, []);
+
+  function clearSessionEditTimers() {
+    Object.values(editTimersRef.current).forEach((timer) => clearTimeout(timer));
+    editTimersRef.current = {};
+  }
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -230,6 +306,11 @@ export function FitnessWorkspace({
       return;
     }
 
+    if (activeSession?.workoutPlanId === activePlan.id) {
+      setNotice({ kind: "info", text: copy.builder.finishSessionBeforeEditing });
+      return;
+    }
+
     setPendingMutation({ type: "add-exercise" });
     setNotice(null);
 
@@ -265,6 +346,11 @@ export function FitnessWorkspace({
 
     if (!activePlan) {
       setNotice({ kind: "info", text: copy.createPlanFirst });
+      return;
+    }
+
+    if (activeSession?.workoutPlanId === activePlan.id) {
+      setNotice({ kind: "info", text: copy.builder.finishSessionBeforeEditing });
       return;
     }
 
@@ -311,25 +397,13 @@ export function FitnessWorkspace({
     }
   }
 
-  function handleExerciseCompletionToggle(exerciseId: string) {
-    if (!activePlan || isMutating) {
+  async function handleStartWorkout() {
+    if (isMutating) {
       return;
     }
 
-    setExecutionDrafts((current) => {
-      const planDraft = current[activePlan.id] ?? {};
-      return {
-        ...current,
-        [activePlan.id]: {
-          ...planDraft,
-          [exerciseId]: !planDraft[exerciseId],
-        },
-      };
-    });
-  }
-
-  async function handleLogWorkout() {
-    if (isMutating) {
+    if (activeSession) {
+      setNotice({ kind: "info", text: copy.session.resumeReady });
       return;
     }
 
@@ -338,7 +412,227 @@ export function FitnessWorkspace({
       return;
     }
 
-    if (activePlanExercises.length === 0) {
+    if (sortedPlanExercises.length === 0) {
+      setNotice({ kind: "info", text: copy.addExerciseBeforeStarting });
+      return;
+    }
+
+    setPendingMutation({ type: "start-workout" });
+    setNotice(null);
+
+    try {
+      const session = await startWorkoutSessionAction(activePlan.id);
+      setActiveSession(session);
+      setActivePlan((currentPlan) =>
+        currentPlan?.id === session.workoutPlanId
+          ? currentPlan
+          : plans.find((plan) => plan.id === session.workoutPlanId) ?? currentPlan,
+      );
+      setNotice({ kind: "success", text: copy.session.started });
+    } catch (error) {
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
+    } finally {
+      setPendingMutation(null);
+    }
+  }
+
+  async function handleExerciseCompletionToggle(sessionExerciseId: string) {
+    if (isMutating || savingSessionExerciseIds.includes(sessionExerciseId)) {
+      return;
+    }
+
+    if (!activeSession) {
+      setNotice({ kind: "info", text: copy.session.startFirst });
+      return;
+    }
+
+    const currentExercise = activeSession.exercises.find(
+      (exercise) => exercise.id === sessionExerciseId,
+    );
+
+    if (!currentExercise) {
+      return;
+    }
+
+    const nextCompleted = !currentExercise.completed;
+    const previousSession = activeSession;
+    const now = new Date().toISOString();
+
+    setSavingSessionExerciseIds((current) =>
+      current.includes(sessionExerciseId)
+        ? current
+        : [...current, sessionExerciseId],
+    );
+    setActiveSession({
+      ...activeSession,
+      exercises: activeSession.exercises.map((exercise) =>
+        exercise.id === sessionExerciseId
+          ? {
+              ...exercise,
+              completed: nextCompleted,
+              completedAt: nextCompleted ? now : null,
+            }
+          : exercise,
+      ),
+      updatedAt: now,
+    });
+
+    try {
+      const session = await updateWorkoutSessionExerciseCompletionAction({
+        completed: nextCompleted,
+        sessionExerciseId,
+        sessionId: activeSession.id,
+      });
+      setActiveSession(session);
+      setNotice({
+        kind: "success",
+        text: nextCompleted
+          ? copy.session.exerciseCompleted
+          : copy.session.exerciseReset,
+      });
+    } catch (error) {
+      setActiveSession(previousSession);
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
+    } finally {
+      setSavingSessionExerciseIds((current) =>
+        current.filter((id) => id !== sessionExerciseId),
+      );
+    }
+  }
+
+  async function persistSessionExerciseDraft(
+    sessionId: string,
+    sessionExerciseId: string,
+    draft: SessionExerciseDraft,
+  ) {
+    setSavingSessionExerciseIds((current) =>
+      current.includes(sessionExerciseId)
+        ? current
+        : [...current, sessionExerciseId],
+    );
+
+    try {
+      const session = await updateWorkoutSessionExerciseDetailsAction({
+        reps: draft.reps,
+        restSeconds: draft.restSeconds,
+        sessionExerciseId,
+        sessionId,
+        sets: draft.sets,
+        weight: parseWeightDraft(draft.weight),
+      });
+      delete rollbackSnapshotRef.current[sessionExerciseId];
+      setActiveSession(session);
+      setNotice({ kind: "success", text: copy.session.exerciseUpdated });
+    } catch (error) {
+      const rollbackExercise = rollbackSnapshotRef.current[sessionExerciseId];
+
+      if (rollbackExercise) {
+        setActiveSession((current) =>
+          current
+            ? {
+                ...current,
+                exercises: current.exercises.map((exercise) =>
+                  exercise.id === sessionExerciseId ? rollbackExercise : exercise,
+                ),
+              }
+            : current,
+        );
+        setSessionExerciseDrafts((current) => ({
+          ...current,
+          [sessionExerciseId]: toSessionExerciseDraft(rollbackExercise),
+        }));
+      }
+
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
+    } finally {
+      setSavingSessionExerciseIds((current) =>
+        current.filter((id) => id !== sessionExerciseId),
+      );
+    }
+  }
+
+  function handleSessionExerciseFieldChange(
+    sessionExerciseId: string,
+    field: keyof SessionExerciseDraft,
+    value: number | string,
+  ) {
+    if (!activeSession || isMutating) {
+      return;
+    }
+
+    const currentExercise = activeSession.exercises.find(
+      (exercise) => exercise.id === sessionExerciseId,
+    );
+
+    if (!currentExercise) {
+      return;
+    }
+
+    rollbackSnapshotRef.current[sessionExerciseId] =
+      rollbackSnapshotRef.current[sessionExerciseId] ?? { ...currentExercise };
+
+    const nextDraft = {
+      ...(sessionExerciseDrafts[sessionExerciseId] ?? toSessionExerciseDraft(currentExercise)),
+      [field]: value,
+    } as SessionExerciseDraft;
+
+    setSessionExerciseDrafts((current) => ({
+      ...current,
+      [sessionExerciseId]: nextDraft,
+    }));
+
+    setActiveSession((current) =>
+      current
+        ? {
+            ...current,
+            exercises: current.exercises.map((exercise) =>
+              exercise.id === sessionExerciseId
+                ? {
+                    ...exercise,
+                    reps: field === "reps" ? Number(value) : nextDraft.reps,
+                    restSeconds:
+                      field === "restSeconds" ? Number(value) : nextDraft.restSeconds,
+                    sets: field === "sets" ? Number(value) : nextDraft.sets,
+                    weight:
+                      field === "weight"
+                        ? parseWeightDraft(String(value))
+                        : parseWeightDraft(nextDraft.weight),
+                  }
+                : exercise,
+            ),
+          }
+        : current,
+    );
+
+    if (editTimersRef.current[sessionExerciseId]) {
+      clearTimeout(editTimersRef.current[sessionExerciseId]);
+    }
+
+    editTimersRef.current[sessionExerciseId] = setTimeout(() => {
+      void persistSessionExerciseDraft(activeSession.id, sessionExerciseId, nextDraft);
+    }, 450);
+  }
+
+  async function handleFinishWorkout() {
+    if (isMutating) {
+      return;
+    }
+
+    if (!activeSession) {
+      setNotice({ kind: "info", text: copy.session.startFirst });
+      return;
+    }
+
+    if (activeSessionExercises.length === 0) {
       setNotice({ kind: "info", text: copy.addExerciseBeforeLogging });
       return;
     }
@@ -348,24 +642,43 @@ export function FitnessWorkspace({
       return;
     }
 
-    setPendingMutation({ type: "log-workout" });
+    setPendingMutation({ type: "finish-workout" });
     setNotice(null);
+    clearSessionEditTimers();
 
     try {
-      const workoutLog = await logWorkoutExecutionAction(
-        activePlan.id,
-        sortedPlanExercises.map((exercise) => ({
-          completed: activeExecutionDraft[exercise.id] ?? false,
-          exerciseId: exercise.id,
-        })),
-      );
-
+      const workoutLog = await finishWorkoutSessionAction(activeSession.id);
       setLogs((currentLogs) => [workoutLog, ...currentLogs]);
-      setExecutionDrafts((current) => ({
-        ...current,
-        [activePlan.id]: {},
-      }));
-      setNotice({ kind: "success", text: copy.workoutLogged });
+      setActiveSession(null);
+      setNotice({ kind: "success", text: copy.session.finished });
+    } catch (error) {
+      setNotice({
+        kind: "error",
+        text: getErrorMessage(error, copy.fallbackError),
+      });
+    } finally {
+      setPendingMutation(null);
+    }
+  }
+
+  async function handleCancelWorkout() {
+    if (isMutating) {
+      return;
+    }
+
+    if (!activeSession) {
+      setNotice({ kind: "info", text: copy.session.startFirst });
+      return;
+    }
+
+    setPendingMutation({ type: "cancel-workout" });
+    setNotice(null);
+    clearSessionEditTimers();
+
+    try {
+      await cancelWorkoutSessionAction(activeSession.id);
+      setActiveSession(null);
+      setNotice({ kind: "success", text: copy.session.cancelled });
     } catch (error) {
       setNotice({
         kind: "error",
@@ -492,16 +805,18 @@ export function FitnessWorkspace({
 
         <WorkoutBuilder
           activePlan={activePlan}
-          activeExecutionDraft={activeExecutionDraft}
+          activeSession={activeSession}
+          activeSessionExercises={activeSessionExercises}
           completedExerciseCount={completedExerciseCount}
           commonCopy={commonCopy}
           copy={copy}
           logs={logs}
           planDescription={planDescription}
           planName={planName}
+          cancellingWorkout={pendingMutation?.type === "cancel-workout"}
           creatingPlan={pendingMutation?.type === "create-plan"}
           createPlanSheetOpen={createPlanSheetOpen}
-          loggingWorkout={pendingMutation?.type === "log-workout"}
+          finishingWorkout={pendingMutation?.type === "finish-workout"}
           mutationPending={isMutating}
           pendingRemovalId={
             pendingMutation?.type === "remove-exercise"
@@ -509,15 +824,22 @@ export function FitnessWorkspace({
               : null
           }
           plans={plans}
+          sessionExerciseDrafts={sessionExerciseDrafts}
+          savingSessionExerciseIds={savingSessionExerciseIds}
           sortedPlanExercises={sortedPlanExercises}
+          startingWorkout={pendingMutation?.type === "start-workout"}
+          workoutSessionPlanId={activeSession?.workoutPlanId ?? null}
           onCreatePlan={handleCreatePlan}
           onCreatePlanSheetOpenChange={setCreatePlanSheetOpen}
-          onLogWorkout={handleLogWorkout}
+          onCancelWorkout={handleCancelWorkout}
+          onFinishWorkout={handleFinishWorkout}
           onPlanDescriptionChange={setPlanDescription}
           onPlanNameChange={setPlanName}
+          onSessionExerciseFieldChange={handleSessionExerciseFieldChange}
           onToggleExerciseCompletion={handleExerciseCompletionToggle}
           onRemoveExercise={handleRemoveExercise}
           onSelectPlan={setActivePlan}
+          onStartWorkout={handleStartWorkout}
           remainingExerciseCount={remainingExerciseCount}
         />
       </section>
@@ -742,54 +1064,76 @@ function ExerciseInspector({
 
 function WorkoutBuilder({
   activePlan,
-  activeExecutionDraft,
+  activeSession,
+  activeSessionExercises,
   completedExerciseCount,
+  cancellingWorkout,
   commonCopy,
   copy,
   createPlanSheetOpen,
   creatingPlan,
-  loggingWorkout,
+  finishingWorkout,
   logs,
   mutationPending,
   onCreatePlan,
   onCreatePlanSheetOpenChange,
-  onLogWorkout,
+  onCancelWorkout,
+  onFinishWorkout,
   onPlanDescriptionChange,
   onPlanNameChange,
+  onSessionExerciseFieldChange,
   onToggleExerciseCompletion,
   onRemoveExercise,
   onSelectPlan,
+  onStartWorkout,
   pendingRemovalId,
   planDescription,
   planName,
   plans,
   remainingExerciseCount,
+  sessionExerciseDrafts,
+  savingSessionExerciseIds,
   sortedPlanExercises,
+  startingWorkout,
+  workoutSessionPlanId,
 }: {
   activePlan: WorkoutPlan | null;
-  activeExecutionDraft: Record<string, boolean>;
+  activeSession: WorkoutSession | null;
+  activeSessionExercises: WorkoutSession["exercises"];
   completedExerciseCount: number;
+  cancellingWorkout: boolean;
   commonCopy: CommonCopy;
   copy: FitnessCopy;
   createPlanSheetOpen: boolean;
   creatingPlan: boolean;
-  loggingWorkout: boolean;
+  finishingWorkout: boolean;
   logs: WorkoutLog[];
   mutationPending: boolean;
   onCreatePlan: (event: FormEvent<HTMLFormElement>) => void;
   onCreatePlanSheetOpenChange: (open: boolean) => void;
-  onLogWorkout: () => void;
+  onCancelWorkout: () => void;
+  onFinishWorkout: () => void;
   onPlanDescriptionChange: (value: string) => void;
   onPlanNameChange: (value: string) => void;
+  onSessionExerciseFieldChange: (
+    exerciseId: string,
+    field: keyof SessionExerciseDraft,
+    value: number | string,
+  ) => void;
   onToggleExerciseCompletion: (exerciseId: string) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onSelectPlan: (plan: WorkoutPlan) => void;
+  onStartWorkout: () => void;
   pendingRemovalId: string | null;
   planDescription: string;
   planName: string;
   plans: WorkoutPlan[];
   remainingExerciseCount: number;
+  sessionExerciseDrafts: Record<string, SessionExerciseDraft>;
+  savingSessionExerciseIds: string[];
   sortedPlanExercises: WorkoutPlan["exercises"];
+  startingWorkout: boolean;
+  workoutSessionPlanId: string | null;
 }) {
   return (
     <aside className="space-y-5 sm:space-y-6 2xl:sticky 2xl:top-28 2xl:self-start">
@@ -859,7 +1203,10 @@ function WorkoutBuilder({
                   : "border-[var(--landing-border)] bg-[var(--landing-surface)] text-[var(--landing-text-muted)] hover:bg-[var(--landing-surface-strong)]",
               )}
               key={plan.id}
-              disabled={mutationPending}
+              disabled={
+                mutationPending ||
+                (workoutSessionPlanId !== null && workoutSessionPlanId !== plan.id)
+              }
               onClick={() => onSelectPlan(plan)}
               type="button"
             >
@@ -874,13 +1221,21 @@ function WorkoutBuilder({
           <div className="flex items-start justify-between gap-4">
             <div>
               <CardTitle>
-                {activePlan?.name ?? copy.builder.noWorkout}
+                {activeSession
+                  ? copy.session.activeTitle(activePlan?.name ?? copy.builder.noWorkout)
+                  : activePlan?.name ?? copy.builder.noWorkout}
               </CardTitle>
               <p className="mt-2 text-sm leading-6 text-[var(--landing-text-muted)]">
-                {activePlan?.description || copy.builder.noWorkoutDescription}
+                {activeSession
+                  ? copy.session.startedAt(
+                      new Date(activeSession.startedAt).toLocaleString(),
+                    )
+                  : activePlan?.description || copy.builder.noWorkoutDescription}
               </p>
             </div>
-            <Badge variant="muted">{sortedPlanExercises.length}</Badge>
+            <Badge variant={activeSession ? "success" : "muted"}>
+              {activeSession ? copy.session.inProgress : sortedPlanExercises.length}
+            </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-3 p-4">
@@ -893,122 +1248,286 @@ function WorkoutBuilder({
           ) : (
             <>
               <div className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 sm:rounded-[1.5rem]">
-                <p className="text-sm font-semibold text-[var(--landing-text)]">
-                  {copy.builder.progressCompleted(
-                    completedExerciseCount,
-                    sortedPlanExercises.length,
-                  )}
-                </p>
-                <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-[var(--landing-text)]">
+                    {copy.builder.progressCompleted(
+                      completedExerciseCount,
+                      activeSessionExercises.length || sortedPlanExercises.length,
+                    )}
+                  </p>
+                  {activeSession ? (
+                    <span className="text-xs font-medium text-[var(--landing-text-muted)]">
+                      {copy.session.liveLabel}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--landing-surface)]">
+                  <div
+                    className="h-full rounded-full bg-[var(--landing-accent)] transition-[width] duration-300"
+                    style={{
+                      width: `${Math.max(
+                        (((activeSessionExercises.length || sortedPlanExercises.length) === 0
+                          ? 0
+                          : completedExerciseCount /
+                            (activeSessionExercises.length || sortedPlanExercises.length)) *
+                          100),
+                        0,
+                      )}%`,
+                    }}
+                  />
+                </div>
+                <p className="mt-3 text-sm text-[var(--landing-text-muted)]">
                   {copy.builder.progressRemaining(remainingExerciseCount)}
                 </p>
               </div>
-              {sortedPlanExercises.map((item, index) => {
-                const completed = activeExecutionDraft[item.id] ?? false;
-
-                return (
-                  <div
-                    className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 sm:rounded-[24px]"
-                    key={item.id}
-                  >
+              {!activeSession ? (
+                <div className="space-y-3">
+                  <div className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4 text-sm text-[var(--landing-text-muted)]">
                     <div className="flex items-start gap-3">
-                      <ExerciseMedia
-                        className="h-20 w-20 shrink-0 rounded-[1rem]"
-                        exercise={item.exercise}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-text-muted)]">
-                              {String(index + 1).padStart(2, "0")}
-                            </p>
-                            <h3 className="mt-1 font-semibold tracking-tight">
-                              {item.exercise.name}
-                            </h3>
-                            <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
-                              {[
-                                getMetaValue(
-                                  item.exercise.bodyPart,
-                                  commonCopy.notSpecified,
-                                ),
-                                getMetaValue(
-                                  item.exercise.target,
-                                  commonCopy.notSpecified,
-                                ),
-                              ].join(commonCopy.slashSeparator)}
-                            </p>
+                      <Clock3 className="mt-0.5 size-4 shrink-0 text-[var(--landing-accent)]" />
+                      <p>{copy.session.resumeHint}</p>
+                    </div>
+                  </div>
+                  <Button
+                    className="w-full"
+                    disabled={mutationPending || !activePlan || sortedPlanExercises.length === 0}
+                    onClick={onStartWorkout}
+                    size="lg"
+                    type="button"
+                  >
+                    {startingWorkout ? <Loader2 className="size-4 animate-spin" /> : <Activity className="size-4" />}
+                    {copy.session.startAction}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    className="flex-1"
+                    disabled={
+                      mutationPending ||
+                      activeSessionExercises.length === 0 ||
+                      savingSessionExerciseIds.length > 0
+                    }
+                    onClick={onFinishWorkout}
+                    type="button"
+                  >
+                    {finishingWorkout ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                    {copy.session.finishAction}
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    disabled={mutationPending || savingSessionExerciseIds.length > 0}
+                    onClick={onCancelWorkout}
+                    type="button"
+                    variant="ghost"
+                  >
+                    {cancellingWorkout ? <Loader2 className="size-4 animate-spin" /> : <Circle className="size-4" />}
+                    {copy.session.cancelAction}
+                  </Button>
+                </div>
+              )}
+              {activeSession
+                ? activeSessionExercises.map((item, index) => {
+                    const completed = item.completed;
+
+                    return (
+                      <div
+                        className={cn(
+                          "rounded-[1.25rem] border bg-[var(--landing-surface)] p-4 transition-[border-color,background-color,box-shadow] duration-200 sm:rounded-[24px]",
+                          completed
+                            ? "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)]/40 shadow-[var(--landing-chip-inset-shadow)]"
+                            : "border-[var(--landing-border)]",
+                        )}
+                        key={item.id}
+                      >
+                        <div className="flex items-start gap-3">
+                          <ExerciseMedia
+                            className="h-20 w-20 shrink-0 rounded-[1rem]"
+                            exercise={item}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-text-muted)]">
+                                  {String(index + 1).padStart(2, "0")}
+                                </p>
+                                <h3 className="mt-1 font-semibold tracking-tight">
+                                  {item.name}
+                                </h3>
+                                <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                                  {[
+                                    getMetaValue(
+                                      item.bodyPart,
+                                      commonCopy.notSpecified,
+                                    ),
+                                    getMetaValue(
+                                      item.target,
+                                      commonCopy.notSpecified,
+                                    ),
+                                  ].join(commonCopy.slashSeparator)}
+                                </p>
+                              </div>
+                              <button
+                                aria-pressed={completed}
+                                className={cn(
+                                  "inline-flex min-h-11 items-center gap-2 rounded-full border px-3 text-sm font-medium transition",
+                                  completed
+                                    ? "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]"
+                                    : "border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] text-[var(--landing-text-muted)]",
+                                )}
+                                disabled={
+                                  mutationPending ||
+                                  savingSessionExerciseIds.includes(item.id)
+                                }
+                                onClick={() => onToggleExerciseCompletion(item.id)}
+                                type="button"
+                              >
+                                {savingSessionExerciseIds.includes(item.id) ? (
+                                  <Loader2 className="size-4 animate-spin" />
+                                ) : completed ? (
+                                  <CheckCircle2 className="size-4" />
+                                ) : (
+                                  <Circle className="size-4" />
+                                )}
+                                {completed
+                                  ? copy.builder.markComplete
+                                  : copy.builder.markPending}
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            aria-pressed={completed}
-                            className={cn(
-                              "inline-flex min-h-11 items-center gap-2 rounded-full border px-3 text-sm font-medium transition",
-                              completed
-                                ? "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]"
-                                : "border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] text-[var(--landing-text-muted)]",
-                            )}
-                            disabled={mutationPending}
-                            onClick={() => onToggleExerciseCompletion(item.id)}
-                            type="button"
-                          >
-                            {completed ? (
-                              <CheckCircle2 className="size-4" />
-                            ) : (
-                              <Circle className="size-4" />
-                            )}
-                            {completed
-                              ? copy.builder.markComplete
-                              : copy.builder.markPending}
-                          </button>
+                        </div>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <NumberField
+                            label={copy.builder.sets}
+                            min={1}
+                            onChange={(value) =>
+                              onSessionExerciseFieldChange(item.id, "sets", value)
+                            }
+                            value={sessionExerciseDrafts[item.id]?.sets ?? item.sets ?? 1}
+                          />
+                          <NumberField
+                            label={copy.builder.reps}
+                            min={1}
+                            onChange={(value) =>
+                              onSessionExerciseFieldChange(item.id, "reps", value)
+                            }
+                            value={sessionExerciseDrafts[item.id]?.reps ?? item.reps ?? 1}
+                          />
+                          <NumberField
+                            label={copy.builder.rest}
+                            min={0}
+                            onChange={(value) =>
+                              onSessionExerciseFieldChange(item.id, "restSeconds", value)
+                            }
+                            value={
+                              sessionExerciseDrafts[item.id]?.restSeconds ??
+                              item.restSeconds ??
+                              0
+                            }
+                          />
+                          <WeightField
+                            label={copy.builder.weight}
+                            onChange={(value) =>
+                              onSessionExerciseFieldChange(item.id, "weight", value)
+                            }
+                            value={
+                              sessionExerciseDrafts[item.id]?.weight ??
+                              formatWeightDraft(item.weight)
+                            }
+                          />
+                        </div>
+                        {savingSessionExerciseIds.includes(item.id) ? (
+                          <p className="mt-3 text-xs font-medium text-[var(--landing-text-muted)]">
+                            {copy.session.savingExercise}
+                          </p>
+                        ) : null}
+                        {item.notes ? (
+                          <>
+                            <Disclosure className="mt-3 sm:hidden" summary={copy.builder.notes}>
+                              <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
+                                {item.notes}
+                              </p>
+                            </Disclosure>
+                            <p className="mt-3 hidden text-sm leading-6 text-[var(--landing-text-muted)] sm:block">
+                              {item.notes}
+                            </p>
+                          </>
+                        ) : null}
+                      </div>
+                    );
+                  })
+                : sortedPlanExercises.map((item, index) => (
+                    <div
+                      className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 sm:rounded-[24px]"
+                      key={item.id}
+                    >
+                      <div className="flex items-start gap-3">
+                        <ExerciseMedia
+                          className="h-20 w-20 shrink-0 rounded-[1rem]"
+                          exercise={item.exercise}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-text-muted)]">
+                                {String(index + 1).padStart(2, "0")}
+                              </p>
+                              <h3 className="mt-1 font-semibold tracking-tight">
+                                {item.exercise.name}
+                              </h3>
+                              <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                                {[
+                                  getMetaValue(
+                                    item.exercise.bodyPart,
+                                    commonCopy.notSpecified,
+                                  ),
+                                  getMetaValue(
+                                    item.exercise.target,
+                                    commonCopy.notSpecified,
+                                  ),
+                                ].join(commonCopy.slashSeparator)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
-                      <MiniStat
-                        label={copy.builder.sets}
-                        value={item.sets ?? "-"}
-                      />
-                      <MiniStat
-                        label={copy.builder.reps}
-                        value={item.reps ?? "-"}
-                      />
-                      <MiniStat
-                        label={copy.builder.rest}
-                        value={item.restSeconds ? `${item.restSeconds}s` : "-"}
-                      />
-                    </div>
-                    {item.notes ? (
-                      <>
-                        <Disclosure
-                          className="mt-3 sm:hidden"
-                          summary={copy.builder.notes}
-                        >
-                          <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
+                      <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+                        <MiniStat label={copy.builder.sets} value={item.sets ?? "-"} />
+                        <MiniStat label={copy.builder.reps} value={item.reps ?? "-"} />
+                        <MiniStat
+                          label={copy.builder.rest}
+                          value={item.restSeconds ? `${item.restSeconds}s` : "-"}
+                        />
+                      </div>
+                      {item.notes ? (
+                        <>
+                          <Disclosure className="mt-3 sm:hidden" summary={copy.builder.notes}>
+                            <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
+                              {item.notes}
+                            </p>
+                          </Disclosure>
+                          <p className="mt-3 hidden text-sm leading-6 text-[var(--landing-text-muted)] sm:block">
                             {item.notes}
                           </p>
-                        </Disclosure>
-                        <p className="mt-3 hidden text-sm leading-6 text-[var(--landing-text-muted)] sm:block">
-                          {item.notes}
-                        </p>
-                      </>
-                    ) : null}
-                    <Button
-                      aria-label={`Remove ${item.exercise.name}`}
-                      className="mt-3 w-full sm:w-auto"
-                      disabled={mutationPending}
-                      onClick={() => onRemoveExercise(item.id)}
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      {pendingRemovalId === item.id ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="size-4" />
-                      )}
-                    </Button>
-                  </div>
-                );
-              })}
+                        </>
+                      ) : null}
+                      <Button
+                        aria-label={`Remove ${item.exercise.name}`}
+                        className="mt-3 w-full sm:w-auto"
+                        disabled={mutationPending}
+                        onClick={() => onRemoveExercise(item.id)}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        {pendingRemovalId === item.id ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-4" />
+                        )}
+                      </Button>
+                    </div>
+                  ))}
             </>
           )}
         </CardContent>
@@ -1027,21 +1546,6 @@ function WorkoutBuilder({
           </div>
         </CardHeader>
         <CardContent className="space-y-3 p-4">
-          <Button
-            className="w-full"
-            disabled={
-              !activePlan || sortedPlanExercises.length === 0 || mutationPending
-            }
-            onClick={onLogWorkout}
-            type="button"
-            variant="secondary"
-          >
-            {loggingWorkout ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : null}
-            {copy.logs.logActivePlan}
-          </Button>
-
           {logs.length === 0 ? (
             <div className="rounded-[24px] border border-dashed border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 text-sm leading-6 text-[var(--landing-text-muted)]">
               {copy.logs.empty}
@@ -1067,6 +1571,41 @@ function WorkoutBuilder({
                     log.exercises.length,
                   )}
                 </p>
+                <div className="mt-3 space-y-2">
+                  {log.exercises.slice(0, 4).map((exercise) => (
+                    <div
+                      className="rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-3 py-3"
+                      key={`${log.id}-${exercise.name}-${exercise.sortOrder ?? 0}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium text-[var(--landing-text)]">
+                            {exercise.name}
+                          </p>
+                          <p className="mt-1 text-xs text-[var(--landing-text-muted)]">
+                            {[
+                              `${copy.builder.sets}: ${exercise.setsCompleted ?? "-"}`,
+                              `${copy.builder.reps}: ${exercise.repsCompleted ?? "-"}`,
+                              `${copy.builder.rest}: ${
+                                exercise.restSeconds ? `${exercise.restSeconds}s` : "-"
+                              }`,
+                              `${copy.builder.weight}: ${
+                                exercise.weight !== null && exercise.weight !== undefined
+                                  ? `${exercise.weight}${copy.builder.weightUnit}`
+                                  : "-"
+                              }`,
+                            ].join(" • ")}
+                          </p>
+                        </div>
+                        <Badge variant={exercise.completed ? "success" : "muted"}>
+                          {exercise.completed
+                            ? copy.logs.completedStatus
+                            : copy.logs.skippedStatus}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))
           )}
@@ -1138,6 +1677,29 @@ function NumberField({
           onChange(Math.max(min, Number(event.target.value) || min))
         }
         type="number"
+        value={value}
+      />
+    </label>
+  );
+}
+
+function WeightField({
+  label,
+  onChange,
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  return (
+    <label className="block space-y-2 text-sm font-medium">
+      <span>{label}</span>
+      <Input
+        inputMode="decimal"
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="0"
+        type="text"
         value={value}
       />
     </label>

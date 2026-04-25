@@ -21,9 +21,15 @@ type DashboardOverviewProps = {
       value: string;
     }>;
     nextSteps: Array<{
+      active?: boolean;
       href: string;
       key: "studySessions" | "workoutTracking" | "stripePlans";
       progress?: {
+        completedCount: number;
+        remainingCount: number;
+        totalCount: number;
+      } | null;
+      sessionProgress?: {
         completedCount: number;
         remainingCount: number;
         totalCount: number;
@@ -137,9 +143,18 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
                   <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
                     {stepCopy.description}
                   </p>
-                  {step.key === "workoutTracking" && step.progress ? (
+                  {step.key === "workoutTracking" && step.active && step.sessionProgress ? (
                     <p className="mt-2 text-sm font-medium text-[var(--landing-text)]">
-                      {copy.nextModules.workoutTracking.progress(
+                      {copy.nextModules.workoutTracking.activeProgress(
+                        step.sessionProgress.completedCount,
+                        step.sessionProgress.totalCount,
+                        step.sessionProgress.remainingCount,
+                      )}
+                    </p>
+                  ) : null}
+                  {step.key === "workoutTracking" && !step.active && step.progress ? (
+                    <p className="mt-2 text-sm font-medium text-[var(--landing-text)]">
+                      {copy.nextModules.workoutTracking.completedProgress(
                         step.progress.completedCount,
                         step.progress.totalCount,
                         step.progress.remainingCount,

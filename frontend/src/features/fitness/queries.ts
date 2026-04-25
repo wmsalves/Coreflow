@@ -1,6 +1,11 @@
 import "server-only";
 import { listExerciseCatalog } from "@/features/fitness/catalog-api";
-import type { WorkoutLog, WorkoutPlan, WorkoutPlanExercise } from "@/features/fitness/types";
+import type {
+  WorkoutLog,
+  WorkoutPlan,
+  WorkoutPlanExercise,
+  WorkoutSession,
+} from "@/features/fitness/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -49,6 +54,40 @@ type WorkoutLogRow = Pick<
   Database["public"]["Tables"]["workout_logs"]["Row"],
   "duration_minutes" | "id" | "notes" | "performed_at" | "plan_id" | "user_id"
 >;
+type WorkoutSessionExerciseRow = Pick<
+  Database["public"]["Tables"]["workout_session_exercises"]["Row"],
+  | "body_part"
+  | "catalog_id"
+  | "catalog_internal_id"
+  | "completed"
+  | "completed_at"
+  | "equipment"
+  | "gif_url"
+  | "id"
+  | "image_url"
+  | "name"
+  | "notes"
+  | "order_index"
+  | "reps"
+  | "rest_seconds"
+  | "sets"
+  | "target"
+  | "video_url"
+  | "weight"
+  | "workout_plan_exercise_id"
+  | "workout_session_id"
+>;
+type WorkoutSessionRow = Pick<
+  Database["public"]["Tables"]["workout_sessions"]["Row"],
+  | "completed_at"
+  | "id"
+  | "started_at"
+  | "status"
+  | "updated_at"
+  | "user_id"
+  | "workout_log_id"
+  | "workout_plan_id"
+>;
 type WorkoutPlanRow = Pick<
   Database["public"]["Tables"]["workout_plans"]["Row"],
   "created_at" | "description" | "id" | "name" | "updated_at" | "user_id"
@@ -85,15 +124,19 @@ function groupBy<T, K extends string>(items: T[], getKey: (item: T) => K) {
 }
 
 export async function getFitnessWorkspaceData(userId: string, accessToken: string) {
-  const [exercisesResult, plansResult, logsResult] = await Promise.allSettled([
+  const [activeSessionResult, exercisesResult, plansResult, logsResult] = await Promise.allSettled([
+    getActiveWorkoutSessionForUser(userId),
     listExerciseCatalog(accessToken),
     getWorkoutPlansForUser(userId),
     getWorkoutLogsForUser(userId),
   ]);
 
   return {
+    initialActiveSession:
+      activeSessionResult.status === "fulfilled" ? activeSessionResult.value : null,
     initialExercises: exercisesResult.status === "fulfilled" ? exercisesResult.value : [],
     initialLoadFailed:
+      activeSessionResult.status === "rejected" ||
       exercisesResult.status === "rejected" ||
       plansResult.status === "rejected" ||
       logsResult.status === "rejected",
@@ -103,19 +146,33 @@ export async function getFitnessWorkspaceData(userId: string, accessToken: strin
 }
 
 export async function getFitnessSnapshot(userId: string) {
-  const [plansResult, logsResult] = await Promise.allSettled([
+  const [activeSessionResult, plansResult, logsResult] = await Promise.allSettled([
+    getActiveWorkoutSessionForUser(userId),
     getWorkoutPlansForUser(userId),
     getWorkoutLogsForUser(userId),
   ]);
 
+  const activeSession = activeSessionResult.status === "fulfilled" ? activeSessionResult.value : null;
   const logs = logsResult.status === "fulfilled" ? logsResult.value : [];
   const latestLog = logs[0] ?? null;
   const completedCount = latestLog
     ? latestLog.exercises.filter((exercise) => exercise.completed).length
     : 0;
   const totalCount = latestLog?.exercises.length ?? 0;
+  const activeCompletedCount = activeSession
+    ? activeSession.exercises.filter((exercise) => exercise.completed).length
+    : 0;
+  const activeTotalCount = activeSession?.exercises.length ?? 0;
 
   return {
+    activeWorkoutProgress:
+      activeSession && activeTotalCount > 0
+        ? {
+            completedCount: activeCompletedCount,
+            remainingCount: Math.max(activeTotalCount - activeCompletedCount, 0),
+            totalCount: activeTotalCount,
+          }
+        : null,
     latestWorkoutProgress:
       latestLog && totalCount > 0
         ? {
@@ -127,6 +184,50 @@ export async function getFitnessSnapshot(userId: string) {
     logCount: logs.length,
     planCount: plansResult.status === "fulfilled" ? plansResult.value.length : 0,
   };
+}
+
+export async function getActiveWorkoutSessionForUser(userId: string): Promise<WorkoutSession | null> {
+  const supabase = await createServerSupabaseClient();
+  const { data: session, error } = await supabase
+    .from("workout_sessions")
+    .select("completed_at, id, started_at, status, updated_at, user_id, workout_log_id, workout_plan_id")
+    .eq("user_id", userId)
+    .eq("status", "in_progress")
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    if (isMissingSchemaError(error)) {
+      return null;
+    }
+
+    throw new Error(error.message);
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  const sessionExercises = await getWorkoutSessionExercises(userId, [session.id]);
+  return toWorkoutSession(session, sessionExercises.get(session.id) ?? []);
+}
+
+export async function getWorkoutSessionById(userId: string, sessionId: string): Promise<WorkoutSession> {
+  const supabase = await createServerSupabaseClient();
+  const { data: session, error } = await supabase
+    .from("workout_sessions")
+    .select("completed_at, id, started_at, status, updated_at, user_id, workout_log_id, workout_plan_id")
+    .eq("id", sessionId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const sessionExercises = await getWorkoutSessionExercises(userId, [session.id]);
+  return toWorkoutSession(session, sessionExercises.get(session.id) ?? []);
 }
 
 export async function getWorkoutPlanById(userId: string, planId: string) {
@@ -265,6 +366,35 @@ async function getLogExercises(userId: string, logIds: string[]) {
   return groupBy((data ?? []) as WorkoutLogExerciseRow[], (exercise) => exercise.workout_log_id);
 }
 
+async function getWorkoutSessionExercises(userId: string, sessionIds: string[]) {
+  if (sessionIds.length === 0) {
+    return new Map<string, WorkoutSessionExerciseRow[]>();
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("workout_session_exercises")
+    .select(
+      "body_part, catalog_id, catalog_internal_id, completed, completed_at, equipment, gif_url, id, image_url, name, notes, order_index, reps, rest_seconds, sets, target, user_id, video_url, weight, workout_plan_exercise_id, workout_session_id",
+    )
+    .eq("user_id", userId)
+    .in("workout_session_id", sessionIds)
+    .order("order_index", { ascending: true });
+
+  if (error) {
+    if (isMissingSchemaError(error)) {
+      return new Map<string, WorkoutSessionExerciseRow[]>();
+    }
+
+    throw new Error(error.message);
+  }
+
+  return groupBy(
+    (data ?? []) as WorkoutSessionExerciseRow[],
+    (exercise) => exercise.workout_session_id,
+  );
+}
+
 function toWorkoutPlan(plan: WorkoutPlanRow, exercises: PlanExerciseRow[]): WorkoutPlan {
   return {
     createdAt: plan.created_at,
@@ -333,5 +463,42 @@ function toWorkoutLog(log: WorkoutLogRow, exercises: WorkoutLogExerciseRow[]): W
     notes: log.notes,
     userId: log.user_id,
     workoutPlanId: log.plan_id,
+  };
+}
+
+function toWorkoutSession(
+  session: WorkoutSessionRow,
+  exercises: WorkoutSessionExerciseRow[],
+): WorkoutSession {
+  return {
+    completedAt: session.completed_at,
+    exercises: exercises.map((exercise) => ({
+      bodyPart: exercise.body_part,
+      completed: exercise.completed,
+      completedAt: exercise.completed_at,
+      equipment: exercise.equipment,
+      externalId: exercise.catalog_id,
+      exerciseId: exercise.catalog_internal_id,
+      gifUrl: exercise.gif_url,
+      id: exercise.id,
+      imageUrl: exercise.image_url,
+      name: exercise.name,
+      notes: exercise.notes,
+      reps: exercise.reps,
+      restSeconds: exercise.rest_seconds,
+      sets: exercise.sets,
+      sortOrder: exercise.order_index,
+      target: exercise.target,
+      videoUrl: exercise.video_url,
+      weight: exercise.weight,
+      workoutPlanExerciseId: exercise.workout_plan_exercise_id,
+    })),
+    id: session.id,
+    startedAt: session.started_at,
+    status: session.status as WorkoutSession["status"],
+    updatedAt: session.updated_at,
+    userId: session.user_id,
+    workoutLogId: session.workout_log_id,
+    workoutPlanId: session.workout_plan_id,
   };
 }

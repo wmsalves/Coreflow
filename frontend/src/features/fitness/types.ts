@@ -82,6 +82,40 @@ export type WorkoutLog = {
   workoutPlanId: string | null;
 };
 
+export type WorkoutSessionExercise = {
+  bodyPart: string | null;
+  completed: boolean;
+  completedAt: string | null;
+  equipment: string | null;
+  externalId: string | null;
+  gifUrl: string | null;
+  id: string;
+  imageUrl: string | null;
+  exerciseId: number | null;
+  name: string;
+  notes: string | null;
+  reps: number | null;
+  restSeconds: number | null;
+  sets: number | null;
+  sortOrder: number | null;
+  target: string | null;
+  videoUrl: string | null;
+  weight: number | null;
+  workoutPlanExerciseId: string | null;
+};
+
+export type WorkoutSession = {
+  completedAt: string | null;
+  exercises: WorkoutSessionExercise[];
+  id: string;
+  startedAt: string;
+  status: "cancelled" | "completed" | "in_progress";
+  updatedAt: string;
+  userId: string;
+  workoutLogId: string | null;
+  workoutPlanId: string;
+};
+
 export type ExerciseConfig = {
   sets: number;
   reps: number;

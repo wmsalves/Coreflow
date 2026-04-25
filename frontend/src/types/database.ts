@@ -352,6 +352,118 @@ export type Database = {
           workout_log_id?: string;
         };
       };
+      workout_session_exercises: {
+        Insert: {
+          body_part?: string | null;
+          catalog_id?: string | null;
+          catalog_internal_id?: number | null;
+          completed?: boolean;
+          completed_at?: string | null;
+          created_at?: string;
+          equipment?: string | null;
+          gif_url?: string | null;
+          id?: string;
+          image_url?: string | null;
+          name: string;
+          notes?: string | null;
+          order_index?: number;
+          reps?: number | null;
+          rest_seconds?: number | null;
+          sets?: number | null;
+          target?: string | null;
+          updated_at?: string;
+          user_id: string;
+          video_url?: string | null;
+          weight?: number | null;
+          workout_plan_exercise_id?: string | null;
+          workout_session_id: string;
+        };
+        Row: {
+          body_part: string | null;
+          catalog_id: string | null;
+          catalog_internal_id: number | null;
+          completed: boolean;
+          completed_at: string | null;
+          created_at: string;
+          equipment: string | null;
+          gif_url: string | null;
+          id: string;
+          image_url: string | null;
+          name: string;
+          notes: string | null;
+          order_index: number;
+          reps: number | null;
+          rest_seconds: number | null;
+          sets: number | null;
+          target: string | null;
+          updated_at: string;
+          user_id: string;
+          video_url: string | null;
+          weight: number | null;
+          workout_plan_exercise_id: string | null;
+          workout_session_id: string;
+        };
+        Update: {
+          body_part?: string | null;
+          catalog_id?: string | null;
+          catalog_internal_id?: number | null;
+          completed?: boolean;
+          completed_at?: string | null;
+          created_at?: string;
+          equipment?: string | null;
+          gif_url?: string | null;
+          id?: string;
+          image_url?: string | null;
+          name?: string;
+          notes?: string | null;
+          order_index?: number;
+          reps?: number | null;
+          rest_seconds?: number | null;
+          sets?: number | null;
+          target?: string | null;
+          updated_at?: string;
+          user_id?: string;
+          video_url?: string | null;
+          weight?: number | null;
+          workout_plan_exercise_id?: string | null;
+          workout_session_id?: string;
+        };
+      };
+      workout_sessions: {
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          started_at?: string;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+          workout_log_id?: string | null;
+          workout_plan_id: string;
+        };
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          started_at: string;
+          status: string;
+          updated_at: string;
+          user_id: string;
+          workout_log_id: string | null;
+          workout_plan_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          started_at?: string;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+          workout_log_id?: string | null;
+          workout_plan_id?: string;
+        };
+      };
       workout_logs: {
         Insert: {
           created_at?: string;

@@ -8,6 +8,7 @@ export default async function FitnessPage() {
 
   return (
     <FitnessWorkspace
+      initialActiveSession={fitnessData.initialActiveSession}
       initialExercises={fitnessData.initialExercises}
       initialLoadFailed={fitnessData.initialLoadFailed}
       initialLogs={fitnessData.initialLogs}
