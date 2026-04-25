@@ -42,7 +42,11 @@ export async function getDashboardSnapshot(userId: string) {
     recentHabits: habitsOverview.habits.slice(0, 3),
     nextSteps: [
       { href: "/dashboard/focus", key: "studySessions" as const },
-      { href: "/dashboard/fitness", key: "workoutTracking" as const },
+      {
+        href: "/dashboard/fitness",
+        key: "workoutTracking" as const,
+        progress: fitnessSnapshot.latestWorkoutProgress,
+      },
       { href: "/dashboard", key: "stripePlans" as const },
     ],
   };

@@ -65,6 +65,8 @@ export const dashboardCopy = {
         workoutTracking: {
           title: "Workout tracking",
           description: "Build plans from the exercise catalog and record completed workouts.",
+          progress: (completed: number, total: number, remaining: number) =>
+            `${completed}/${total} completed · ${remaining} remaining`,
         },
         stripePlans: {
           title: "Stripe plans",
@@ -125,6 +127,7 @@ export const dashboardCopy = {
       workoutLogged: "Workout logged.",
       createPlanFirst: "Create a workout plan and select an exercise first.",
       addExerciseBeforeLogging: "Add at least one exercise before logging this workout.",
+      noExercisesCompleted: "Mark at least one exercise as completed before logging this workout.",
       defaults: {
         searchQuery: "squat",
         planName: "Strength foundation",
@@ -167,6 +170,10 @@ export const dashboardCopy = {
         noWorkout: "No workout yet",
         noWorkoutDescription: "Create a plan to start collecting selected exercises.",
         emptyPlan: "Exercises you add will appear here in order with sets, reps, rest, and notes.",
+        progressCompleted: (completed: number, total: number) => `${completed}/${total} completed`,
+        progressRemaining: (remaining: number) => `${remaining} remaining`,
+        markComplete: "Completed",
+        markPending: "Pending",
         sets: "Sets",
         reps: "Reps",
         rest: "Rest",
@@ -179,6 +186,7 @@ export const dashboardCopy = {
         empty: "Completed workouts will appear here.",
         completedAt: (value: string) => `Completed: ${value}`,
         exerciseCount: (value: number) => `${value} exercises logged`,
+        progress: (completed: number, total: number) => `${completed}/${total} completed`,
       },
     },
   },
@@ -248,6 +256,8 @@ export const dashboardCopy = {
         workoutTracking: {
           title: "Registro de treino",
           description: "Monte planos pelo catalogo de exercicios e registre treinos concluidos.",
+          progress: (completed: number, total: number, remaining: number) =>
+            `${completed}/${total} concluidos · ${remaining} restantes`,
         },
         stripePlans: {
           title: "Planos Stripe",
@@ -308,6 +318,7 @@ export const dashboardCopy = {
       workoutLogged: "Treino registrado.",
       createPlanFirst: "Crie um plano de treino e selecione um exercicio primeiro.",
       addExerciseBeforeLogging: "Adicione pelo menos um exercicio antes de registrar este treino.",
+      noExercisesCompleted: "Marque pelo menos um exercicio como concluido antes de registrar este treino.",
       defaults: {
         searchQuery: "squat",
         planName: "Base de forca",
@@ -350,6 +361,10 @@ export const dashboardCopy = {
         noWorkout: "Nenhum treino ainda",
         noWorkoutDescription: "Crie um plano para comecar a reunir exercicios selecionados.",
         emptyPlan: "Os exercicios adicionados aparecem aqui em ordem com series, reps, descanso e notas.",
+        progressCompleted: (completed: number, total: number) => `${completed}/${total} concluidos`,
+        progressRemaining: (remaining: number) => `${remaining} restantes`,
+        markComplete: "Concluido",
+        markPending: "Pendente",
         sets: "Series",
         reps: "Reps",
         rest: "Descanso",
@@ -362,6 +377,7 @@ export const dashboardCopy = {
         empty: "Treinos concluidos aparecerao aqui.",
         completedAt: (value: string) => `Concluido: ${value}`,
         exerciseCount: (value: number) => `${value} exercicios registrados`,
+        progress: (completed: number, total: number) => `${completed}/${total} concluidos`,
       },
     },
   },

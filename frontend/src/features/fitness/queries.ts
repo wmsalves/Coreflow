@@ -28,6 +28,8 @@ type WorkoutLogExerciseRow = Pick<
   | "body_part"
   | "catalog_id"
   | "catalog_internal_id"
+  | "completed"
+  | "completed_at"
   | "equipment"
   | "gif_url"
   | "id"
@@ -106,8 +108,23 @@ export async function getFitnessSnapshot(userId: string) {
     getWorkoutLogsForUser(userId),
   ]);
 
+  const logs = logsResult.status === "fulfilled" ? logsResult.value : [];
+  const latestLog = logs[0] ?? null;
+  const completedCount = latestLog
+    ? latestLog.exercises.filter((exercise) => exercise.completed).length
+    : 0;
+  const totalCount = latestLog?.exercises.length ?? 0;
+
   return {
-    logCount: logsResult.status === "fulfilled" ? logsResult.value.length : 0,
+    latestWorkoutProgress:
+      latestLog && totalCount > 0
+        ? {
+            completedCount,
+            remainingCount: Math.max(totalCount - completedCount, 0),
+            totalCount,
+          }
+        : null,
+    logCount: logs.length,
     planCount: plansResult.status === "fulfilled" ? plansResult.value.length : 0,
   };
 }
@@ -231,7 +248,7 @@ async function getLogExercises(userId: string, logIds: string[]) {
   const { data, error } = await supabase
     .from("workout_log_exercises")
     .select(
-      "body_part, catalog_id, catalog_internal_id, equipment, gif_url, id, image_url, name, notes, order_index, reps_completed, rest_seconds, sets_completed, target, user_id, video_url, weight, workout_log_id",
+      "body_part, catalog_id, catalog_internal_id, completed, completed_at, equipment, gif_url, id, image_url, name, notes, order_index, reps_completed, rest_seconds, sets_completed, target, user_id, video_url, weight, workout_log_id",
     )
     .eq("user_id", userId)
     .in("workout_log_id", logIds)
@@ -295,6 +312,8 @@ function toWorkoutLog(log: WorkoutLogRow, exercises: WorkoutLogExerciseRow[]): W
     durationMinutes: log.duration_minutes,
     exercises: exercises.map((exercise) => ({
       bodyPart: exercise.body_part,
+      completed: exercise.completed,
+      completedAt: exercise.completed_at,
       equipment: exercise.equipment,
       externalId: exercise.catalog_id,
       exerciseId: exercise.catalog_internal_id,

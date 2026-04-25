@@ -2,6 +2,8 @@
 
 import {
   Activity,
+  CheckCircle2,
+  Circle,
   Dumbbell,
   Loader2,
   Play,
@@ -24,7 +26,7 @@ import {
   createWorkoutPlanAction,
   getExerciseDetailAction,
   listExerciseCatalogAction,
-  logWorkoutAction,
+  logWorkoutExecutionAction,
   removeExerciseFromWorkoutPlanAction,
   searchExerciseCatalogAction,
 } from "@/features/fitness/actions";
@@ -50,6 +52,7 @@ type PendingMutation =
   | { type: "log-workout" };
 type FitnessCopy = (typeof dashboardCopy)["en"]["fitness"];
 type CommonCopy = (typeof dashboardCopy)["en"]["common"];
+type ExecutionDrafts = Record<string, Record<string, boolean>>;
 
 const defaultConfig: ExerciseConfig = {
   notes: "",
@@ -104,6 +107,7 @@ export function FitnessWorkspace({
   const [detailState, setDetailState] = useState<LoadState>("idle");
   const [pendingMutation, setPendingMutation] =
     useState<PendingMutation | null>(null);
+  const [executionDrafts, setExecutionDrafts] = useState<ExecutionDrafts>({});
   const [createPlanSheetOpen, setCreatePlanSheetOpen] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(
     initialLoadFailed ? { kind: "error", text: copy.initialLoadError } : null,
@@ -142,6 +146,24 @@ export function FitnessWorkspace({
         (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
       ),
     [activePlanExercises],
+  );
+  const activeExecutionDraft = useMemo(() => {
+    if (!activePlan) {
+      return {};
+    }
+
+    const currentDraft = executionDrafts[activePlan.id] ?? {};
+    return sortedPlanExercises.reduce<Record<string, boolean>>((draft, exercise) => {
+      draft[exercise.id] = currentDraft[exercise.id] ?? false;
+      return draft;
+    }, {});
+  }, [activePlan, executionDrafts, sortedPlanExercises]);
+  const completedExerciseCount = sortedPlanExercises.filter(
+    (exercise) => activeExecutionDraft[exercise.id],
+  ).length;
+  const remainingExerciseCount = Math.max(
+    sortedPlanExercises.length - completedExerciseCount,
+    0,
   );
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
@@ -250,7 +272,9 @@ export function FitnessWorkspace({
     const previousPlans = plans;
     const removeFromPlan = (plan: WorkoutPlan) => ({
       ...plan,
-      exercises: plan.exercises.filter((exercise) => exercise.id !== exerciseId),
+      exercises: plan.exercises.filter(
+        (exercise) => exercise.id !== exerciseId,
+      ),
     });
 
     setPendingMutation({ exerciseId, type: "remove-exercise" });
@@ -263,7 +287,10 @@ export function FitnessWorkspace({
     );
 
     try {
-      const updatedPlan = await removeExerciseFromWorkoutPlanAction(activePlan.id, exerciseId);
+      const updatedPlan = await removeExerciseFromWorkoutPlanAction(
+        activePlan.id,
+        exerciseId,
+      );
 
       setActivePlan(updatedPlan);
       setPlans((currentPlans) =>
@@ -284,6 +311,23 @@ export function FitnessWorkspace({
     }
   }
 
+  function handleExerciseCompletionToggle(exerciseId: string) {
+    if (!activePlan || isMutating) {
+      return;
+    }
+
+    setExecutionDrafts((current) => {
+      const planDraft = current[activePlan.id] ?? {};
+      return {
+        ...current,
+        [activePlan.id]: {
+          ...planDraft,
+          [exerciseId]: !planDraft[exerciseId],
+        },
+      };
+    });
+  }
+
   async function handleLogWorkout() {
     if (isMutating) {
       return;
@@ -299,13 +343,28 @@ export function FitnessWorkspace({
       return;
     }
 
+    if (completedExerciseCount === 0) {
+      setNotice({ kind: "info", text: copy.noExercisesCompleted });
+      return;
+    }
+
     setPendingMutation({ type: "log-workout" });
     setNotice(null);
 
     try {
-      const workoutLog = await logWorkoutAction(activePlan.id);
+      const workoutLog = await logWorkoutExecutionAction(
+        activePlan.id,
+        sortedPlanExercises.map((exercise) => ({
+          completed: activeExecutionDraft[exercise.id] ?? false,
+          exerciseId: exercise.id,
+        })),
+      );
 
       setLogs((currentLogs) => [workoutLog, ...currentLogs]);
+      setExecutionDrafts((current) => ({
+        ...current,
+        [activePlan.id]: {},
+      }));
       setNotice({ kind: "success", text: copy.workoutLogged });
     } catch (error) {
       setNotice({
@@ -433,6 +492,8 @@ export function FitnessWorkspace({
 
         <WorkoutBuilder
           activePlan={activePlan}
+          activeExecutionDraft={activeExecutionDraft}
+          completedExerciseCount={completedExerciseCount}
           commonCopy={commonCopy}
           copy={copy}
           logs={logs}
@@ -454,8 +515,10 @@ export function FitnessWorkspace({
           onLogWorkout={handleLogWorkout}
           onPlanDescriptionChange={setPlanDescription}
           onPlanNameChange={setPlanName}
+          onToggleExerciseCompletion={handleExerciseCompletionToggle}
           onRemoveExercise={handleRemoveExercise}
           onSelectPlan={setActivePlan}
+          remainingExerciseCount={remainingExerciseCount}
         />
       </section>
     </>
@@ -465,7 +528,9 @@ export function FitnessWorkspace({
 function Metric({ label, value }: { label: string; value: number }) {
   return (
     <div className="border-r border-[var(--landing-border)] px-4 py-4 last:border-r-0">
-      <p className="text-xl font-semibold tracking-tight sm:text-2xl">{value}</p>
+      <p className="text-xl font-semibold tracking-tight sm:text-2xl">
+        {value}
+      </p>
       <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-muted)] sm:text-[11px] sm:tracking-[0.18em]">
         {label}
       </p>
@@ -496,7 +561,10 @@ function ExerciseResultCard({
       onClick={() => onSelect(exercise)}
       type="button"
     >
-      <ExerciseMedia className="h-24 w-24 shrink-0 sm:h-auto sm:w-auto sm:shrink sm:aspect-[4/3]" exercise={exercise} />
+      <ExerciseMedia
+        className="h-24 w-24 shrink-0 sm:h-auto sm:w-auto sm:shrink sm:aspect-[4/3]"
+        exercise={exercise}
+      />
       <div className="flex flex-1 flex-col justify-between gap-3 sm:mt-4 sm:gap-4">
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
@@ -571,7 +639,11 @@ function ExerciseInspector({
     <Card className="overflow-hidden">
       <div className="grid gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,0.8fr)]">
         <div className="bg-[var(--landing-surface-alt)] p-4">
-          <ExerciseMedia className="aspect-[4/3] sm:aspect-video" exercise={exercise} large />
+          <ExerciseMedia
+            className="aspect-[4/3] sm:aspect-video"
+            exercise={exercise}
+            large
+          />
         </div>
         <div className="space-y-5 p-4 sm:space-y-6 sm:p-6">
           <div className="space-y-3">
@@ -599,7 +671,10 @@ function ExerciseInspector({
 
           {exercise.instructions.length > 0 ? (
             <>
-              <Disclosure className="sm:hidden" summary={copy.inspector.formNotes}>
+              <Disclosure
+                className="sm:hidden"
+                summary={copy.inspector.formNotes}
+              >
                 <InstructionList exercise={exercise} />
               </Disclosure>
               <div className="hidden space-y-2 sm:block">
@@ -667,6 +742,8 @@ function ExerciseInspector({
 
 function WorkoutBuilder({
   activePlan,
+  activeExecutionDraft,
+  completedExerciseCount,
   commonCopy,
   copy,
   createPlanSheetOpen,
@@ -679,15 +756,19 @@ function WorkoutBuilder({
   onLogWorkout,
   onPlanDescriptionChange,
   onPlanNameChange,
+  onToggleExerciseCompletion,
   onRemoveExercise,
   onSelectPlan,
   pendingRemovalId,
   planDescription,
   planName,
   plans,
+  remainingExerciseCount,
   sortedPlanExercises,
 }: {
   activePlan: WorkoutPlan | null;
+  activeExecutionDraft: Record<string, boolean>;
+  completedExerciseCount: number;
   commonCopy: CommonCopy;
   copy: FitnessCopy;
   createPlanSheetOpen: boolean;
@@ -700,12 +781,14 @@ function WorkoutBuilder({
   onLogWorkout: () => void;
   onPlanDescriptionChange: (value: string) => void;
   onPlanNameChange: (value: string) => void;
+  onToggleExerciseCompletion: (exerciseId: string) => void;
   onRemoveExercise: (exerciseId: string) => void;
   onSelectPlan: (plan: WorkoutPlan) => void;
   pendingRemovalId: string | null;
   planDescription: string;
   planName: string;
   plans: WorkoutPlan[];
+  remainingExerciseCount: number;
   sortedPlanExercises: WorkoutPlan["exercises"];
 }) {
   return (
@@ -803,80 +886,130 @@ function WorkoutBuilder({
         <CardContent className="space-y-3 p-4">
           {sortedPlanExercises.length === 0 ? (
             <div className="rounded-[24px] border border-dashed border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 text-sm leading-6 text-[var(--landing-text-muted)]">
-              {activePlan ? copy.builder.emptyPlan : copy.builder.noWorkoutDescription}
+              {activePlan
+                ? copy.builder.emptyPlan
+                : copy.builder.noWorkoutDescription}
             </div>
           ) : (
-            sortedPlanExercises.map((item, index) => (
-              <div
-                className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 sm:rounded-[24px]"
-                key={item.id}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-text-muted)]">
-                      {String(index + 1).padStart(2, "0")}
-                    </p>
-                    <h3 className="mt-1 font-semibold tracking-tight">
-                      {item.exercise.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
-                      {[
-                        getMetaValue(
-                          item.exercise.bodyPart,
-                          commonCopy.notSpecified,
-                        ),
-                        getMetaValue(
-                          item.exercise.target,
-                          commonCopy.notSpecified,
-                        ),
-                      ].join(commonCopy.slashSeparator)}
-                    </p>
-                  </div>
-                  <Dumbbell className="mt-1 size-4 shrink-0 text-[var(--landing-accent)]" />
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
-                  <MiniStat
-                    label={copy.builder.sets}
-                    value={item.sets ?? "-"}
-                  />
-                  <MiniStat
-                    label={copy.builder.reps}
-                    value={item.reps ?? "-"}
-                  />
-                  <MiniStat
-                    label={copy.builder.rest}
-                    value={item.restSeconds ? `${item.restSeconds}s` : "-"}
-                  />
-                </div>
-                {item.notes ? (
-                  <>
-                    <Disclosure className="mt-3 sm:hidden" summary={copy.builder.notes}>
-                      <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
-                        {item.notes}
-                      </p>
-                    </Disclosure>
-                    <p className="mt-3 hidden text-sm leading-6 text-[var(--landing-text-muted)] sm:block">
-                      {item.notes}
-                    </p>
-                  </>
-                ) : null}
-                <Button
-                  aria-label={`Remove ${item.exercise.name}`}
-                  className="mt-3 w-full sm:w-auto"
-                  disabled={mutationPending}
-                  onClick={() => onRemoveExercise(item.id)}
-                  size="sm"
-                  type="button"
-                  variant="ghost"
-                >
-                  {pendingRemovalId === item.id ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="size-4" />
+            <>
+              <div className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 sm:rounded-[1.5rem]">
+                <p className="text-sm font-semibold text-[var(--landing-text)]">
+                  {copy.builder.progressCompleted(
+                    completedExerciseCount,
+                    sortedPlanExercises.length,
                   )}
-                </Button>
+                </p>
+                <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                  {copy.builder.progressRemaining(remainingExerciseCount)}
+                </p>
               </div>
-            ))
+              {sortedPlanExercises.map((item, index) => {
+                const completed = activeExecutionDraft[item.id] ?? false;
+
+                return (
+                  <div
+                    className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 sm:rounded-[24px]"
+                    key={item.id}
+                  >
+                    <div className="flex items-start gap-3">
+                      <ExerciseMedia
+                        className="h-20 w-20 shrink-0 rounded-[1rem]"
+                        exercise={item.exercise}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-text-muted)]">
+                              {String(index + 1).padStart(2, "0")}
+                            </p>
+                            <h3 className="mt-1 font-semibold tracking-tight">
+                              {item.exercise.name}
+                            </h3>
+                            <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                              {[
+                                getMetaValue(
+                                  item.exercise.bodyPart,
+                                  commonCopy.notSpecified,
+                                ),
+                                getMetaValue(
+                                  item.exercise.target,
+                                  commonCopy.notSpecified,
+                                ),
+                              ].join(commonCopy.slashSeparator)}
+                            </p>
+                          </div>
+                          <button
+                            aria-pressed={completed}
+                            className={cn(
+                              "inline-flex min-h-11 items-center gap-2 rounded-full border px-3 text-sm font-medium transition",
+                              completed
+                                ? "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]"
+                                : "border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] text-[var(--landing-text-muted)]",
+                            )}
+                            disabled={mutationPending}
+                            onClick={() => onToggleExerciseCompletion(item.id)}
+                            type="button"
+                          >
+                            {completed ? (
+                              <CheckCircle2 className="size-4" />
+                            ) : (
+                              <Circle className="size-4" />
+                            )}
+                            {completed
+                              ? copy.builder.markComplete
+                              : copy.builder.markPending}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+                      <MiniStat
+                        label={copy.builder.sets}
+                        value={item.sets ?? "-"}
+                      />
+                      <MiniStat
+                        label={copy.builder.reps}
+                        value={item.reps ?? "-"}
+                      />
+                      <MiniStat
+                        label={copy.builder.rest}
+                        value={item.restSeconds ? `${item.restSeconds}s` : "-"}
+                      />
+                    </div>
+                    {item.notes ? (
+                      <>
+                        <Disclosure
+                          className="mt-3 sm:hidden"
+                          summary={copy.builder.notes}
+                        >
+                          <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
+                            {item.notes}
+                          </p>
+                        </Disclosure>
+                        <p className="mt-3 hidden text-sm leading-6 text-[var(--landing-text-muted)] sm:block">
+                          {item.notes}
+                        </p>
+                      </>
+                    ) : null}
+                    <Button
+                      aria-label={`Remove ${item.exercise.name}`}
+                      className="mt-3 w-full sm:w-auto"
+                      disabled={mutationPending}
+                      onClick={() => onRemoveExercise(item.id)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      {pendingRemovalId === item.id ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-4" />
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
+            </>
           )}
         </CardContent>
       </Card>
@@ -896,12 +1029,16 @@ function WorkoutBuilder({
         <CardContent className="space-y-3 p-4">
           <Button
             className="w-full"
-            disabled={!activePlan || sortedPlanExercises.length === 0 || mutationPending}
+            disabled={
+              !activePlan || sortedPlanExercises.length === 0 || mutationPending
+            }
             onClick={onLogWorkout}
             type="button"
             variant="secondary"
           >
-            {loggingWorkout ? <Loader2 className="size-4 animate-spin" /> : null}
+            {loggingWorkout ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : null}
             {copy.logs.logActivePlan}
           </Button>
 
@@ -916,10 +1053,19 @@ function WorkoutBuilder({
                 key={log.id}
               >
                 <p className="font-semibold text-[var(--landing-text)]">
-                  {copy.logs.completedAt(new Date(log.completedAt).toLocaleString())}
+                  {copy.logs.completedAt(
+                    new Date(log.completedAt).toLocaleString(),
+                  )}
                 </p>
                 <p className="mt-1 text-[var(--landing-text-muted)]">
                   {copy.logs.exerciseCount(log.exercises.length)}
+                </p>
+                <p className="mt-1 text-[var(--landing-text)]">
+                  {copy.logs.progress(
+                    log.exercises.filter((exercise) => exercise.completed)
+                      .length,
+                    log.exercises.length,
+                  )}
                 </p>
               </div>
             ))
@@ -1002,10 +1148,7 @@ function InstructionList({ exercise }: { exercise: ExerciseDetail }) {
   return (
     <ol className="space-y-2 text-sm leading-6 text-[var(--landing-text-muted)]">
       {exercise.instructions.slice(0, 3).map((instruction, index) => (
-        <li
-          className="flex gap-3"
-          key={`${exercise.id}-instruction-${index}`}
-        >
+        <li className="flex gap-3" key={`${exercise.id}-instruction-${index}`}>
           <span className="font-semibold text-[var(--landing-accent)]">
             {index + 1}
           </span>
@@ -1050,7 +1193,13 @@ function WorkoutPlanForm({
 }) {
   return (
     <form className="space-y-4" onSubmit={onCreatePlan}>
-      <div className={guided ? "space-y-4 rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3" : "space-y-4"}>
+      <div
+        className={
+          guided
+            ? "space-y-4 rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-3"
+            : "space-y-4"
+        }
+      >
         {guided ? <StepLabel index={1} title={copy.builder.planName} /> : null}
         <label className="block space-y-2 text-sm font-medium">
           <span>{copy.builder.planName}</span>
@@ -1065,18 +1214,12 @@ function WorkoutPlanForm({
           <span>{copy.builder.planDescription}</span>
           <Input
             disabled={creatingPlan}
-            onChange={(event) =>
-              onPlanDescriptionChange(event.target.value)
-            }
+            onChange={(event) => onPlanDescriptionChange(event.target.value)}
             value={planDescription}
           />
         </label>
       </div>
-      <Button
-        className="w-full"
-        disabled={mutationPending}
-        type="submit"
-      >
+      <Button className="w-full" disabled={mutationPending} type="submit">
         {creatingPlan ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (

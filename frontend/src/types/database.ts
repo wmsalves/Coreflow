@@ -286,6 +286,8 @@ export type Database = {
           body_part?: string | null;
           catalog_id?: string | null;
           catalog_internal_id?: number | null;
+          completed?: boolean;
+          completed_at?: string | null;
           created_at?: string;
           equipment?: string | null;
           gif_url?: string | null;
@@ -307,6 +309,8 @@ export type Database = {
           body_part: string | null;
           catalog_id: string | null;
           catalog_internal_id: number | null;
+          completed: boolean;
+          completed_at: string | null;
           created_at: string;
           equipment: string | null;
           gif_url: string | null;
@@ -328,6 +332,8 @@ export type Database = {
           body_part?: string | null;
           catalog_id?: string | null;
           catalog_internal_id?: number | null;
+          completed?: boolean;
+          completed_at?: string | null;
           created_at?: string;
           equipment?: string | null;
           gif_url?: string | null;

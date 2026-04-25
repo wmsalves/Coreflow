@@ -54,6 +54,8 @@ export type WorkoutPlan = {
 
 export type WorkoutLogExercise = {
   bodyPart: string | null;
+  completed: boolean;
+  completedAt: string | null;
   equipment: string | null;
   externalId: string | null;
   gifUrl: string | null;

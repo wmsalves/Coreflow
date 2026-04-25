@@ -23,6 +23,11 @@ type DashboardOverviewProps = {
     nextSteps: Array<{
       href: string;
       key: "studySessions" | "workoutTracking" | "stripePlans";
+      progress?: {
+        completedCount: number;
+        remainingCount: number;
+        totalCount: number;
+      } | null;
     }>;
     recentHabits: Array<{
       completedToday: boolean;
@@ -132,6 +137,15 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
                   <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
                     {stepCopy.description}
                   </p>
+                  {step.key === "workoutTracking" && step.progress ? (
+                    <p className="mt-2 text-sm font-medium text-[var(--landing-text)]">
+                      {copy.nextModules.workoutTracking.progress(
+                        step.progress.completedCount,
+                        step.progress.totalCount,
+                        step.progress.remainingCount,
+                      )}
+                    </p>
+                  ) : null}
                 </Link>
               );
             })}

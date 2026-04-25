@@ -167,6 +167,16 @@ export async function removeExerciseFromWorkoutPlanAction(
 }
 
 export async function logWorkoutAction(planId: string): Promise<WorkoutLog> {
+  return logWorkoutExecutionAction(
+    planId,
+    [],
+  );
+}
+
+export async function logWorkoutExecutionAction(
+  planId: string,
+  exerciseCompletion: Array<{ completed: boolean; exerciseId: string }>,
+): Promise<WorkoutLog> {
   const user = await requireUser();
   const supabase = await createServerSupabaseClient();
   const plan = await getWorkoutPlanById(user.id, planId);
@@ -174,6 +184,10 @@ export async function logWorkoutAction(planId: string): Promise<WorkoutLog> {
   if (plan.exercises.length === 0) {
     throw new Error("Add at least one exercise before logging this workout.");
   }
+
+  const completionMap = new Map(
+    exerciseCompletion.map((item) => [item.exerciseId, item.completed]),
+  );
 
   const { data: log, error: logError } = await supabase
     .from("workout_logs")
@@ -189,24 +203,30 @@ export async function logWorkoutAction(planId: string): Promise<WorkoutLog> {
   }
 
   const { error: exercisesError } = await supabase.from("workout_log_exercises").insert(
-    plan.exercises.map((exercise, index) => ({
-      body_part: exercise.exercise.bodyPart,
-      catalog_id: exercise.exercise.externalId,
-      catalog_internal_id: exercise.exerciseId,
-      equipment: exercise.exercise.equipment,
-      gif_url: exercise.exercise.gifUrl,
-      image_url: exercise.exercise.imageUrl,
-      name: exercise.exercise.name,
-      notes: exercise.notes,
-      order_index: exercise.sortOrder ?? index + 1,
-      reps_completed: exercise.reps,
-      rest_seconds: exercise.restSeconds,
-      sets_completed: exercise.sets,
-      target: exercise.exercise.target,
-      user_id: user.id,
-      video_url: exercise.exercise.videoUrl,
-      workout_log_id: log.id,
-    })),
+    plan.exercises.map((exercise, index) => {
+      const completed = completionMap.get(exercise.id) ?? false;
+
+      return {
+        body_part: exercise.exercise.bodyPart,
+        catalog_id: exercise.exercise.externalId,
+        catalog_internal_id: exercise.exerciseId,
+        completed,
+        completed_at: completed ? new Date().toISOString() : null,
+        equipment: exercise.exercise.equipment,
+        gif_url: exercise.exercise.gifUrl,
+        image_url: exercise.exercise.imageUrl,
+        name: exercise.exercise.name,
+        notes: exercise.notes,
+        order_index: exercise.sortOrder ?? index + 1,
+        reps_completed: exercise.reps,
+        rest_seconds: exercise.restSeconds,
+        sets_completed: exercise.sets,
+        target: exercise.exercise.target,
+        user_id: user.id,
+        video_url: exercise.exercise.videoUrl,
+        workout_log_id: log.id,
+      };
+    }),
   );
 
   if (exercisesError) {
