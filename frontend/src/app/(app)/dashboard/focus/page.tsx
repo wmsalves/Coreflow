@@ -8,8 +8,12 @@ export default async function FocusPage() {
 
   return (
     <FocusWorkspace
+      initialActiveSession={focusData.activeSession}
+      initialHistory={focusData.history}
       initialSessions={focusData.sessions}
       initialStandaloneFocusSeconds={focusData.standaloneFocusSeconds}
+      initialTodayFocusSeconds={focusData.todayFocusSeconds}
+      initialWeekFocusSeconds={focusData.weekFocusSeconds}
     />
   );
 }

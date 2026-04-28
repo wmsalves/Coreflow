@@ -159,6 +159,7 @@ export async function getFitnessSnapshot(userId: string) {
     ? latestLog.exercises.filter((exercise) => exercise.completed).length
     : 0;
   const totalCount = latestLog?.exercises.length ?? 0;
+  const skippedCount = latestLog ? Math.max(totalCount - completedCount, 0) : 0;
   const activeCompletedCount = activeSession
     ? activeSession.exercises.filter((exercise) => exercise.completed).length
     : 0;
@@ -177,8 +178,12 @@ export async function getFitnessSnapshot(userId: string) {
       latestLog && totalCount > 0
         ? {
             completedCount,
+            logId: latestLog.id,
             remainingCount: Math.max(totalCount - completedCount, 0),
+            skippedCount,
             totalCount,
+            workoutName: latestLog.workoutName,
+            completedAt: latestLog.completedAt,
           }
         : null,
     logCount: logs.length,
@@ -260,8 +265,16 @@ export async function getWorkoutLogById(userId: string, logId: string) {
     throw new Error(error.message);
   }
 
+  const workoutNames = await getWorkoutPlanNames(
+    userId,
+    log.plan_id ? [log.plan_id] : [],
+  );
   const logExercises = await getLogExercises(userId, [log.id]);
-  return toWorkoutLog(log, logExercises.get(log.id) ?? []);
+  return toWorkoutLog(
+    log,
+    logExercises.get(log.id) ?? [],
+    workoutNames.get(log.plan_id ?? ""),
+  );
 }
 
 async function getWorkoutPlansForUser(userId: string): Promise<WorkoutPlan[]> {
@@ -306,12 +319,18 @@ async function getWorkoutLogsForUser(userId: string): Promise<WorkoutLog[]> {
   }
 
   const logRows = logs ?? [];
+  const workoutNames = await getWorkoutPlanNames(
+    userId,
+    logRows.flatMap((log) => (log.plan_id ? [log.plan_id] : [])),
+  );
   const logExercises = await getLogExercises(
     userId,
     logRows.map((log) => log.id),
   );
 
-  return logRows.map((log) => toWorkoutLog(log, logExercises.get(log.id) ?? []));
+  return logRows.map((log) =>
+    toWorkoutLog(log, logExercises.get(log.id) ?? [], workoutNames.get(log.plan_id ?? "")),
+  );
 }
 
 async function getPlanExercises(userId: string, planIds: string[]) {
@@ -395,6 +414,30 @@ async function getWorkoutSessionExercises(userId: string, sessionIds: string[]) 
   );
 }
 
+async function getWorkoutPlanNames(userId: string, planIds: string[]) {
+  if (planIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const uniquePlanIds = [...new Set(planIds)];
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("workout_plans")
+    .select("id, name")
+    .eq("user_id", userId)
+    .in("id", uniquePlanIds);
+
+  if (error) {
+    if (isMissingSchemaError(error)) {
+      return new Map<string, string>();
+    }
+
+    throw new Error(error.message);
+  }
+
+  return new Map((data ?? []).map((plan) => [plan.id, plan.name]));
+}
+
 function toWorkoutPlan(plan: WorkoutPlanRow, exercises: PlanExerciseRow[]): WorkoutPlan {
   return {
     createdAt: plan.created_at,
@@ -436,7 +479,11 @@ function toWorkoutPlanExercise(exercise: PlanExerciseRow): WorkoutPlanExercise {
   };
 }
 
-function toWorkoutLog(log: WorkoutLogRow, exercises: WorkoutLogExerciseRow[]): WorkoutLog {
+function toWorkoutLog(
+  log: WorkoutLogRow,
+  exercises: WorkoutLogExerciseRow[],
+  workoutName: string | undefined = undefined,
+): WorkoutLog {
   return {
     completedAt: log.performed_at,
     durationMinutes: log.duration_minutes,
@@ -462,6 +509,7 @@ function toWorkoutLog(log: WorkoutLogRow, exercises: WorkoutLogExerciseRow[]): W
     id: log.id,
     notes: log.notes,
     userId: log.user_id,
+    workoutName: workoutName ?? null,
     workoutPlanId: log.plan_id,
   };
 }

@@ -12,6 +12,7 @@ const defaultSettings: PomodoroSettings = {
 
 type PomodoroState = {
   cycle: number;
+  completedFocusCycles: number;
   focusSeconds: number;
   isRunning: boolean;
   phase: PomodoroPhase;
@@ -21,6 +22,7 @@ type PomodoroState = {
 function createInitialState(settings: PomodoroSettings, isRunning = false): PomodoroState {
   return {
     cycle: 1,
+    completedFocusCycles: 0,
     focusSeconds: 0,
     isRunning,
     phase: "focus",
@@ -66,6 +68,7 @@ function tick(current: PomodoroState, settings: PomodoroSettings): PomodoroState
     const nextPhase: PomodoroPhase = current.cycle >= settings.cycles ? "long_break" : "short_break";
     return {
       ...current,
+      completedFocusCycles: current.completedFocusCycles + 1,
       focusSeconds,
       phase: nextPhase,
       remainingSeconds: secondsForPhase(nextPhase, settings),
@@ -168,6 +171,7 @@ export function usePomodoro(initialSettings: PomodoroSettings = defaultSettings)
 
   return {
     cycle: timerState.cycle,
+    completedFocusCycles: timerState.completedFocusCycles,
     focusSecondsLogged: timerState.focusSeconds,
     isRunning: timerState.isRunning,
     phase: timerState.phase,

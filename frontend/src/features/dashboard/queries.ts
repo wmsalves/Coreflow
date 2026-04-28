@@ -1,6 +1,6 @@
 import "server-only";
 import { getFitnessSnapshot } from "@/features/fitness/queries";
-import { getStudySessionsOverview } from "@/features/focus/queries";
+import { getFocusDashboardSnapshot } from "@/features/focus/queries";
 import { getHabitsOverview } from "@/features/habits/queries";
 import { formatPercentage } from "@/lib/utils";
 
@@ -8,15 +8,17 @@ export type DashboardMetricKey = "habitsToday" | "completionRate" | "longestStre
 export type DashboardNextStepKey = "studySessions" | "workoutTracking" | "stripePlans";
 
 export async function getDashboardSnapshot(userId: string) {
-  const [habitsOverview, studySessions, fitnessSnapshot] = await Promise.all([
+  const [habitsOverview, focusSnapshot, fitnessSnapshot] = await Promise.all([
     getHabitsOverview(userId),
-    getStudySessionsOverview(userId),
+    getFocusDashboardSnapshot(userId),
     getFitnessSnapshot(userId),
   ]);
 
   const modulesInProgress = [
     habitsOverview.summary.activeCount > 0,
-    studySessions.length > 0,
+    focusSnapshot.completedSessions > 0 ||
+      focusSnapshot.pendingSessions > 0 ||
+      Boolean(focusSnapshot.activeSession),
     fitnessSnapshot.planCount > 0 || fitnessSnapshot.logCount > 0,
   ].filter(Boolean).length;
 
@@ -41,9 +43,24 @@ export async function getDashboardSnapshot(userId: string) {
     ],
     recentHabits: habitsOverview.habits.slice(0, 3),
     nextSteps: [
-      { href: "/dashboard/focus", key: "studySessions" as const },
       {
-        href: "/dashboard/fitness",
+        href: "/dashboard/focus",
+        key: "studySessions" as const,
+        focus: {
+          activeSessionTitle: focusSnapshot.activeSession?.title ?? null,
+          completedSessions: focusSnapshot.completedSessions,
+          pendingSessions: focusSnapshot.pendingSessions,
+          todayFocusSeconds: focusSnapshot.todayFocusSeconds,
+          weekFocusSeconds: focusSnapshot.weekFocusSeconds,
+        },
+      },
+      {
+        href:
+          fitnessSnapshot.activeWorkoutProgress
+            ? "/dashboard/fitness"
+            : fitnessSnapshot.latestWorkoutProgress?.logId
+              ? `/dashboard/fitness/history/${fitnessSnapshot.latestWorkoutProgress.logId}`
+              : "/dashboard/fitness",
         key: "workoutTracking" as const,
         active: Boolean(fitnessSnapshot.activeWorkoutProgress),
         progress: fitnessSnapshot.latestWorkoutProgress,

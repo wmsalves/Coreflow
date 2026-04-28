@@ -27,7 +27,11 @@ type PomodoroPanelProps = {
   copy: FocusCopy;
   onClearSession: () => void;
   onCompleteSession: (id: string) => Promise<void> | void;
-  onLogFocusRun: (studySessionId: string | null, focusSeconds: number) => Promise<void> | void;
+  onLogFocusRun: (
+    studySessionId: string | null,
+    focusSeconds: number,
+    cyclesCompleted: number,
+  ) => Promise<void> | void;
   onStartSession: (id: string) => Promise<StudySession | null> | StudySession | null;
   selectedSession: StudySession | null;
   standaloneFocusSeconds: number;
@@ -54,6 +58,7 @@ export function PomodoroPanel({
   const canRun = !selectedSession || selectedSessionCanRun;
   const hasFocusTimeToSave = timer.focusSecondsLogged > 0;
   const controlsBusy = isSavingFocusRun || isStartingSession;
+  const currentCyclesCompleted = timer.completedFocusCycles;
   const primaryLabel = timer.isRunning
     ? copy.actions.pause
     : timer.remainingSeconds < timer.settings.focusMinutes * 60
@@ -91,7 +96,11 @@ export function PomodoroPanel({
 
     setIsSavingFocusRun(true);
     try {
-      await onLogFocusRun(selectedSession?.id ?? null, timer.focusSecondsLogged);
+      await onLogFocusRun(
+        selectedSession?.id ?? null,
+        timer.focusSecondsLogged,
+        currentCyclesCompleted,
+      );
       timer.reset();
     } finally {
       setIsSavingFocusRun(false);
@@ -106,7 +115,11 @@ export function PomodoroPanel({
     setIsSavingFocusRun(true);
     try {
       if (hasFocusTimeToSave) {
-        await onLogFocusRun(selectedSession.id, timer.focusSecondsLogged);
+        await onLogFocusRun(
+          selectedSession.id,
+          timer.focusSecondsLogged,
+          currentCyclesCompleted,
+        );
       }
       await onCompleteSession(selectedSession.id);
       timer.reset();
@@ -135,12 +148,29 @@ export function PomodoroPanel({
           </p>
           {selectedSession ? (
             <div className="mt-2">
-              <h3 className="font-semibold tracking-[-0.025em] text-[var(--landing-text)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-accent)]">
+                {selectedSession.status === "in_progress" ? copy.pomodoro.active : copy.pomodoro.selected}
+              </p>
+              <h3 className="mt-2 font-semibold tracking-[-0.025em] text-[var(--landing-text)]">
                 {selectedSession.title}
               </h3>
               <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
                 {selectedSession.subject}
               </p>
+              <p className="mt-2 text-sm text-[var(--landing-text-muted)]">
+                {copy.pomodoro.status}: {copy.status[selectedSession.status]}
+              </p>
+              <p className="mt-1 text-sm font-medium text-[var(--landing-text)]">
+                {copy.pomodoro.savedSessionTotal(selectedSession.completedFocusSeconds)}
+              </p>
+              <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                {copy.pomodoro.cyclesSaved(selectedSession.totalCyclesCompleted)}
+              </p>
+              {selectedSession.status === "in_progress" ? (
+                <p className="mt-1 text-xs font-medium text-[var(--landing-text-faint)]">
+                  {copy.pomodoro.readyToResume}
+                </p>
+              ) : null}
               <Button className="mt-3" onClick={onClearSession} size="sm" variant="secondary">
                 {copy.actions.useStandalone}
               </Button>
@@ -169,6 +199,9 @@ export function PomodoroPanel({
           </p>
           <p className="mt-2 text-xs font-medium text-[var(--landing-text-faint)]">
             {copy.pomodoro.currentRun(timer.focusSecondsLogged)}
+          </p>
+          <p className="mt-1 text-xs font-medium text-[var(--landing-text-faint)]">
+            {copy.list.cyclesLogged(currentCyclesCompleted)}
           </p>
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-[var(--landing-surface-alt)]">
             <div

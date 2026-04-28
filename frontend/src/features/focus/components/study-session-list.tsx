@@ -49,7 +49,6 @@ export function StudySessionList({
   const upcomingSessions = sessions.filter(
     (session) => session.status === "pending" || session.status === "in_progress",
   );
-  const completedSessions = sessions.filter((session) => session.status === "completed");
   const inactiveSessions = sessions.filter(
     (session) => session.status === "canceled" || session.status === "archived",
   );
@@ -119,20 +118,6 @@ export function StudySessionList({
               pendingAction={pendingAction}
               sessions={upcomingSessions}
               title={copy.list.upcomingTitle}
-            />
-            <SessionSection
-              activeSessionId={activeSessionId}
-              copy={copy}
-              onArchive={onArchive}
-              onCancel={onCancel}
-              onComplete={onComplete}
-              onDelete={onDelete}
-              onEdit={onEdit}
-              onSelect={onSelect}
-              onStart={onStart}
-              pendingAction={pendingAction}
-              sessions={completedSessions}
-              title={copy.list.completedTitle}
             />
             <SessionSection
               activeSessionId={activeSessionId}

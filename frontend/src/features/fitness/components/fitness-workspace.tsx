@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1552,27 +1553,57 @@ function WorkoutBuilder({
             </div>
           ) : (
             logs.slice(0, 5).map((log) => (
-              <div
-                className="rounded-[20px] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 text-sm"
+              <Link
+                className="block rounded-[20px] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 text-sm transition hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-bg-elevated)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--landing-border-strong)]"
+                href={`/dashboard/fitness/history/${log.id}`}
                 key={log.id}
               >
-                <p className="font-semibold text-[var(--landing-text)]">
-                  {copy.logs.completedAt(
-                    new Date(log.completedAt).toLocaleString(),
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-semibold text-[var(--landing-text)]">
+                      {log.workoutName ?? copy.builder.noWorkout}
+                    </p>
+                    <p className="mt-1 text-[var(--landing-text-muted)]">
+                      {copy.logs.completedAt(
+                        new Date(log.completedAt).toLocaleString(),
+                      )}
+                    </p>
+                  </div>
+                  <Badge variant="muted">{copy.logs.detailCta}</Badge>
+                </div>
+                <p className="mt-3 text-[var(--landing-text)]">
+                  {copy.logs.progress(
+                    log.exercises.filter((exercise) => exercise.completed).length,
+                    log.exercises.length,
+                  )}
+                </p>
+                <p className="mt-1 text-[var(--landing-text-muted)]">
+                  {copy.logs.skippedCount(
+                    log.exercises.filter((exercise) => !exercise.completed).length,
                   )}
                 </p>
                 <p className="mt-1 text-[var(--landing-text-muted)]">
                   {copy.logs.exerciseCount(log.exercises.length)}
                 </p>
-                <p className="mt-1 text-[var(--landing-text)]">
-                  {copy.logs.progress(
-                    log.exercises.filter((exercise) => exercise.completed)
-                      .length,
-                    log.exercises.length,
-                  )}
-                </p>
-                <div className="mt-3 space-y-2">
-                  {log.exercises.slice(0, 4).map((exercise) => (
+                {log.durationMinutes !== null ? (
+                  <p className="mt-1 text-[var(--landing-text-muted)]">
+                    {copy.detail.duration(log.durationMinutes)}
+                  </p>
+                ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {log.exercises.slice(0, 3).map((exercise, index) => (
+                    <Badge key={`${log.id}-${exercise.name}-${index}`} variant="muted">
+                      {exercise.name}
+                    </Badge>
+                  ))}
+                </div>
+                {log.exercises.length > 0 ? (
+                  <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-[var(--landing-text-faint)]">
+                    {copy.logs.summaryLabel}
+                  </p>
+                ) : null}
+                <div className="mt-2 space-y-2">
+                  {log.exercises.slice(0, 2).map((exercise) => (
                     <div
                       className="rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-3 py-3"
                       key={`${log.id}-${exercise.name}-${exercise.sortOrder ?? 0}`}
@@ -1589,11 +1620,6 @@ function WorkoutBuilder({
                               `${copy.builder.rest}: ${
                                 exercise.restSeconds ? `${exercise.restSeconds}s` : "-"
                               }`,
-                              `${copy.builder.weight}: ${
-                                exercise.weight !== null && exercise.weight !== undefined
-                                  ? `${exercise.weight}${copy.builder.weightUnit}`
-                                  : "-"
-                              }`,
                             ].join(" • ")}
                           </p>
                         </div>
@@ -1606,7 +1632,7 @@ function WorkoutBuilder({
                     </div>
                   ))}
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </CardContent>

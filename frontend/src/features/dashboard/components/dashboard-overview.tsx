@@ -22,12 +22,23 @@ type DashboardOverviewProps = {
     }>;
     nextSteps: Array<{
       active?: boolean;
+      focus?: {
+        activeSessionTitle: string | null;
+        completedSessions: number;
+        pendingSessions: number;
+        todayFocusSeconds: number;
+        weekFocusSeconds: number;
+      };
       href: string;
       key: "studySessions" | "workoutTracking" | "stripePlans";
       progress?: {
+        completedAt?: string;
         completedCount: number;
+        logId?: string;
         remainingCount: number;
+        skippedCount?: number;
         totalCount: number;
+        workoutName?: string | null;
       } | null;
       sessionProgress?: {
         completedCount: number;
@@ -143,6 +154,27 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
                   <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
                     {stepCopy.description}
                   </p>
+                  {step.key === "studySessions" && step.focus ? (
+                    <>
+                      <p className="mt-2 text-sm font-medium text-[var(--landing-text)]">
+                        {copy.nextModules.studySessions.progress(
+                          step.focus.todayFocusSeconds,
+                          step.focus.weekFocusSeconds,
+                        )}
+                      </p>
+                      <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                        {copy.nextModules.studySessions.summary(
+                          step.focus.completedSessions,
+                          step.focus.pendingSessions,
+                        )}
+                      </p>
+                      {step.focus.activeSessionTitle ? (
+                        <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                          {copy.nextModules.studySessions.active(step.focus.activeSessionTitle)}
+                        </p>
+                      ) : null}
+                    </>
+                  ) : null}
                   {step.key === "workoutTracking" && step.active && step.sessionProgress ? (
                     <p className="mt-2 text-sm font-medium text-[var(--landing-text)]">
                       {copy.nextModules.workoutTracking.activeProgress(
@@ -153,13 +185,22 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
                     </p>
                   ) : null}
                   {step.key === "workoutTracking" && !step.active && step.progress ? (
-                    <p className="mt-2 text-sm font-medium text-[var(--landing-text)]">
-                      {copy.nextModules.workoutTracking.completedProgress(
-                        step.progress.completedCount,
-                        step.progress.totalCount,
-                        step.progress.remainingCount,
-                      )}
-                    </p>
+                    <>
+                      <p className="mt-2 text-sm font-medium text-[var(--landing-text)]">
+                        {copy.nextModules.workoutTracking.completedProgress(
+                          step.progress.completedCount,
+                          step.progress.totalCount,
+                          step.progress.remainingCount,
+                        )}
+                      </p>
+                      {step.progress.skippedCount !== undefined ? (
+                        <p className="mt-1 text-sm text-[var(--landing-text-muted)]">
+                          {dashboardCopy[locale].fitness.logs.skippedCount(
+                            step.progress.skippedCount,
+                          )}
+                        </p>
+                      ) : null}
+                    </>
                   ) : null}
                 </Link>
               );

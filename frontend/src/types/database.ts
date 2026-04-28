@@ -169,32 +169,38 @@ export type Database = {
       };
       focus_runs: {
         Insert: {
+          cycles_completed?: number;
           created_at?: string;
           duration_seconds: number;
           ended_at?: string;
           id?: string;
           source?: string;
           started_at?: string;
+          status?: string;
           study_session_id?: string | null;
           user_id: string;
         };
         Row: {
+          cycles_completed: number;
           created_at: string;
           duration_seconds: number;
           ended_at: string;
           id: string;
           source: string;
           started_at: string;
+          status: string;
           study_session_id: string | null;
           user_id: string;
         };
         Update: {
+          cycles_completed?: number;
           created_at?: string;
           duration_seconds?: number;
           ended_at?: string;
           id?: string;
           source?: string;
           started_at?: string;
+          status?: string;
           study_session_id?: string | null;
           user_id?: string;
         };

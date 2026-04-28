@@ -20,7 +20,9 @@ const maxFocusRunSeconds = 24 * 60 * 60;
 const statuses: FocusStatus[] = ["pending", "in_progress", "completed", "canceled", "archived"];
 
 type LogFocusRunInput = {
+  cyclesCompleted?: number;
   durationSeconds: number;
+  status?: "canceled" | "completed";
   studySessionId?: string | null;
 };
 
@@ -57,7 +59,11 @@ export async function createStudySessionAction(input: StudySessionInput): Promis
 
   revalidatePath("/dashboard/focus");
   revalidatePath("/dashboard");
-  return toStudySession(data, 0);
+  return {
+    ...toStudySession(data, 0),
+    totalCyclesCompleted: 0,
+    totalFocusRuns: 0,
+  };
 }
 
 export async function updateStudySessionAction(
@@ -89,11 +95,15 @@ export async function updateStudySessionAction(
     throw new Error(error.message);
   }
 
-  const totalSeconds = await getSessionFocusSeconds(supabase, user.id, sessionId);
+  const stats = await getSessionFocusStats(supabase, user.id, sessionId);
 
   revalidatePath("/dashboard/focus");
   revalidatePath("/dashboard");
-  return toStudySession(data, totalSeconds);
+  return {
+    ...toStudySession(data, stats.totalSeconds),
+    totalCyclesCompleted: stats.totalCyclesCompleted,
+    totalFocusRuns: stats.runCount,
+  };
 }
 
 export async function updateStudySessionStatusAction(
@@ -140,17 +150,22 @@ export async function updateStudySessionStatusAction(
     throw new Error(error.message);
   }
 
-  const totalSeconds = await getSessionFocusSeconds(supabase, user.id, sessionId);
+  const stats = await getSessionFocusStats(supabase, user.id, sessionId);
 
   revalidatePath("/dashboard/focus");
   revalidatePath("/dashboard");
-  return toStudySession(data, totalSeconds);
+  return {
+    ...toStudySession(data, stats.totalSeconds),
+    totalCyclesCompleted: stats.totalCyclesCompleted,
+    totalFocusRuns: stats.runCount,
+  };
 }
 
 export async function logFocusRunAction(input: LogFocusRunInput): Promise<LogFocusRunResult> {
   const user = await requireUser();
   const supabase = await createServerSupabaseClient();
   const durationSeconds = clampInteger(input.durationSeconds, 1, maxFocusRunSeconds);
+  const cyclesCompleted = clampInteger(input.cyclesCompleted ?? 0, 0, 24);
   const endedAt = new Date();
   const startedAt = new Date(endedAt.getTime() - durationSeconds * 1000);
 
@@ -172,10 +187,12 @@ export async function logFocusRunAction(input: LogFocusRunInput): Promise<LogFoc
   }
 
   const { error: insertError } = await supabase.from("focus_runs").insert({
+    cycles_completed: cyclesCompleted,
     duration_seconds: durationSeconds,
     ended_at: endedAt.toISOString(),
     source: "pomodoro",
     started_at: startedAt.toISOString(),
+    status: input.status ?? "completed",
     study_session_id: input.studySessionId ?? null,
     user_id: user.id,
   });
@@ -222,11 +239,11 @@ async function refreshSessionFocusSummary(
   userId: string,
   sessionId: string,
 ) {
-  const totalSeconds = await getSessionFocusSeconds(supabase, userId, sessionId);
+  const stats = await getSessionFocusStats(supabase, userId, sessionId);
   const { data, error } = await supabase
     .from("study_sessions")
     .update({
-      duration_minutes: Math.ceil(totalSeconds / 60),
+      duration_minutes: Math.ceil(stats.totalSeconds / 60),
       status: "in_progress",
     })
     .eq("id", sessionId)
@@ -240,7 +257,11 @@ async function refreshSessionFocusSummary(
   }
 
   if (data) {
-    return toStudySession(data, totalSeconds);
+    return {
+      ...toStudySession(data, stats.totalSeconds),
+      totalCyclesCompleted: stats.totalCyclesCompleted,
+      totalFocusRuns: stats.runCount,
+    };
   }
 
   const { data: currentSession, error: currentSessionError } = await supabase
@@ -254,17 +275,21 @@ async function refreshSessionFocusSummary(
     throw new Error(currentSessionError.message);
   }
 
-  return toStudySession(currentSession, totalSeconds);
+  return {
+    ...toStudySession(currentSession, stats.totalSeconds),
+    totalCyclesCompleted: stats.totalCyclesCompleted,
+    totalFocusRuns: stats.runCount,
+  };
 }
 
-async function getSessionFocusSeconds(
+async function getSessionFocusStats(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
   userId: string,
   sessionId: string,
 ) {
   const { data, error } = await supabase
     .from("focus_runs")
-    .select("duration_seconds")
+    .select("cycles_completed, duration_seconds")
     .eq("user_id", userId)
     .eq("study_session_id", sessionId);
 
@@ -272,7 +297,18 @@ async function getSessionFocusSeconds(
     throw new Error(error.message);
   }
 
-  return (data ?? []).reduce((total, run) => total + run.duration_seconds, 0);
+  return (data ?? []).reduce(
+    (totals, run) => ({
+      runCount: totals.runCount + 1,
+      totalCyclesCompleted: totals.totalCyclesCompleted + run.cycles_completed,
+      totalSeconds: totals.totalSeconds + run.duration_seconds,
+    }),
+    {
+      runCount: 0,
+      totalCyclesCompleted: 0,
+      totalSeconds: 0,
+    },
+  );
 }
 
 async function getStandaloneFocusSeconds(

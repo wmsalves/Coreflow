@@ -12,6 +12,7 @@ export type PomodoroSettings = {
 };
 
 export type StudySession = {
+  completedAt: string | null;
   id: string;
   title: string;
   description: string;
@@ -23,9 +24,14 @@ export type StudySession = {
   status: FocusStatus;
   subject: string;
   completedFocusSeconds: number;
+  totalCyclesCompleted: number;
+  totalFocusRuns: number;
 };
 
-export type StudySessionInput = Omit<StudySession, "completedFocusSeconds" | "id" | "status">;
+export type StudySessionInput = Omit<
+  StudySession,
+  "completedAt" | "completedFocusSeconds" | "id" | "status" | "totalCyclesCompleted" | "totalFocusRuns"
+>;
 
 export type FocusFilters = {
   difficulty: FocusLevel | "all";
@@ -34,6 +40,22 @@ export type FocusFilters = {
 };
 
 export type FocusWorkspaceData = {
+  activeSession: StudySession | null;
+  completedSessions: StudySession[];
+  history: FocusRunHistory[];
   sessions: StudySession[];
   standaloneFocusSeconds: number;
+  todayFocusSeconds: number;
+  weekFocusSeconds: number;
+};
+
+export type FocusRunHistory = {
+  completedAt: string;
+  cyclesCompleted: number;
+  durationSeconds: number;
+  id: string;
+  sessionId: string | null;
+  sessionStatus: FocusStatus | null;
+  sessionTitle: string;
+  startedAt: string;
 };

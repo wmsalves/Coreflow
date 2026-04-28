@@ -64,6 +64,11 @@ export const dashboardCopy = {
           title: "Study sessions",
           description:
             "Plan sessions, start focus work, and save completed duration history.",
+          active: (title: string) => `Active session: ${title}`,
+          progress: (today: number, week: number) =>
+            `${formatDuration(today)} today · ${formatDuration(week)} this week`,
+          summary: (completed: number, pending: number) =>
+            `${completed} completed · ${pending} pending`,
         },
         workoutTracking: {
           title: "Workout tracking",
@@ -241,6 +246,7 @@ export const dashboardCopy = {
         title: "Workout logs",
         description:
           "Record completed plans without changing the plan template.",
+        detailCta: "View details",
         empty: "Completed workouts will appear here.",
         completedAt: (value: string) => `Completed: ${value}`,
         completedStatus: "Completed",
@@ -248,6 +254,26 @@ export const dashboardCopy = {
         progress: (completed: number, total: number) =>
           `${completed}/${total} completed`,
         skippedStatus: "Skipped",
+        skippedCount: (value: number) => `${value} skipped`,
+        summaryLabel: "Exercise summary",
+      },
+      history: {
+        backToFitness: "Back to Fitness",
+        emptyExercises: "No logged exercises were saved for this workout.",
+        notFoundDescription:
+          "That workout log was not found or is no longer available for this account.",
+        notFoundTitle: "Workout not found",
+      },
+      detail: {
+        completedBadge: "Completed workout",
+        completionRatio: (completed: number, total: number) =>
+          `${completed}/${total} completed`,
+        completedLabel: "Completed",
+        duration: (minutes: number) => `${minutes} min`,
+        exerciseSummary: "Logged exercises",
+        notes: "Notes",
+        skippedLabel: "Skipped",
+        startedFrom: (name: string) => `From plan: ${name}`,
       },
     },
   },
@@ -319,6 +345,11 @@ export const dashboardCopy = {
           title: "Sessoes de estudo",
           description:
             "Planeje sessoes, inicie foco e salve historico de duracao concluida.",
+          active: (title: string) => `Sessao ativa: ${title}`,
+          progress: (today: number, week: number) =>
+            `${formatDuration(today)} hoje · ${formatDuration(week)} nesta semana`,
+          summary: (completed: number, pending: number) =>
+            `${completed} concluidas · ${pending} pendentes`,
         },
         workoutTracking: {
           title: "Registro de treino",
@@ -499,6 +530,7 @@ export const dashboardCopy = {
         title: "Logs de treino",
         description:
           "Registre planos concluidos sem alterar o modelo do treino.",
+        detailCta: "Ver detalhes",
         empty: "Treinos concluidos aparecerao aqui.",
         completedAt: (value: string) => `Concluido: ${value}`,
         completedStatus: "Concluido",
@@ -506,7 +538,44 @@ export const dashboardCopy = {
         progress: (completed: number, total: number) =>
           `${completed}/${total} concluidos`,
         skippedStatus: "Pulou",
+        skippedCount: (value: number) => `${value} pulados`,
+        summaryLabel: "Resumo dos exercicios",
+      },
+      history: {
+        backToFitness: "Voltar para Treino",
+        emptyExercises: "Nenhum exercicio registrado foi salvo para este treino.",
+        notFoundDescription:
+          "Esse log de treino nao foi encontrado ou nao esta disponivel para esta conta.",
+        notFoundTitle: "Treino nao encontrado",
+      },
+      detail: {
+        completedBadge: "Treino concluido",
+        completionRatio: (completed: number, total: number) =>
+          `${completed}/${total} concluidos`,
+        completedLabel: "Concluidos",
+        duration: (minutes: number) => `${minutes} min`,
+        exerciseSummary: "Exercicios registrados",
+        notes: "Notas",
+        skippedLabel: "Pulados",
+        startedFrom: (name: string) => `Plano de origem: ${name}`,
       },
     },
   },
 };
+
+function formatDashboardDuration(totalSeconds: number) {
+  if (totalSeconds <= 0) {
+    return "0m";
+  }
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  return `${minutes}m`;
+}
+
+const formatDuration = formatDashboardDuration;

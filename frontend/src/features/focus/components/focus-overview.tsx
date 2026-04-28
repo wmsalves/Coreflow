@@ -3,36 +3,34 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import type { FocusCopy } from "@/features/focus/content/focus-copy";
 
 type FocusOverviewProps = {
-  activeCount: number;
   completionRate: number;
   completedCount: number;
   copy: FocusCopy;
-  pendingCount: number;
-  totalFocusSeconds: number;
+  todayFocusSeconds: number;
+  weekFocusSeconds: number;
 };
 
-const metricIcons = [Clock3, ListChecks, Target, TrendingUp];
+const metricIcons = [Clock3, TrendingUp, ListChecks, Target];
 
 export function FocusOverview({
-  activeCount,
   completionRate,
   completedCount,
   copy,
-  pendingCount,
-  totalFocusSeconds,
+  todayFocusSeconds,
+  weekFocusSeconds,
 }: FocusOverviewProps) {
   const metrics = [
     {
-      label: copy.overview.totalFocus,
-      value: copy.overview.duration(totalFocusSeconds),
+      label: copy.overview.todayFocus,
+      value: copy.overview.duration(todayFocusSeconds),
+    },
+    {
+      label: copy.overview.weekFocus,
+      value: copy.overview.duration(weekFocusSeconds),
     },
     {
       label: copy.overview.completed,
       value: String(completedCount),
-    },
-    {
-      label: copy.overview.activePending,
-      value: copy.overview.ratio(activeCount, pendingCount),
     },
     {
       label: copy.overview.completionRate,

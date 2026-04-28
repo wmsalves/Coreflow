@@ -24,6 +24,7 @@ export function toStudySession(row: StudySessionRow, completedFocusSeconds?: num
     completedFocusSeconds ?? (row.duration_minutes === null ? 0 : row.duration_minutes * 60);
 
   return {
+    completedAt: row.ended_at,
     completedFocusSeconds: totalFocusSeconds,
     description: row.notes ?? "",
     difficulty: normalizeLevel(row.difficulty, defaultDifficulty),
@@ -36,6 +37,8 @@ export function toStudySession(row: StudySessionRow, completedFocusSeconds?: num
     status: normalizeStatus(row.status, row.ended_at),
     subject: row.subject ?? "Focus",
     title: row.title || row.subject || "Study session",
+    totalCyclesCompleted: 0,
+    totalFocusRuns: 0,
   };
 }
 

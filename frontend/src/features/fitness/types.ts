@@ -79,6 +79,7 @@ export type WorkoutLog = {
   id: string;
   notes: string | null;
   userId: string;
+  workoutName: string | null;
   workoutPlanId: string | null;
 };
 

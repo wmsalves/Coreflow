@@ -23,12 +23,14 @@ import {
   updateStudySessionAction,
   updateStudySessionStatusAction,
 } from "@/features/focus/actions";
+import { FocusHistory } from "@/features/focus/components/focus-history";
 import { FocusOverview } from "@/features/focus/components/focus-overview";
 import { PomodoroPanel } from "@/features/focus/components/pomodoro-panel";
 import { StudySessionList } from "@/features/focus/components/study-session-list";
 import type {
   FocusFilters,
   FocusLevel,
+  FocusRunHistory,
   FocusStatus,
   StudySession,
   StudySessionInput,
@@ -51,8 +53,12 @@ type PendingSessionAction =
   | null;
 
 type FocusWorkspaceProps = {
+  initialActiveSession: StudySession | null;
+  initialHistory: FocusRunHistory[];
   initialSessions: StudySession[];
   initialStandaloneFocusSeconds: number;
+  initialTodayFocusSeconds: number;
+  initialWeekFocusSeconds: number;
 };
 
 function addDays(dateKey: string, amount: number) {
@@ -90,17 +96,25 @@ function toStudySessionInput(session: StudySession): StudySessionInput {
 }
 
 export function FocusWorkspace({
+  initialActiveSession,
+  initialHistory,
   initialSessions,
   initialStandaloneFocusSeconds,
+  initialTodayFocusSeconds,
+  initialWeekFocusSeconds,
 }: FocusWorkspaceProps) {
   const { locale } = useLandingPreferences();
   const copy = focusCopy[locale];
   const [sessions, setSessions] = useState<StudySession[]>(initialSessions);
+  const [history, setHistory] = useState<FocusRunHistory[]>(initialHistory);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
-    initialSessions.find((session) => session.status === "in_progress" || session.status === "pending")?.id ??
+    initialActiveSession?.id ??
+      initialSessions.find((session) => session.status === "pending")?.id ??
       null,
   );
   const [standaloneFocusSeconds, setStandaloneFocusSeconds] = useState(initialStandaloneFocusSeconds);
+  const [todayFocusSeconds, setTodayFocusSeconds] = useState(initialTodayFocusSeconds);
+  const [weekFocusSeconds, setWeekFocusSeconds] = useState(initialWeekFocusSeconds);
   const [filters, setFilters] = useState<FocusFilters>(defaultFilters);
   const [input, setInput] = useState<StudySessionInput>(() => createDefaultInput());
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
@@ -141,17 +155,17 @@ export function FocusWorkspace({
   const completedCount = sessions.filter(
     (session) => session.status === "completed",
   ).length;
-  const activeCount = sessions.filter(
-    (session) => session.status === "in_progress",
-  ).length;
-  const pendingCount = sessions.filter(
-    (session) => session.status === "pending",
-  ).length;
-  const totalSessionFocusSeconds = sessions.reduce(
-    (total, session) => total + session.completedFocusSeconds,
-    0,
+  const completedSessions = useMemo(
+    () =>
+      sessions
+        .filter((session) => session.status === "completed")
+        .sort(
+          (first, second) =>
+            new Date(second.completedAt ?? second.dueDate).getTime() -
+            new Date(first.completedAt ?? first.dueDate).getTime(),
+        ),
+    [sessions],
   );
-  const totalFocusSeconds = totalSessionFocusSeconds + standaloneFocusSeconds;
   const visibleSessionCount = sessions.filter((session) => session.status !== "archived").length;
   const completionRate =
     visibleSessionCount === 0
@@ -269,11 +283,21 @@ export function FocusWorkspace({
     return session ?? null;
   }
 
-  async function logFocusRun(studySessionId: string | null, focusSeconds: number) {
+  async function logFocusRun(
+    studySessionId: string | null,
+    focusSeconds: number,
+    cyclesCompleted = 0,
+  ) {
     setNotice(null);
 
     try {
-      const result = await logFocusRunAction({ durationSeconds: focusSeconds, studySessionId });
+      const completedAt = new Date().toISOString();
+      const startedAt = new Date(Date.now() - focusSeconds * 1000).toISOString();
+      const result = await logFocusRunAction({
+        cyclesCompleted,
+        durationSeconds: focusSeconds,
+        studySessionId,
+      });
       if (result.studySession) {
         const updatedSession = result.studySession;
         setSessions((current) =>
@@ -281,10 +305,38 @@ export function FocusWorkspace({
             session.id === updatedSession.id ? updatedSession : session,
           ),
         );
+        setHistory((current) => [
+          {
+            completedAt,
+            cyclesCompleted,
+            durationSeconds: focusSeconds,
+            id: `${updatedSession.id}-${Date.now()}`,
+            sessionId: updatedSession.id,
+            sessionStatus: updatedSession.status,
+            sessionTitle: updatedSession.title,
+            startedAt,
+          },
+          ...current,
+        ]);
       }
       if (result.standaloneFocusSeconds !== undefined) {
         setStandaloneFocusSeconds(result.standaloneFocusSeconds);
+        setHistory((current) => [
+          {
+            completedAt,
+            cyclesCompleted,
+            durationSeconds: focusSeconds,
+            id: `standalone-${Date.now()}`,
+            sessionId: null,
+            sessionStatus: null,
+            sessionTitle: copy.list.freeFocus,
+            startedAt,
+          },
+          ...current,
+        ]);
       }
+      setTodayFocusSeconds((current) => current + focusSeconds);
+      setWeekFocusSeconds((current) => current + focusSeconds);
       setNotice({ kind: "success", text: copy.notices.focusSaved });
     } catch (error) {
       setNotice({
@@ -392,12 +444,11 @@ export function FocusWorkspace({
 
       <section className="mt-5 sm:mt-6">
         <FocusOverview
-          activeCount={activeCount}
           completedCount={completedCount}
           completionRate={completionRate}
           copy={copy}
-          pendingCount={pendingCount}
-          totalFocusSeconds={totalFocusSeconds}
+          todayFocusSeconds={todayFocusSeconds}
+          weekFocusSeconds={weekFocusSeconds}
         />
       </section>
 
@@ -496,6 +547,14 @@ export function FocusWorkspace({
           onStart={startSession}
           pendingAction={pendingSessionAction}
           sessions={filteredSessions}
+        />
+      </section>
+
+      <section className="mt-6">
+        <FocusHistory
+          completedSessions={completedSessions}
+          copy={copy}
+          history={history}
         />
       </section>
 
