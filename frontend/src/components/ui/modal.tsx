@@ -1,10 +1,11 @@
 "use client";
 
-import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getPortalThemeBridge } from "@/components/ui/portal-theme";
 import { cn } from "@/lib/utils";
 
 type ModalProps = {
@@ -15,8 +16,6 @@ type ModalProps = {
   title: ReactNode;
   onOpenChange: (open: boolean) => void;
 };
-
-type ThemeBridgeStyle = CSSProperties & Record<`--${string}`, string>;
 
 const focusableSelector = [
   "a[href]",
@@ -66,7 +65,7 @@ export function Modal({
     return null;
   }
 
-  const themeBridge = getModalThemeBridge();
+  const themeBridge = getPortalThemeBridge();
 
   function close() {
     onOpenChange(false);
@@ -153,28 +152,6 @@ export function Modal({
     </div>,
     document.body,
   );
-}
-
-function getModalThemeBridge() {
-  const themeRoot = document.querySelector<HTMLElement>("[data-theme]");
-
-  if (!themeRoot) {
-    return {};
-  }
-
-  const computedStyle = window.getComputedStyle(themeRoot);
-  const style: ThemeBridgeStyle = {};
-
-  for (const propertyName of Array.from(computedStyle)) {
-    if (propertyName.startsWith("--")) {
-      style[propertyName as `--${string}`] = computedStyle.getPropertyValue(propertyName).trim();
-    }
-  }
-
-  return {
-    style,
-    theme: themeRoot.dataset.theme,
-  };
 }
 
 function getFocusableElements(container: HTMLElement | null) {

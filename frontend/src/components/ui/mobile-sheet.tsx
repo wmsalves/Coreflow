@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getPortalThemeBridge } from "@/components/ui/portal-theme";
 
 type MobileSheetProps = {
   children: ReactNode;
@@ -29,6 +30,8 @@ export function MobileSheet({
   const titleId = useId();
   const descriptionId = useId();
   const open = controlledOpen ?? uncontrolledOpen;
+  const themeBridge =
+    typeof document !== "undefined" && open ? getPortalThemeBridge() : null;
 
   function setOpen(nextOpen: boolean) {
     onOpenChange?.(nextOpen);
@@ -99,11 +102,13 @@ export function MobileSheet({
   return (
     <>
       <div onClick={() => setOpen(true)}>{trigger}</div>
-      {typeof document !== "undefined" && open
+      {themeBridge
         ? createPortal(
             <div
               className="fixed inset-0 z-[100] flex min-h-dvh items-end sm:hidden"
+              data-theme={themeBridge.theme}
               onKeyDown={handleKeyDown}
+              style={themeBridge.style}
             >
               <button
                 aria-label="Close sheet"
