@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Dumbbell, Flame, TimerReset } from "lucide-react";
+import { ChevronDown, Dumbbell, Flame, TimerReset } from "lucide-react";
 import type { LandingCopy } from "@/features/landing/content/landing-copy";
 import { SectionDivider, SectionIntro } from "@/features/landing/components/landing-primitives";
 import { revealStyle } from "@/features/landing/lib/reveal";
@@ -63,9 +63,35 @@ function PillarCard({
 }) {
   return (
     <div className="landing-reveal h-full" style={style}>
+      <details className="landing-card-strong group rounded-[1.2rem] border border-(--landing-border) bg-[var(--landing-panel)] px-4 py-2.5 shadow-[var(--landing-shadow-soft)] sm:hidden">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
+          <div className="flex items-center gap-3">
+            <div className="rounded-[0.95rem] border border-(--landing-border) bg-(--landing-surface) p-2.5 shadow-[var(--landing-shadow-soft)]">
+              <Icon className="size-4 text-(--landing-text-soft)" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-(--landing-text)">{kicker}</p>
+              <p className="mt-0.5 text-[11px] uppercase tracking-[0.18em] text-(--landing-text-faint)">
+                {stat}
+              </p>
+            </div>
+          </div>
+          <ChevronDown className="size-4 shrink-0 text-(--landing-text-faint) transition group-open:rotate-180" />
+        </summary>
+        <div className="space-y-3 pb-2 pt-2">
+          <p className="text-sm leading-6 text-(--landing-text-muted)">
+            {description}
+          </p>
+          <div className="border-t border-(--landing-border) pt-3">
+            <p className="text-xs text-(--landing-text-faint)">{footerLabel}</p>
+            <p className="mt-1 text-sm font-medium text-(--landing-text)">{value}</p>
+          </div>
+        </div>
+      </details>
+
       <div
         data-card-motion="follow"
-        className="landing-card-strong group relative h-full overflow-hidden rounded-[1.45rem] border border-(--landing-border) bg-[var(--landing-panel)] p-5 shadow-[var(--landing-shadow-soft)] sm:rounded-[2.1rem] sm:p-6"
+        className="landing-card-strong group relative hidden h-full overflow-hidden rounded-[1.45rem] border border-(--landing-border) bg-[var(--landing-panel)] p-5 shadow-[var(--landing-shadow-soft)] sm:block sm:rounded-[2.1rem] sm:p-6"
       >
         <div className="relative flex items-center justify-between">
           <div className="rounded-[1.25rem] border border-(--landing-border) bg-(--landing-surface) p-3 shadow-[var(--landing-shadow-soft)]">

@@ -10,7 +10,7 @@ type DailyFlowSectionProps = {
 
 export function DailyFlowSection({ copy }: DailyFlowSectionProps) {
   return (
-    <section className="relative py-14 sm:py-22" id="daily-flow">
+    <section className="relative hidden py-14 sm:block sm:py-22" id="daily-flow">
       <SectionDivider />
       <div className="grid gap-10 lg:grid-cols-[0.88fr_1.12fr]">
         <div className="space-y-8">

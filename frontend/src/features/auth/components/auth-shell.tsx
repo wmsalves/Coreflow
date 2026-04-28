@@ -49,7 +49,7 @@ export function AuthShell({ children, mode }: AuthShellProps) {
       data-theme={theme}
       style={landingThemeStyles[theme] as CSSProperties}
     >
-      <LandingBackdrop theme={theme} />
+      <LandingBackdrop priority="compact" theme={theme} />
       <LandingHeader
         controls={marketingCopy.controls}
         copy={headerCopy}

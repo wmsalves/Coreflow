@@ -8,7 +8,7 @@ type LandingFooterProps = {
 
 export function LandingFooter({ copy }: LandingFooterProps) {
   return (
-    <footer className="relative mt-6 border-t border-(--landing-border) py-10 sm:mt-12 sm:py-16 lg:py-18">
+    <footer className="relative mt-4 border-t border-(--landing-border) py-8 sm:mt-12 sm:py-16 lg:py-18">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--landing-accent-ember),transparent)] opacity-70" />
 
       <div className="grid gap-8 lg:gap-16">
@@ -45,19 +45,19 @@ export function LandingFooter({ copy }: LandingFooterProps) {
         </nav>
       </div>
 
-      <div className="mt-8 border-t border-(--landing-border) pt-6 sm:mt-14 sm:pt-10">
-        <div className="grid gap-5 rounded-[1.45rem] border border-(--landing-border) bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-4 shadow-[var(--landing-shadow-soft)] sm:rounded-[2rem] sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.78fr)] lg:items-center lg:p-6">
-          <div className="max-w-xl space-y-2">
+      <div className="mt-6 border-t border-(--landing-border) pt-5 sm:mt-14 sm:pt-10">
+        <div className="grid gap-4 rounded-[1.25rem] border border-(--landing-border) bg-[linear-gradient(180deg,var(--landing-surface-strong),var(--landing-surface))] p-3 shadow-[var(--landing-shadow-soft)] sm:rounded-[2rem] sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.78fr)] lg:items-center lg:p-6">
+          <div className="max-w-xl space-y-1.5">
             <p className="text-lg font-medium tracking-[-0.03em] text-(--landing-text)">
               {copy.newsletter.title}
             </p>
-            <p className="text-sm leading-6 text-(--landing-text-muted)">
+            <p className="text-sm leading-5 text-(--landing-text-muted) sm:leading-6">
               {copy.newsletter.description}
             </p>
           </div>
 
-          <form className="space-y-2" action="#">
-            <div className="flex flex-col gap-2 rounded-[1.35rem] border border-(--landing-border) bg-(--landing-bg-elevated) p-1.5 sm:flex-row">
+          <form className="space-y-1.5" action="#">
+            <div className="flex flex-col gap-2 rounded-[1.15rem] border border-(--landing-border) bg-(--landing-bg-elevated) p-1.5 sm:flex-row sm:rounded-[1.35rem]">
               <label className="sr-only" htmlFor="footer-email">
                 Email
               </label>
@@ -76,7 +76,7 @@ export function LandingFooter({ copy }: LandingFooterProps) {
                 <ArrowRight className="size-4 transition duration-300 group-hover:translate-x-0.5" />
               </button>
             </div>
-            <p className="px-1 text-xs text-(--landing-text-faint)">
+            <p className="px-1 text-[11px] leading-4 text-(--landing-text-faint)">
               {copy.newsletter.disclaimer}
             </p>
           </form>

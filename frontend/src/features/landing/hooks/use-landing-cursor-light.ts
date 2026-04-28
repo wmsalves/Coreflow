@@ -14,6 +14,7 @@ export function useLandingCursorLight(mainRef: RefObject<HTMLElement | null>) {
       "(prefers-reduced-motion: reduce)",
     ).matches;
     const finePointer = window.matchMedia("(pointer: fine)").matches;
+    const desktopViewport = window.matchMedia("(min-width: 1024px)").matches;
 
     const setCursor = (x: number, y: number) => {
       main.style.setProperty("--cursor-x", `${x}px`);
@@ -23,7 +24,7 @@ export function useLandingCursorLight(mainRef: RefObject<HTMLElement | null>) {
     const restingX = window.innerWidth * 0.5;
     const restingY = window.innerHeight * 0.18;
 
-    if (reduceMotion || !finePointer) {
+    if (reduceMotion || !finePointer || !desktopViewport) {
       setCursor(restingX, restingY);
       return;
     }

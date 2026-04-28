@@ -16,8 +16,9 @@ export function useLandingPreviewMotion(
       "(prefers-reduced-motion: reduce)",
     ).matches;
     const finePointer = window.matchMedia("(pointer: fine)").matches;
+    const desktopViewport = window.matchMedia("(min-width: 1024px)").matches;
 
-    if (reduceMotion || !finePointer) {
+    if (reduceMotion || !finePointer || !desktopViewport) {
       preview.style.setProperty("--preview-rotate-x", "0deg");
       preview.style.setProperty("--preview-rotate-y", "0deg");
       preview.style.setProperty("--preview-shift-y", "0px");

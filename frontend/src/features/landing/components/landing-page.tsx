@@ -1,19 +1,12 @@
-﻿"use client";
+"use client";
 
+import dynamic from "next/dynamic";
 import type { CSSProperties } from "react";
 import { useRef } from "react";
 import { landingCopy } from "@/features/landing/content/landing-copy";
 import { LandingBackdrop } from "@/features/landing/components/landing-backdrop";
-import { LandingFooter } from "@/features/landing/components/landing-footer";
 import { LandingHeader } from "@/features/landing/components/landing-header";
-import { DailyFlowSection } from "@/features/landing/components/sections/daily-flow-section";
-import { FinalCtaSection } from "@/features/landing/components/sections/final-cta-section";
 import { HeroSection } from "@/features/landing/components/sections/hero-section";
-import { PillarsSection } from "@/features/landing/components/sections/pillars-section";
-import { PricingSection } from "@/features/landing/components/sections/pricing-section";
-import { ProblemSection } from "@/features/landing/components/sections/problem-section";
-import { ShowcaseSection } from "@/features/landing/components/sections/showcase-section";
-import { SolutionSection } from "@/features/landing/components/sections/solution-section";
 import { useLandingCardMotion } from "@/features/landing/hooks/use-landing-card-motion";
 import { useLandingCursorLight } from "@/features/landing/hooks/use-landing-cursor-light";
 import { useLandingHeaderScroll } from "@/features/landing/hooks/use-landing-header-scroll";
@@ -21,6 +14,47 @@ import { useLandingPreferences } from "@/features/landing/hooks/use-landing-pref
 import { useLandingPreviewMotion } from "@/features/landing/hooks/use-landing-preview-motion";
 import { useLandingReveal } from "@/features/landing/hooks/use-landing-reveal";
 import { landingThemeStyles } from "@/features/landing/lib/theme-styles";
+
+const ProblemSection = dynamic(() =>
+  import("@/features/landing/components/sections/problem-section").then(
+    (mod) => mod.ProblemSection,
+  ),
+);
+const SolutionSection = dynamic(() =>
+  import("@/features/landing/components/sections/solution-section").then(
+    (mod) => mod.SolutionSection,
+  ),
+);
+const PillarsSection = dynamic(() =>
+  import("@/features/landing/components/sections/pillars-section").then(
+    (mod) => mod.PillarsSection,
+  ),
+);
+const DailyFlowSection = dynamic(() =>
+  import("@/features/landing/components/sections/daily-flow-section").then(
+    (mod) => mod.DailyFlowSection,
+  ),
+);
+const ShowcaseSection = dynamic(() =>
+  import("@/features/landing/components/sections/showcase-section").then(
+    (mod) => mod.ShowcaseSection,
+  ),
+);
+const PricingSection = dynamic(() =>
+  import("@/features/landing/components/sections/pricing-section").then(
+    (mod) => mod.PricingSection,
+  ),
+);
+const FinalCtaSection = dynamic(() =>
+  import("@/features/landing/components/sections/final-cta-section").then(
+    (mod) => mod.FinalCtaSection,
+  ),
+);
+const LandingFooter = dynamic(() =>
+  import("@/features/landing/components/landing-footer").then(
+    (mod) => mod.LandingFooter,
+  ),
+);
 
 type LandingPageProps = {
   userEmail: string | null;
@@ -80,4 +114,3 @@ export function LandingPage({ userEmail }: LandingPageProps) {
     </main>
   );
 }
-

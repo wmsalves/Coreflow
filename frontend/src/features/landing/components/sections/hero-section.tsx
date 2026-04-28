@@ -18,27 +18,28 @@ export function HeroSection({
   previewRef,
 }: HeroSectionProps) {
   const heroStats = [copy.showcase.stats[0], copy.showcase.stats[1]];
+  const mobilePrinciples = copy.hero.principles.slice(0, 2);
 
   return (
-    <section className="relative grid flex-1 items-center gap-10 pb-14 pt-8 sm:gap-16 sm:pb-20 sm:pt-12 lg:grid-cols-[minmax(0,0.98fr)_minmax(480px,1.02fr)] lg:gap-1 lg:pt-6">
-      <div className="relative max-w-[35rem] space-y-7 sm:space-y-10 lg:self-start">
+    <section className="relative grid flex-1 items-center gap-8 pb-10 pt-5 sm:gap-16 sm:pb-20 sm:pt-12 lg:grid-cols-[minmax(0,0.98fr)_minmax(480px,1.02fr)] lg:gap-1 lg:pt-6">
+      <div className="relative max-w-[35rem] space-y-5 sm:space-y-10 lg:self-start">
         <div
-          className="landing-reveal inline-flex items-center gap-2 rounded-full border border-(--landing-border-strong) bg-(--landing-surface) px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-(--landing-text-muted) shadow-[var(--landing-shadow-soft)]"
+          className="landing-reveal inline-flex items-center gap-2 rounded-full border border-(--landing-border-strong) bg-(--landing-surface) px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-(--landing-text-muted) shadow-[var(--landing-shadow-soft)] sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-[0.28em]"
           style={revealStyle(40)}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-(--landing-accent) shadow-[0_0_18px_var(--landing-glow)]" />
           {copy.hero.badge}
         </div>
 
-        <div className="space-y-6 sm:space-y-7">
-          <div className="landing-reveal space-y-5 sm:space-y-6" style={revealStyle(120)}>
+        <div className="space-y-5 sm:space-y-7">
+          <div className="landing-reveal space-y-4 sm:space-y-6" style={revealStyle(120)}>
             <h1
-              className="text-[clamp(2.85rem,14vw,6.9rem)] leading-[0.92] font-semibold tracking-[-0.064em] text-(--landing-text) sm:leading-[0.9] sm:tracking-[-0.068em]"
+              className="text-[clamp(2.5rem,13vw,6.9rem)] leading-[0.94] font-semibold tracking-[-0.06em] text-(--landing-text) sm:leading-[0.9] sm:tracking-[-0.068em]"
               style={heroHeadlineStyle}
             >
               {copy.hero.headline}
             </h1>
-            <p className="max-w-[34rem] text-base leading-7 text-(--landing-text-muted) sm:text-[1.14rem] sm:leading-8">
+            <p className="max-w-[31rem] text-[15px] leading-6 text-(--landing-text-muted) sm:text-[1.14rem] sm:leading-8">
               {copy.hero.subheadline}
             </p>
           </div>
@@ -48,7 +49,7 @@ export function HeroSection({
             style={revealStyle(200)}
           >
             <Link
-              className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-(--landing-button-primary) px-5 text-sm font-medium text-(--landing-button-primary-text) shadow-[var(--landing-button-accent-shadow)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[var(--landing-button-accent-shadow-hover)]"
+              className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-(--landing-button-primary) px-5 text-sm font-medium text-(--landing-button-primary-text) shadow-[var(--landing-button-accent-shadow)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[var(--landing-button-accent-shadow-hover)] sm:w-auto"
               href="/signup"
             >
               {copy.hero.ctaPrimary}
@@ -60,6 +61,44 @@ export function HeroSection({
             >
               {copy.hero.ctaSecondary}
             </Link>
+          </div>
+
+          <div
+            className="landing-reveal grid gap-2 sm:hidden"
+            style={revealStyle(240)}
+          >
+            <div className="grid grid-cols-2 gap-2">
+              {heroStats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-[1.2rem] border border-(--landing-border) bg-(--landing-surface) px-3 py-3 shadow-[var(--landing-shadow-soft)]"
+                >
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-(--landing-text-faint)">
+                    {stat.label}
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-(--landing-text)">
+                    {stat.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <details className="group rounded-[1.2rem] border border-(--landing-border) bg-(--landing-surface) px-4 py-2.5 shadow-[var(--landing-shadow-soft)]">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-(--landing-text) [&::-webkit-details-marker]:hidden">
+                <span>{copy.hero.preview.title}</span>
+                <ArrowRight className="size-4 shrink-0 text-(--landing-text-faint) transition group-open:rotate-90" />
+              </summary>
+              <div className="space-y-2 pb-2 pt-2">
+                {mobilePrinciples.map((principle) => (
+                  <p
+                    key={principle}
+                    className="text-sm leading-6 text-(--landing-text-muted)"
+                  >
+                    {principle}
+                  </p>
+                ))}
+              </div>
+            </details>
           </div>
         </div>
 

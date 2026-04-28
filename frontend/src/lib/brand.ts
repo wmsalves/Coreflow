@@ -1,6 +1,6 @@
 export const BRAND = {
   logoAlt: "Coreflow logo",
-  logoPath: "/brand/coreflow-logo.svg",
+  logoPath: "/logo.png",
   name: "Coreflow",
   tagline: "Personal operating system for self-improvement.",
 } as const;

@@ -55,10 +55,10 @@ export function LandingHeader({
 
         <div className="relative grid grid-cols-[auto_1fr_auto] items-center gap-2 lg:hidden">
           <CoreflowLogo
-            className="gap-0 sm:gap-2.5"
+            className="gap-0"
             frameClassName="border-(--landing-border) bg-(--landing-logo-frame)"
             href="/"
-            nameClassName="sr-only text-(--landing-text) sm:not-sr-only"
+            nameClassName="sr-only"
             showTagline={false}
           />
 
@@ -82,7 +82,7 @@ export function LandingHeader({
             ) : (
               <>
                 <Link
-                  className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--landing-button-primary)] px-3 text-[13px] font-medium text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] transition active:scale-[0.98] sm:px-4"
+                  className="inline-flex h-10 max-w-[8.5rem] items-center justify-center truncate rounded-full bg-[var(--landing-button-primary)] px-3 text-[13px] font-medium text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] transition active:scale-[0.98] sm:px-4"
                   href="/signup"
                 >
                   {copy.cta}

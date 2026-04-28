@@ -38,6 +38,7 @@ export function CoreflowLogo({
           className="object-cover"
           height={40}
           priority
+          sizes="40px"
           src={BRAND.logoPath}
           width={40}
         />

@@ -4,6 +4,16 @@ import { useEffect } from "react";
 
 export function useLandingCardMotion() {
   useEffect(() => {
+    const desktopViewport = window.matchMedia("(min-width: 1024px)").matches;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const finePointer = window.matchMedia("(pointer: fine)").matches;
+
+    if (!desktopViewport || reduceMotion || !finePointer) {
+      return;
+    }
+
     const cards = Array.from(
       document.querySelectorAll<HTMLElement>("[data-card-motion]"),
     ).filter((card) => !card.closest(".landing-preview"));
@@ -12,19 +22,9 @@ export function useLandingCardMotion() {
       return;
     }
 
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const finePointer = window.matchMedia("(pointer: fine)").matches;
-
     const resetCard = (card: HTMLElement) => {
       card.style.removeProperty("transform");
     };
-
-    if (reduceMotion || !finePointer) {
-      cards.forEach(resetCard);
-      return;
-    }
 
     const cleanups = cards.map((card) => {
       const motion = card.dataset.cardMotion === "panel" ? "panel" : "follow";
