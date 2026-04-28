@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { PwaRegister } from "@/components/pwa/pwa-register";
 import "./globals.css";
 
 function withProtocol(url: string) {
@@ -34,8 +35,36 @@ const logoUrl = new URL(brandAssets.logo, siteUrl).toString();
 
 export const metadata: Metadata = {
   metadataBase: siteUrl,
+  applicationName: "Coreflow",
   title: "Coreflow",
   description: "A unified system for habits, study sessions, and fitness momentum.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Coreflow",
+  },
+  icons: {
+    apple: [
+      {
+        sizes: "180x180",
+        type: "image/png",
+        url: "/apple-touch-icon.png",
+      },
+    ],
+    icon: [
+      {
+        sizes: "192x192",
+        type: "image/png",
+        url: "/icon-192.png",
+      },
+      {
+        sizes: "512x512",
+        type: "image/png",
+        url: "/icon-512.png",
+      },
+    ],
+  },
   openGraph: {
     title: "Coreflow",
     description: "One disciplined system for habits, focus, and training.",
@@ -62,6 +91,18 @@ export const metadata: Metadata = {
       },
     ],
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport: Viewport = {
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8f4ee" },
+    { media: "(prefers-color-scheme: dark)", color: "#080a0f" },
+  ],
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -73,8 +114,13 @@ export default function RootLayout({
     <html lang="en" className="h-full">
       <head>
         <meta content={logoUrl} property="og:logo" />
+        <link href="/manifest.webmanifest" rel="manifest" />
+        <meta content="yes" name="apple-mobile-web-app-capable" />
+        <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style" />
+        <link href="/apple-touch-icon.png" rel="apple-touch-icon" />
       </head>
       <body className="min-h-full bg-background text-foreground antialiased">
+        <PwaRegister />
         {children}
       </body>
     </html>

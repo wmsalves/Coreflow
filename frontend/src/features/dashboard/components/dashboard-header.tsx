@@ -27,8 +27,8 @@ const navItems: Array<{
   key: DashboardNavKey;
 }> = [
   { href: "/dashboard", icon: LayoutDashboard, key: "overview" },
-  { href: "/dashboard/focus", icon: TimerReset, key: "focus" },
   { href: "/dashboard/habits", icon: ListChecks, key: "habits" },
+  { href: "/dashboard/focus", icon: TimerReset, key: "focus" },
   { href: "/dashboard/fitness", icon: Dumbbell, key: "fitness" },
 ];
 

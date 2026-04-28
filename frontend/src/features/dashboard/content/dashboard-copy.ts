@@ -29,7 +29,8 @@ export const dashboardCopy = {
         title: "Today's execution",
         description:
           "Start from the actions that still need attention, then use the module blocks below to continue the day.",
-        habitsProgress: (completed: number, total: number) => `${completed}/${total} habits checked`,
+        habitsProgress: (completed: number, total: number) =>
+          `${completed}/${total} habits checked`,
         focusProgress: (today: number, week: number) =>
           `${formatDuration(today)} focused today · ${formatDuration(week)} this week`,
         modulesInMotion: (value: number) => `${value}/3 systems moving`,
@@ -41,7 +42,8 @@ export const dashboardCopy = {
           ready: "Daily routine is on track.",
           empty: "No habits yet. Create the first one to start today's loop.",
           pending: (count: number) => `${count} habits still need a check-in`,
-          completed: (completed: number, total: number) => `${completed}/${total} completed today`,
+          completed: (completed: number, total: number) =>
+            `${completed}/${total} completed today`,
           openAction: "Open habits",
         },
         focus: {
@@ -72,7 +74,8 @@ export const dashboardCopy = {
       },
       quickActions: {
         title: "Quick actions",
-        description: "Use the shortest route into the module that needs attention next.",
+        description:
+          "Use the shortest route into the module that needs attention next.",
         createHabit: "Create habit",
         planFocusSession: "Plan focus session",
         startFocus: "Start focus",
@@ -80,20 +83,24 @@ export const dashboardCopy = {
       },
       secondaryMetrics: {
         title: "Daily signals",
-        description: "The original dashboard metrics stay here as a secondary read on system health.",
+        description:
+          "The original dashboard metrics stay here as a secondary read on system health.",
       },
       metrics: {
         habitsToday: {
           label: "Habits completed today",
-          detail: "Daily completions are powered by habit log entries for the current day.",
+          detail:
+            "Daily completions are powered by habit log entries for the current day.",
         },
         completionRate: {
           label: "Daily completion rate",
-          detail: "A quick signal for whether your day is keeping pace with your targets.",
+          detail:
+            "A quick signal for whether your day is keeping pace with your targets.",
         },
         longestStreak: {
           label: "Longest active streak",
-          detail: "Computed from consecutive completion dates so streaks survive refreshes and deploys.",
+          detail:
+            "Computed from consecutive completion dates so streaks survive refreshes and deploys.",
         },
         modulesInProgress: {
           label: "Modules in progress",
@@ -102,7 +109,8 @@ export const dashboardCopy = {
       },
       habitMomentum: {
         title: "Habit momentum",
-        description: "Pending habits stay visible here so the dashboard can still point to what is left today.",
+        description:
+          "Pending habits stay visible here so the dashboard can still point to what is left today.",
         emptyTitle: "No habits yet",
         emptyDescription:
           "Create your first habit to start generating daily progress and streak data.",
@@ -246,8 +254,7 @@ export const dashboardCopy = {
         started: "Workout started. Progress now autosaves as you train.",
         startedAt: (value: string) => `Started: ${value}`,
         startAction: "Start workout",
-        startFirst:
-          "Start a workout to track progress exercise by exercise.",
+        startFirst: "Start a workout to track progress exercise by exercise.",
         resumeHint:
           "Start the workout to save progress as you complete each exercise. You can leave and resume later.",
         resumeReady: "A workout is already in progress. Resume it below.",
@@ -305,8 +312,8 @@ export const dashboardCopy = {
       navLabel: "Dashboard",
       nav: {
         overview: "Visao geral",
-        focus: "Foco",
         habits: "Habitos",
+        focus: "Foco",
         fitness: "Treino",
       },
       userMenu: {
@@ -326,7 +333,8 @@ export const dashboardCopy = {
         title: "Execucao de hoje",
         description:
           "Comece pelas acoes que ainda precisam de atencao e depois siga pelos blocos de modulo abaixo.",
-        habitsProgress: (completed: number, total: number) => `${completed}/${total} habitos marcados`,
+        habitsProgress: (completed: number, total: number) =>
+          `${completed}/${total} habitos marcados`,
         focusProgress: (today: number, week: number) =>
           `${formatDuration(today)} de foco hoje · ${formatDuration(week)} nesta semana`,
         modulesInMotion: (value: number) => `${value}/3 sistemas em movimento`,
@@ -336,9 +344,12 @@ export const dashboardCopy = {
           eyebrow: "Habitos",
           title: "Habitos diarios",
           ready: "A rotina diaria esta em dia.",
-          empty: "Nenhum habito ainda. Crie o primeiro para iniciar o ciclo de hoje.",
-          pending: (count: number) => `${count} habitos ainda precisam de check-in`,
-          completed: (completed: number, total: number) => `${completed}/${total} concluidos hoje`,
+          empty:
+            "Nenhum habito ainda. Crie o primeiro para iniciar o ciclo de hoje.",
+          pending: (count: number) =>
+            `${count} habitos ainda precisam de check-in`,
+          completed: (completed: number, total: number) =>
+            `${completed}/${total} concluidos hoje`,
           openAction: "Abrir habitos",
         },
         focus: {
@@ -369,7 +380,8 @@ export const dashboardCopy = {
       },
       quickActions: {
         title: "Acoes rapidas",
-        description: "Use o caminho mais curto para o modulo que precisa da sua atencao agora.",
+        description:
+          "Use o caminho mais curto para o modulo que precisa da sua atencao agora.",
         createHabit: "Criar habito",
         planFocusSession: "Planejar foco",
         startFocus: "Iniciar foco",
@@ -377,7 +389,8 @@ export const dashboardCopy = {
       },
       secondaryMetrics: {
         title: "Sinais do dia",
-        description: "As metricas originais continuam aqui como leitura secundaria da saude do sistema.",
+        description:
+          "As metricas originais continuam aqui como leitura secundaria da saude do sistema.",
       },
       metrics: {
         habitsToday: {
@@ -397,12 +410,14 @@ export const dashboardCopy = {
         },
         modulesInProgress: {
           label: "Modulos em progresso",
-          detail: "Conta modulos com registros salvos para o usuario conectado.",
+          detail:
+            "Conta modulos com registros salvos para o usuario conectado.",
         },
       },
       habitMomentum: {
         title: "Ritmo dos habitos",
-        description: "Os habitos pendentes continuam visiveis aqui para o dashboard apontar o que ainda falta hoje.",
+        description:
+          "Os habitos pendentes continuam visiveis aqui para o dashboard apontar o que ainda falta hoje.",
         emptyTitle: "Nenhum habito ainda",
         emptyDescription:
           "Crie seu primeiro habito para gerar progresso diario e dados de sequencia.",
@@ -581,7 +596,8 @@ export const dashboardCopy = {
       },
       history: {
         backToFitness: "Voltar para Treino",
-        emptyExercises: "Nenhum exercicio registrado foi salvo para este treino.",
+        emptyExercises:
+          "Nenhum exercicio registrado foi salvo para este treino.",
         notFoundDescription:
           "Esse log de treino nao foi encontrado ou nao esta disponivel para esta conta.",
         notFoundTitle: "Treino nao encontrado",
