@@ -11,13 +11,13 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const buttonVariants: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-[var(--landing-button-primary)] text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] hover:-translate-y-0.5 hover:shadow-[var(--landing-button-shadow-hover)]",
+    "bg-[var(--landing-button-primary)] text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] hover:-translate-y-px hover:shadow-[var(--landing-button-shadow-hover)] active:translate-y-0",
   secondary:
-    "border border-[var(--landing-border)] bg-[var(--landing-button-secondary)] text-[var(--landing-text-soft)] shadow-[var(--landing-shadow-soft)] hover:-translate-y-0.5 hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-button-secondary-hover)] hover:text-[var(--landing-text)]",
+    "border border-[var(--landing-border)] bg-[var(--landing-button-secondary)] text-[var(--landing-text-soft)] shadow-[var(--landing-shadow-soft)] hover:-translate-y-px hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-button-secondary-hover)] hover:text-[var(--landing-text)] active:translate-y-0",
   ghost:
     "bg-transparent text-[var(--landing-text-muted)] hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)]",
   danger:
-    "bg-[var(--danger)] text-[var(--danger-text)] shadow-[var(--landing-button-shadow)] hover:-translate-y-0.5 hover:brightness-95",
+    "bg-[var(--danger)] text-[var(--danger-text)] shadow-[var(--landing-button-shadow)] hover:-translate-y-px hover:brightness-95 active:translate-y-0",
 };
 
 const buttonSizes: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -41,8 +41,9 @@ export function Button({
     <Component
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--landing-accent-strong)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-bg)]",
-        "disabled:cursor-not-allowed disabled:opacity-60",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-bg)]",
+        "disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-55",
+        "[&_svg]:size-4 [&_svg]:shrink-0 motion-reduce:transition-none",
         buttonVariants[variant],
         buttonSizes[size],
         className,

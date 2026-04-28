@@ -78,6 +78,12 @@ type DashboardOverviewProps = {
   };
 };
 
+type RecommendedAction = {
+  href: string;
+  key: "createHabit" | "openWorkoutBuilder" | "planFocusSession" | "startFocus";
+  reason: string;
+};
+
 function formatDate(value: string | null | undefined, locale: string) {
   if (!value) {
     return null;
@@ -93,6 +99,57 @@ function clampProgress(value: number) {
   return Math.max(0, Math.min(100, Math.round(value * 100)));
 }
 
+function getRecommendedAction(
+  snapshot: DashboardOverviewProps["snapshot"],
+  copy: (typeof dashboardCopy)["en"]["dashboard"],
+): RecommendedAction {
+  if (snapshot.todayView.focus.hasActiveSession) {
+    return {
+      href: "/dashboard/focus",
+      key: "startFocus",
+      reason: copy.nextAction.reasons.resumeFocus,
+    };
+  }
+
+  if (snapshot.todayView.fitness.hasActiveWorkout) {
+    return {
+      href: "/dashboard/fitness",
+      key: "openWorkoutBuilder",
+      reason: copy.nextAction.reasons.resumeWorkout,
+    };
+  }
+
+  if (snapshot.todayView.habits.pendingCount > 0) {
+    return {
+      href: "/dashboard/habits",
+      key: "createHabit",
+      reason: copy.nextAction.reasons.habitsPending(snapshot.todayView.habits.pendingCount),
+    };
+  }
+
+  if (snapshot.todayView.focus.nextSessionTitle) {
+    return {
+      href: "/dashboard/focus",
+      key: "planFocusSession",
+      reason: copy.nextAction.reasons.nextFocus(snapshot.todayView.focus.nextSessionTitle),
+    };
+  }
+
+  if (snapshot.todayView.fitness.planCount > 0) {
+    return {
+      href: "/dashboard/fitness",
+      key: "openWorkoutBuilder",
+      reason: copy.nextAction.reasons.readyWorkout,
+    };
+  }
+
+  return {
+    href: "/dashboard/habits",
+    key: "createHabit",
+    reason: copy.nextAction.reasons.firstStep,
+  };
+}
+
 export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
   const { locale } = useLandingPreferences();
   const copy = dashboardCopy[locale].dashboard;
@@ -101,6 +158,7 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
   const fitnessCardHref =
     snapshot.moduleCards.find((card) => card.key === "fitness")?.href ?? "/dashboard/fitness";
   const overallProgress = clampProgress(snapshot.todayView.overallProgress);
+  const recommendedAction = getRecommendedAction(snapshot, copy);
 
   return (
     <>
@@ -220,12 +278,27 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
               <CardTitle>{copy.quickActions.title}</CardTitle>
               <CardDescription>{copy.quickActions.description}</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              {snapshot.todayView.quickActions.map((action) => (
-                <Button key={action.key} asChild variant="secondary" className="w-full justify-start px-4 text-left">
-                  <Link href={action.href}>{copy.quickActions[action.key]}</Link>
+            <CardContent className="space-y-4">
+              <div className="rounded-[1.15rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4 shadow-[var(--landing-chip-inset-shadow)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-muted)]">
+                  {copy.nextAction.title}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--landing-text-soft)]">
+                  {recommendedAction.reason}
+                </p>
+                <Button asChild className="mt-3 w-full justify-start px-4 text-left">
+                  <Link href={recommendedAction.href}>
+                    {copy.quickActions[recommendedAction.key]}
+                  </Link>
                 </Button>
-              ))}
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                {snapshot.todayView.quickActions.map((action) => (
+                  <Button key={action.key} asChild variant="secondary" className="w-full justify-start px-4 text-left">
+                    <Link href={action.href}>{copy.quickActions[action.key]}</Link>
+                  </Button>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>

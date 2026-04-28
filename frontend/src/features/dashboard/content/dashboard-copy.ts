@@ -75,11 +75,22 @@ export const dashboardCopy = {
       quickActions: {
         title: "Quick actions",
         description:
-          "Use the shortest route into the module that needs attention next.",
+          "Jump straight into the next useful move, or use a shortcut if you already know where you want to go.",
         createHabit: "Create habit",
         planFocusSession: "Plan focus session",
         startFocus: "Start focus",
         openWorkoutBuilder: "Open workout builder",
+      },
+      nextAction: {
+        title: "Best next step",
+        reasons: {
+          resumeFocus: "You already have a focus session in motion. Pick it back up before context drifts.",
+          resumeWorkout: "Your workout is already open. Finishing it now keeps the execution history clean.",
+          habitsPending: (count: number) => `${count} habits still need a check-in. Clear those first so the day starts with visible progress.`,
+          nextFocus: (title: string) => `Your next planned focus block is ${title}. Start there when you are ready for deeper work.`,
+          readyWorkout: "A workout plan is ready to run. Use it when you want a more structured execution block.",
+          firstStep: "There is no daily momentum yet. Start with one habit so the dashboard has something real to track.",
+        },
       },
       secondaryMetrics: {
         title: "Daily signals",
@@ -110,10 +121,10 @@ export const dashboardCopy = {
       habitMomentum: {
         title: "Habit momentum",
         description:
-          "Pending habits stay visible here so the dashboard can still point to what is left today.",
+          "Keep the unfinished habits visible so you can close the loop without hunting through the module.",
         emptyTitle: "No habits yet",
         emptyDescription:
-          "Create your first habit to start generating daily progress and streak data.",
+          "Create your first habit to give the day a repeatable starting point.",
         emptyAction: "Create a habit",
         doneToday: "Done today",
         pending: "Pending",
@@ -134,7 +145,7 @@ export const dashboardCopy = {
       form: {
         title: "Create habit",
         description:
-          "Start with the smallest reliable version of the routine you want to keep.",
+          "Start with something small enough to repeat without negotiating with yourself.",
         name: "Name",
         namePlaceholder: "Read for 20 minutes",
         descriptionLabel: "Description",
@@ -142,19 +153,24 @@ export const dashboardCopy = {
         targetDays: "Target days per week",
         pending: "Creating habit...",
         submit: "Save habit",
+        success: "Habit saved.",
+        successHint: "It is ready for today's check-in as soon as you want to start the streak.",
       },
       list: {
         title: "Habit list",
         description:
-          "Daily completions are stored separately, so your streak math stays resilient.",
+          "Daily completions stay separate from the habit itself, so checking in today never distorts the long-term pattern.",
         emptyTitle: "Your habits will show up here",
         emptyDescription:
-          "Once you create a habit, you can mark it complete for today, watch the streak grow, and see the metrics land on the dashboard.",
+          "Create one habit, check it off today, and the dashboard starts carrying the progress forward for you.",
+        emptyHint: "A good first habit is small, daily, and easy to confirm in under a minute.",
         doneToday: "Done today",
         needsCheckIn: "Needs check-in",
         details: "Details",
         undoToday: "Undo today",
         markComplete: "Mark complete",
+        toggleSuccess: "Saved for today.",
+        deleteSuccess: "Habit removed.",
         deleteLabel: (name: string) => `Delete ${name}`,
         habitStats: (
           currentStreak: number,
@@ -381,11 +397,22 @@ export const dashboardCopy = {
       quickActions: {
         title: "Acoes rapidas",
         description:
-          "Use o caminho mais curto para o modulo que precisa da sua atencao agora.",
+          "Entre direto na proxima acao util ou use um atalho se voce ja sabe para onde quer ir.",
         createHabit: "Criar habito",
         planFocusSession: "Planejar foco",
         startFocus: "Iniciar foco",
         openWorkoutBuilder: "Abrir treino",
+      },
+      nextAction: {
+        title: "Proximo melhor passo",
+        reasons: {
+          resumeFocus: "Voce ja tem uma sessao de foco em andamento. Retome antes que o contexto esfrie.",
+          resumeWorkout: "Seu treino ja esta aberto. Finalizar agora mantem o historico de execucao limpo.",
+          habitsPending: (count: number) => `${count} habitos ainda precisam de check-in. Resolva isso primeiro para o dia ganhar progresso visivel.`,
+          nextFocus: (title: string) => `Seu proximo bloco planejado de foco e ${title}. Comece por ele quando quiser entrar em trabalho profundo.`,
+          readyWorkout: "Ja existe um plano de treino pronto para executar. Use quando quiser um bloco mais estruturado.",
+          firstStep: "Ainda nao existe ritmo no dia. Comece por um habito para o dashboard ter algo real para acompanhar.",
+        },
       },
       secondaryMetrics: {
         title: "Sinais do dia",
@@ -417,10 +444,10 @@ export const dashboardCopy = {
       habitMomentum: {
         title: "Ritmo dos habitos",
         description:
-          "Os habitos pendentes continuam visiveis aqui para o dashboard apontar o que ainda falta hoje.",
+          "Mantenha os habitos inacabados visiveis para fechar o ciclo sem precisar procurar no modulo.",
         emptyTitle: "Nenhum habito ainda",
         emptyDescription:
-          "Crie seu primeiro habito para gerar progresso diario e dados de sequencia.",
+          "Crie seu primeiro habito para dar ao dia um ponto de partida repetivel.",
         emptyAction: "Criar habito",
         doneToday: "Feito hoje",
         pending: "Pendente",
@@ -441,7 +468,7 @@ export const dashboardCopy = {
       form: {
         title: "Criar habito",
         description:
-          "Comece pela menor versao confiavel da rotina que voce quer manter.",
+          "Comece com algo pequeno o bastante para repetir sem negociar consigo mesmo.",
         name: "Nome",
         namePlaceholder: "Ler por 20 minutos",
         descriptionLabel: "Descricao",
@@ -449,19 +476,24 @@ export const dashboardCopy = {
         targetDays: "Dias alvo por semana",
         pending: "Criando habito...",
         submit: "Salvar habito",
+        success: "Habito salvo.",
+        successHint: "Ele ja esta pronto para o check-in de hoje quando voce quiser iniciar a sequencia.",
       },
       list: {
         title: "Lista de habitos",
         description:
-          "Conclusoes diarias ficam separadas para manter o calculo de sequencia resiliente.",
+          "As conclusoes diarias ficam separadas do habito em si, entao marcar hoje nunca distorce o padrao de longo prazo.",
         emptyTitle: "Seus habitos vao aparecer aqui",
         emptyDescription:
-          "Depois de criar um habito, voce pode marcar o dia como concluido, acompanhar a sequencia e ver as metricas no dashboard.",
+          "Crie um habito, marque hoje e o dashboard passa a carregar esse progresso para voce.",
+        emptyHint: "Um bom primeiro habito e pequeno, diario e facil de confirmar em menos de um minuto.",
         doneToday: "Feito hoje",
         needsCheckIn: "Precisa check-in",
         details: "Detalhes",
         undoToday: "Desfazer hoje",
         markComplete: "Marcar concluido",
+        toggleSuccess: "Salvo para hoje.",
+        deleteSuccess: "Habito removido.",
         deleteLabel: (name: string) => `Excluir ${name}`,
         habitStats: (
           currentStreak: number,

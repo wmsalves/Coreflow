@@ -124,11 +124,11 @@ export function MobileSheet({
                 <div className="relative mx-auto mt-2 h-1 w-10 rounded-full bg-[var(--landing-border-strong)]" />
                 <header className="relative flex items-start justify-between gap-4 border-b border-[var(--landing-border)] px-4 py-4">
                   <div className="min-w-0 space-y-1">
-                    <h2 className="text-lg font-semibold tracking-[-0.03em]" id={titleId}>
+                    <h2 className="text-lg font-semibold tracking-[-0.025em]" id={titleId}>
                       {title}
                     </h2>
                     {description ? (
-                      <div className="text-sm leading-6 text-[var(--landing-text-muted)]" id={descriptionId}>
+                      <div className="text-sm leading-[1.55] text-[var(--landing-text-muted)]" id={descriptionId}>
                         {description}
                       </div>
                     ) : null}

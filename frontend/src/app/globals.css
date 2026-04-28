@@ -45,6 +45,12 @@
   --danger: #cc5a43;
   --danger-text: #ffffff;
   --shadow: var(--landing-shadow-soft);
+  --motion-fast: 160ms;
+  --motion-base: 220ms;
+  --motion-slow: 320ms;
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --focus-ring: color-mix(in srgb, var(--landing-accent) 26%, transparent);
+  --focus-outline: color-mix(in srgb, var(--landing-accent) 58%, white 10%);
 }
 
 @theme inline {
@@ -71,6 +77,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
 }
 
 @media (max-width: 640px) {
@@ -87,11 +94,24 @@ input,
 textarea,
 select {
   transition:
-    color 140ms ease,
-    background-color 140ms ease,
-    border-color 140ms ease,
-    box-shadow 140ms ease,
-    transform 140ms ease;
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    opacity var(--motion-fast) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+:focus-visible {
+  outline-color: var(--focus-outline);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
 }
 
 ::selection {

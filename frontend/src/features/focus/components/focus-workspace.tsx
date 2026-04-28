@@ -15,6 +15,7 @@ import {
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { Input } from "@/components/ui/input";
 import { MobileSheet } from "@/components/ui/mobile-sheet";
+import { StatusNotice } from "@/components/ui/status-notice";
 import { focusCopy } from "@/features/focus/content/focus-copy";
 import {
   createStudySessionAction,
@@ -453,17 +454,9 @@ export function FocusWorkspace({
       </section>
 
       {notice ? (
-        <div
-          className={`mt-6 rounded-[1.5rem] border px-4 py-3 text-sm ${
-            notice.kind === "success"
-              ? "border-[var(--landing-border-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-text)]"
-              : notice.kind === "info"
-                ? "border-[var(--landing-border)] bg-[var(--landing-surface)] text-[var(--landing-text-muted)]"
-                : "border-[rgba(204,90,67,0.3)] bg-[rgba(204,90,67,0.08)] text-[var(--danger)]"
-          }`}
-        >
+        <StatusNotice className="mt-6" variant={notice.kind}>
           {notice.text}
-        </div>
+        </StatusNotice>
       ) : null}
 
       <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]">

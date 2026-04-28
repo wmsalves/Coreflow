@@ -22,7 +22,7 @@ export function LanguageSwitcher({
   return (
     <div
       aria-label={localeLabel}
-      className="inline-flex items-center gap-1 text-xs"
+      className="inline-flex items-center gap-1 rounded-full border border-[var(--landing-border)] bg-[var(--landing-surface)] px-1 py-1 text-xs shadow-[var(--landing-chip-inset-shadow)]"
       role="group"
     >
       <LocaleButton
@@ -57,7 +57,7 @@ function LocaleButton({
       className={cn(
         "inline-flex min-h-10 min-w-10 items-center justify-center rounded-full px-2 text-[11px] font-medium tracking-[0.18em] uppercase sm:min-h-0 sm:min-w-0 sm:rounded-none sm:px-0 sm:tracking-[0.22em]",
         active
-          ? "text-(--landing-text)"
+          ? "bg-[var(--landing-surface-strong)] text-(--landing-text) sm:bg-transparent"
           : "text-(--landing-text-faint) hover:text-(--landing-text-muted)",
       )}
       onClick={onClick}

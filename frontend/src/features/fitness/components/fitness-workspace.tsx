@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Disclosure } from "@/components/ui/disclosure";
 import { Input } from "@/components/ui/input";
 import { MobileSheet } from "@/components/ui/mobile-sheet";
+import { StatusNotice } from "@/components/ui/status-notice";
 import { dashboardCopy } from "@/features/dashboard/content/dashboard-copy";
 import {
   addExerciseToWorkoutPlanAction,
@@ -716,17 +717,9 @@ export function FitnessWorkspace({
       </section>
 
       {notice ? (
-        <div
-          aria-live="polite"
-          className={cn(
-            "mt-6 rounded-[24px] border px-4 py-3 text-sm",
-            notice.kind === "error"
-              ? "border-[rgba(204,90,67,0.3)] bg-[rgba(204,90,67,0.08)] text-[var(--danger)]"
-              : "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]",
-          )}
-        >
+        <StatusNotice aria-live="polite" className="mt-6" variant={notice.kind}>
           {notice.text}
-        </div>
+        </StatusNotice>
       ) : null}
 
       <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 2xl:grid-cols-[minmax(0,1.05fr)_420px]">

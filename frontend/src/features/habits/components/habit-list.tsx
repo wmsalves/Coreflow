@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Disclosure } from "@/components/ui/disclosure";
 import { EmptyState } from "@/components/ui/empty-state";
+import { StatusNotice } from "@/components/ui/status-notice";
 import { SubmitButton } from "@/components/ui/submit-button";
 import {
   deleteHabitAction,
@@ -33,6 +34,9 @@ type HabitListCopy = {
   undoToday: string;
   markComplete: string;
   details: string;
+  emptyHint: string;
+  toggleSuccess: string;
+  deleteSuccess: string;
   deleteLabel: (name: string) => string;
   habitStats: (currentStreak: number, completionsThisWeek: number, frequencyPerWeek: number) => string[];
 };
@@ -53,6 +57,7 @@ export function HabitList({ copy, habits }: HabitListProps) {
       <EmptyState
         title={copy.emptyTitle}
         description={copy.emptyDescription}
+        hint={copy.emptyHint}
       />
     );
   }
@@ -133,9 +138,14 @@ function HabitToggleForm({
         {label}
       </SubmitButton>
       {state.error ? (
-        <p aria-live="polite" className="max-w-48 text-xs text-[var(--danger)]">
-          {state.error}
-        </p>
+        <StatusNotice className="max-w-56" variant="error">
+          <span aria-live="polite">{state.error}</span>
+        </StatusNotice>
+      ) : null}
+      {state.success ? (
+        <StatusNotice className="max-w-56" variant="success">
+          <span aria-live="polite">{copy.toggleSuccess}</span>
+        </StatusNotice>
       ) : null}
     </form>
   );
@@ -161,9 +171,14 @@ function HabitDeleteForm({
         <Trash2 className="size-4" />
       </SubmitButton>
       {state.error ? (
-        <p aria-live="polite" className="max-w-48 text-xs text-[var(--danger)]">
-          {state.error}
-        </p>
+        <StatusNotice className="max-w-56" variant="error">
+          <span aria-live="polite">{state.error}</span>
+        </StatusNotice>
+      ) : null}
+      {state.success ? (
+        <StatusNotice className="max-w-56" variant="success">
+          <span aria-live="polite">{copy.deleteSuccess}</span>
+        </StatusNotice>
       ) : null}
     </form>
   );

@@ -45,13 +45,13 @@ export function HeaderAccountActions({
       ) : (
         <>
           <Link
-            className="inline-flex h-10 items-center justify-center rounded-full px-3 text-[13px] font-medium text-[var(--landing-text-muted)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)] sm:h-9"
+            className="inline-flex h-10 items-center justify-center rounded-full px-3 text-[13px] font-medium text-[var(--landing-text-muted)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-bg)] sm:h-9"
             href="/login"
           >
             {copy.signIn}
           </Link>
           <Link
-            className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--landing-button-primary)] px-3 text-[13px] font-medium text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] transition hover:-translate-y-px hover:shadow-[var(--landing-button-shadow-hover)] sm:h-9 sm:px-4"
+            className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--landing-button-primary)] px-3 text-[13px] font-medium text-[var(--landing-button-primary-text)] shadow-[var(--landing-button-shadow)] transition hover:-translate-y-px hover:shadow-[var(--landing-button-shadow-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-bg)] sm:h-9 sm:px-4"
             href="/signup"
           >
             {copy.startFree}
@@ -82,7 +82,7 @@ function UserMenu({
           "flex size-10 cursor-pointer list-none items-center justify-center rounded-full border border-transparent text-[var(--landing-text-faint)] transition duration-200 sm:size-9",
           "hover:border-[var(--landing-border)] hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)]",
           "group-open:border-[var(--landing-border-strong)] group-open:bg-[var(--landing-surface)] group-open:text-[var(--landing-text)]",
-          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--landing-border-strong)]",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-bg)]",
           "[&::-webkit-details-marker]:hidden",
         )}
       >
@@ -112,7 +112,7 @@ function UserMenu({
         <div className="relative z-10 my-1 h-px bg-[var(--landing-border)]" />
 
         <Link
-          className="relative z-10 flex min-h-11 w-full items-center gap-2 rounded-[0.85rem] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--landing-text-muted)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)]"
+          className="relative z-10 flex min-h-11 w-full items-center gap-2.5 rounded-[0.85rem] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--landing-text-muted)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-inset"
           href="/dashboard"
         >
           <LayoutDashboard className="size-4 text-[var(--landing-text-faint)]" />
@@ -123,7 +123,7 @@ function UserMenu({
 
         <form action={signOutAction} className="relative z-10">
           <button
-            className="flex min-h-11 w-full items-center gap-2 rounded-[0.85rem] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--landing-text-muted)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)]"
+            className="flex min-h-11 w-full items-center gap-2.5 rounded-[0.85rem] px-2.5 py-2 text-left text-[13px] font-medium text-[var(--landing-text-muted)] transition hover:bg-[var(--landing-surface)] hover:text-[var(--landing-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-inset"
             type="submit"
           >
             <LogOut className="size-4 text-[var(--landing-text-faint)]" />

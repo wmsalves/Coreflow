@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MobileSheet } from "@/components/ui/mobile-sheet";
+import { StatusNotice } from "@/components/ui/status-notice";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { createHabitAction, type HabitActionState } from "@/features/habits/actions";
 
@@ -20,6 +21,8 @@ type CreateHabitFormCopy = {
   targetDays: string;
   pending: string;
   submit: string;
+  success: string;
+  successHint: string;
 };
 
 type CreateHabitFormProps = {
@@ -129,9 +132,16 @@ function HabitForm({
       </SubmitButton>
 
       {state.error ? (
-        <p aria-live="polite" className="text-sm text-[var(--danger)]">
-          {state.error}
-        </p>
+        <StatusNotice variant="error">{state.error}</StatusNotice>
+      ) : null}
+
+      {state.success ? (
+        <StatusNotice variant="success">
+          <div aria-live="polite">
+            <p>{copy.success}</p>
+            <p className="mt-1 text-sm text-[var(--landing-text-muted)]">{copy.successHint}</p>
+          </div>
+        </StatusNotice>
       ) : null}
     </form>
   );
