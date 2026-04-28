@@ -47,6 +47,7 @@ export async function getFocusDashboardSnapshot(userId: string) {
   const data = await getFocusWorkspaceData(userId);
   const pendingSessions = data.sessions.filter((session) => session.status === "pending").length;
   const completedSessions = data.sessions.filter((session) => session.status === "completed").length;
+  const nextSession = data.sessions.find((session) => session.status === "pending") ?? null;
 
   return {
     activeSession: data.activeSession
@@ -59,6 +60,14 @@ export async function getFocusDashboardSnapshot(userId: string) {
         }
       : null,
     completedSessions,
+    nextSession: nextSession
+      ? {
+          dueDate: nextSession.dueDate,
+          estimatedMinutes: nextSession.estimatedMinutes,
+          id: nextSession.id,
+          title: nextSession.title,
+        }
+      : null,
     pendingSessions,
     todayFocusSeconds: data.todayFocusSeconds,
     weekFocusSeconds: data.weekFocusSeconds,

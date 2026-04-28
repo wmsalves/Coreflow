@@ -21,11 +21,67 @@ export const dashboardCopy = {
       },
     },
     dashboard: {
-      badge: "Overview",
-      title: "Keep your systems moving.",
+      badge: "Today view",
+      title: "What should you execute today?",
       description:
-        "Track the real activity already flowing through habits, focus sessions, and workout planning from one authenticated workspace.",
-      manageHabits: "Manage habits",
+        "Use the dashboard as a single daily command surface across habits, focus sessions, and workout execution.",
+      summary: {
+        title: "Today's execution",
+        description:
+          "Start from the actions that still need attention, then use the module blocks below to continue the day.",
+        habitsProgress: (completed: number, total: number) => `${completed}/${total} habits checked`,
+        focusProgress: (today: number, week: number) =>
+          `${formatDuration(today)} focused today · ${formatDuration(week)} this week`,
+        modulesInMotion: (value: number) => `${value}/3 systems moving`,
+      },
+      moduleCards: {
+        habits: {
+          eyebrow: "Habits",
+          title: "Daily habits",
+          ready: "Daily routine is on track.",
+          empty: "No habits yet. Create the first one to start today's loop.",
+          pending: (count: number) => `${count} habits still need a check-in`,
+          completed: (completed: number, total: number) => `${completed}/${total} completed today`,
+          openAction: "Open habits",
+        },
+        focus: {
+          eyebrow: "Focus",
+          title: "Study sessions",
+          active: (title: string) => `Active session: ${title}`,
+          next: (title: string) => `Next up: ${title}`,
+          empty: "No focus session is planned yet.",
+          summary: (completed: number, pending: number) =>
+            `${completed} completed · ${pending} pending`,
+          resumeAction: "Resume focus",
+          planAction: "Open focus",
+        },
+        fitness: {
+          eyebrow: "Fitness",
+          title: "Workout execution",
+          active: (name: string) => `Workout in progress: ${name}`,
+          activeFallback: "Workout in progress",
+          latest: (name: string) => `Latest workout: ${name}`,
+          empty: "No workout plan is ready yet.",
+          progress: (completed: number, total: number, remaining: number) =>
+            `${completed}/${total} completed · ${remaining} remaining`,
+          readyPlans: (count: number) => `${count} plans ready`,
+          skipped: (count: number) => `${count} skipped`,
+          resumeAction: "Resume workout",
+          buildAction: "Open fitness",
+        },
+      },
+      quickActions: {
+        title: "Quick actions",
+        description: "Use the shortest route into the module that needs attention next.",
+        createHabit: "Create habit",
+        planFocusSession: "Plan focus session",
+        startFocus: "Start focus",
+        openWorkoutBuilder: "Open workout builder",
+      },
+      secondaryMetrics: {
+        title: "Daily signals",
+        description: "The original dashboard metrics stay here as a secondary read on system health.",
+      },
       metrics: {
         habitsToday: {
           label: "Habits completed today",
@@ -46,7 +102,7 @@ export const dashboardCopy = {
       },
       habitMomentum: {
         title: "Habit momentum",
-        description: "The habits module is fully wired into the dashboard metrics.",
+        description: "Pending habits stay visible here so the dashboard can still point to what is left today.",
         emptyTitle: "No habits yet",
         emptyDescription:
           "Create your first habit to start generating daily progress and streak data.",
@@ -55,43 +111,6 @@ export const dashboardCopy = {
         pending: "Pending",
         habitStats: (currentStreak: number, completionsThisWeek: number) =>
           `${currentStreak} day streak · ${completionsThisWeek} completions this week`,
-      },
-      nextModules: {
-        title: "Continue flows",
-        description:
-          "Jump into the next authenticated workflow without leaving the dashboard.",
-        studySessions: {
-          title: "Study sessions",
-          description:
-            "Plan sessions, start focus work, and save completed duration history.",
-          active: (title: string) => `Active session: ${title}`,
-          progress: (today: number, week: number) =>
-            `${formatDuration(today)} today · ${formatDuration(week)} this week`,
-          summary: (completed: number, pending: number) =>
-            `${completed} completed · ${pending} pending`,
-        },
-        workoutTracking: {
-          title: "Workout tracking",
-          description:
-            "Build plans from the exercise catalog and record completed workouts.",
-          activeProgress: (
-            completed: number,
-            total: number,
-            remaining: number,
-          ) =>
-            `Workout in progress: ${completed}/${total} completed, ${remaining} remaining`,
-          completedProgress: (
-            completed: number,
-            total: number,
-            remaining: number,
-          ) =>
-            `Latest workout: ${completed}/${total} completed, ${remaining} remaining`,
-        },
-        stripePlans: {
-          title: "Stripe plans",
-          description:
-            "The subscription table and env placeholders are ready for free-vs-pro gating next.",
-        },
       },
     },
     habits: {
@@ -299,11 +318,67 @@ export const dashboardCopy = {
       },
     },
     dashboard: {
-      badge: "Visao geral",
-      title: "Mantenha seus sistemas em movimento.",
+      badge: "Hoje",
+      title: "O que voce precisa executar hoje?",
       description:
-        "Acompanhe a atividade real que ja passa por habitos, foco e planejamento de treino em um workspace autenticado.",
-      manageHabits: "Gerenciar habitos",
+        "Use o dashboard como uma superficie diaria unica para habitos, sessoes de foco e execucao de treino.",
+      summary: {
+        title: "Execucao de hoje",
+        description:
+          "Comece pelas acoes que ainda precisam de atencao e depois siga pelos blocos de modulo abaixo.",
+        habitsProgress: (completed: number, total: number) => `${completed}/${total} habitos marcados`,
+        focusProgress: (today: number, week: number) =>
+          `${formatDuration(today)} de foco hoje · ${formatDuration(week)} nesta semana`,
+        modulesInMotion: (value: number) => `${value}/3 sistemas em movimento`,
+      },
+      moduleCards: {
+        habits: {
+          eyebrow: "Habitos",
+          title: "Habitos diarios",
+          ready: "A rotina diaria esta em dia.",
+          empty: "Nenhum habito ainda. Crie o primeiro para iniciar o ciclo de hoje.",
+          pending: (count: number) => `${count} habitos ainda precisam de check-in`,
+          completed: (completed: number, total: number) => `${completed}/${total} concluidos hoje`,
+          openAction: "Abrir habitos",
+        },
+        focus: {
+          eyebrow: "Foco",
+          title: "Sessoes de estudo",
+          active: (title: string) => `Sessao ativa: ${title}`,
+          next: (title: string) => `Proxima: ${title}`,
+          empty: "Nenhuma sessao de foco planejada ainda.",
+          summary: (completed: number, pending: number) =>
+            `${completed} concluidas · ${pending} pendentes`,
+          resumeAction: "Retomar foco",
+          planAction: "Abrir foco",
+        },
+        fitness: {
+          eyebrow: "Treino",
+          title: "Execucao de treino",
+          active: (name: string) => `Treino em andamento: ${name}`,
+          activeFallback: "Treino em andamento",
+          latest: (name: string) => `Ultimo treino: ${name}`,
+          empty: "Nenhum plano de treino pronto ainda.",
+          progress: (completed: number, total: number, remaining: number) =>
+            `${completed}/${total} concluidos · ${remaining} restantes`,
+          readyPlans: (count: number) => `${count} planos prontos`,
+          skipped: (count: number) => `${count} pulados`,
+          resumeAction: "Retomar treino",
+          buildAction: "Abrir treino",
+        },
+      },
+      quickActions: {
+        title: "Acoes rapidas",
+        description: "Use o caminho mais curto para o modulo que precisa da sua atencao agora.",
+        createHabit: "Criar habito",
+        planFocusSession: "Planejar foco",
+        startFocus: "Iniciar foco",
+        openWorkoutBuilder: "Abrir treino",
+      },
+      secondaryMetrics: {
+        title: "Sinais do dia",
+        description: "As metricas originais continuam aqui como leitura secundaria da saude do sistema.",
+      },
       metrics: {
         habitsToday: {
           label: "Habitos concluidos hoje",
@@ -327,7 +402,7 @@ export const dashboardCopy = {
       },
       habitMomentum: {
         title: "Ritmo dos habitos",
-        description: "O modulo de habitos ja alimenta as metricas do dashboard.",
+        description: "Os habitos pendentes continuam visiveis aqui para o dashboard apontar o que ainda falta hoje.",
         emptyTitle: "Nenhum habito ainda",
         emptyDescription:
           "Crie seu primeiro habito para gerar progresso diario e dados de sequencia.",
@@ -336,43 +411,6 @@ export const dashboardCopy = {
         pending: "Pendente",
         habitStats: (currentStreak: number, completionsThisWeek: number) =>
           `${currentStreak} dias de sequencia · ${completionsThisWeek} conclusoes nesta semana`,
-      },
-      nextModules: {
-        title: "Continuar fluxos",
-        description:
-          "Entre no proximo fluxo autenticado sem sair do dashboard.",
-        studySessions: {
-          title: "Sessoes de estudo",
-          description:
-            "Planeje sessoes, inicie foco e salve historico de duracao concluida.",
-          active: (title: string) => `Sessao ativa: ${title}`,
-          progress: (today: number, week: number) =>
-            `${formatDuration(today)} hoje · ${formatDuration(week)} nesta semana`,
-          summary: (completed: number, pending: number) =>
-            `${completed} concluidas · ${pending} pendentes`,
-        },
-        workoutTracking: {
-          title: "Registro de treino",
-          description:
-            "Monte planos pelo catalogo de exercicios e registre treinos concluidos.",
-          activeProgress: (
-            completed: number,
-            total: number,
-            remaining: number,
-          ) =>
-            `Treino em andamento: ${completed}/${total} concluidos, ${remaining} restantes`,
-          completedProgress: (
-            completed: number,
-            total: number,
-            remaining: number,
-          ) =>
-            `Ultimo treino: ${completed}/${total} concluidos, ${remaining} restantes`,
-        },
-        stripePlans: {
-          title: "Planos Stripe",
-          description:
-            "A tabela de assinatura e os env placeholders estao prontos para diferenciar free e pro.",
-        },
       },
     },
     habits: {

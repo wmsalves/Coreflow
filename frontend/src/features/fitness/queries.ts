@@ -153,6 +153,7 @@ export async function getFitnessSnapshot(userId: string) {
   ]);
 
   const activeSession = activeSessionResult.status === "fulfilled" ? activeSessionResult.value : null;
+  const plans = plansResult.status === "fulfilled" ? plansResult.value : [];
   const logs = logsResult.status === "fulfilled" ? logsResult.value : [];
   const latestLog = logs[0] ?? null;
   const completedCount = latestLog
@@ -164,8 +165,12 @@ export async function getFitnessSnapshot(userId: string) {
     ? activeSession.exercises.filter((exercise) => exercise.completed).length
     : 0;
   const activeTotalCount = activeSession?.exercises.length ?? 0;
+  const activeWorkoutPlan = activeSession
+    ? plans.find((plan) => plan.id === activeSession.workoutPlanId) ?? null
+    : null;
 
   return {
+    activeWorkoutName: activeWorkoutPlan?.name ?? null,
     activeWorkoutProgress:
       activeSession && activeTotalCount > 0
         ? {
@@ -187,7 +192,7 @@ export async function getFitnessSnapshot(userId: string) {
           }
         : null,
     logCount: logs.length,
-    planCount: plansResult.status === "fulfilled" ? plansResult.value.length : 0,
+    planCount: plans.length,
   };
 }
 

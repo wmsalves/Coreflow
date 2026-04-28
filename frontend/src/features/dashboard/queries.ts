@@ -5,7 +5,11 @@ import { getHabitsOverview } from "@/features/habits/queries";
 import { formatPercentage } from "@/lib/utils";
 
 export type DashboardMetricKey = "habitsToday" | "completionRate" | "longestStreak" | "modulesInProgress";
-export type DashboardNextStepKey = "studySessions" | "workoutTracking" | "stripePlans";
+export type DashboardQuickActionKey =
+  | "createHabit"
+  | "planFocusSession"
+  | "startFocus"
+  | "openWorkoutBuilder";
 
 export async function getDashboardSnapshot(userId: string) {
   const [habitsOverview, focusSnapshot, fitnessSnapshot] = await Promise.all([
@@ -21,6 +25,13 @@ export async function getDashboardSnapshot(userId: string) {
       Boolean(focusSnapshot.activeSession),
     fitnessSnapshot.planCount > 0 || fitnessSnapshot.logCount > 0,
   ].filter(Boolean).length;
+  const pendingHabits = habitsOverview.habits.filter((habit) => !habit.completedToday);
+  const overallProgress =
+    habitsOverview.summary.activeCount === 0
+      ? 0
+      : habitsOverview.summary.completedTodayCount / habitsOverview.summary.activeCount;
+  const hasActiveFocusSession = Boolean(focusSnapshot.activeSession);
+  const hasActiveWorkout = Boolean(fitnessSnapshot.activeWorkoutProgress);
 
   return {
     metrics: [
@@ -42,31 +53,65 @@ export async function getDashboardSnapshot(userId: string) {
       },
     ],
     recentHabits: habitsOverview.habits.slice(0, 3),
-    nextSteps: [
+    todayView: {
+      focusTimeTodaySeconds: focusSnapshot.todayFocusSeconds,
+      modulesInProgressCount: modulesInProgress,
+      overallProgress,
+      habits: {
+        completedCount: habitsOverview.summary.completedTodayCount,
+        pendingCount: pendingHabits.length,
+        pendingNames: pendingHabits.slice(0, 3).map((habit) => habit.name),
+        totalCount: habitsOverview.summary.activeCount,
+      },
+      focus: {
+        activeSessionTitle: focusSnapshot.activeSession?.title ?? null,
+        completedSessions: focusSnapshot.completedSessions,
+        hasActiveSession: hasActiveFocusSession,
+        nextSessionDueDate: focusSnapshot.nextSession?.dueDate ?? null,
+        nextSessionTitle: focusSnapshot.nextSession?.title ?? null,
+        pendingSessions: focusSnapshot.pendingSessions,
+        todayFocusSeconds: focusSnapshot.todayFocusSeconds,
+        weekFocusSeconds: focusSnapshot.weekFocusSeconds,
+      },
+      fitness: {
+        activeWorkoutName: fitnessSnapshot.activeWorkoutName,
+        activeWorkoutProgress: fitnessSnapshot.activeWorkoutProgress,
+        hasActiveWorkout,
+        latestWorkoutProgress: fitnessSnapshot.latestWorkoutProgress,
+        planCount: fitnessSnapshot.planCount,
+      },
+      quickActions: [
+        {
+          href: "/dashboard/habits",
+          key: "createHabit" as const,
+        },
+        {
+          href: "/dashboard/focus",
+          key: "planFocusSession" as const,
+        },
+        {
+          href: "/dashboard/focus",
+          key: "startFocus" as const,
+        },
+        {
+          href: "/dashboard/fitness",
+          key: "openWorkoutBuilder" as const,
+        },
+      ],
+    },
+    moduleCards: [
+      {
+        href: "/dashboard/habits",
+        key: "habits" as const,
+      },
       {
         href: "/dashboard/focus",
-        key: "studySessions" as const,
-        focus: {
-          activeSessionTitle: focusSnapshot.activeSession?.title ?? null,
-          completedSessions: focusSnapshot.completedSessions,
-          pendingSessions: focusSnapshot.pendingSessions,
-          todayFocusSeconds: focusSnapshot.todayFocusSeconds,
-          weekFocusSeconds: focusSnapshot.weekFocusSeconds,
-        },
+        key: "focus" as const,
       },
       {
-        href:
-          fitnessSnapshot.activeWorkoutProgress
-            ? "/dashboard/fitness"
-            : fitnessSnapshot.latestWorkoutProgress?.logId
-              ? `/dashboard/fitness/history/${fitnessSnapshot.latestWorkoutProgress.logId}`
-              : "/dashboard/fitness",
-        key: "workoutTracking" as const,
-        active: Boolean(fitnessSnapshot.activeWorkoutProgress),
-        progress: fitnessSnapshot.latestWorkoutProgress,
-        sessionProgress: fitnessSnapshot.activeWorkoutProgress,
+        href: "/dashboard/fitness",
+        key: "fitness" as const,
       },
-      { href: "/dashboard", key: "stripePlans" as const },
     ],
   };
 }
