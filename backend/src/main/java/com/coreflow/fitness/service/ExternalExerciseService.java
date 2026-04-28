@@ -1,12 +1,12 @@
 package com.coreflow.fitness.service;
 
-import com.coreflow.fitness.dto.ExternalExerciseDto;
+import com.coreflow.fitness.model.Exercise;
 import java.util.List;
 import java.util.Optional;
 
 public interface ExternalExerciseService {
 
-    List<ExternalExerciseDto> fetchExercises(String query);
+    List<Exercise> fetchExercises(String query);
 
-    Optional<ExternalExerciseDto> fetchExerciseByExternalId(String externalId);
+    Optional<Exercise> fetchExerciseByExternalId(String externalId);
 }

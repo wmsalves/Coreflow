@@ -7,6 +7,7 @@ import com.coreflow.fitness.entity.ExerciseEntity;
 import com.coreflow.fitness.mapper.ExerciseMapper;
 import com.coreflow.fitness.mapper.ExternalExerciseMapper;
 import com.coreflow.fitness.repository.ExerciseRepository;
+import com.coreflow.fitness.support.ExerciseDataNormalizer;
 import com.coreflow.common.exception.ApiException;
 import com.coreflow.common.exception.ExternalServiceException;
 import com.coreflow.common.validation.ApiRequestValidator;
@@ -90,10 +91,15 @@ public class ExerciseCatalogService {
     public ExerciseDetailResponse getExerciseDetail(String id) {
         String normalizedId = normalizeExternalId(id);
         Optional<ExerciseEntity> existingExercise = findExerciseByCatalogId(normalizedId);
-        ExerciseEntity exercise = existingExercise.orElseGet(() -> fetchAndStoreExternalExercise(normalizedId));
+        ExerciseEntity exercise = existingExercise.orElseGet(() -> fetchAndStoreExternalExercise(normalizedId)
+                .orElseGet(() -> buildUnavailableExternalExercise(normalizedId)));
 
         if (existingExercise.isPresent()) {
             enrichExerciseIfAvailable(exercise);
+        }
+
+        if (exercise.getId() == null) {
+            return exerciseMapper.toDetailResponse(exercise);
         }
 
         return exerciseMapper.toDetailResponse(exerciseRepository.save(exercise));
@@ -149,12 +155,15 @@ public class ExerciseCatalogService {
                 .filter(exercise -> !"local".equalsIgnoreCase(exercise.getSource()));
     }
 
-    private ExerciseEntity fetchAndStoreExternalExercise(String externalId) {
-        return externalExerciseService.fetchExerciseByExternalId(externalId)
-                .map(externalExerciseMapper::toEntity)
-                .map(this::upsertExternalExercise)
-                .map(exerciseRepository::save)
-                .orElseThrow(() -> new NoSuchElementException("Exercise not found"));
+    private Optional<ExerciseEntity> fetchAndStoreExternalExercise(String externalId) {
+        try {
+            return externalExerciseService.fetchExerciseByExternalId(externalId)
+                    .map(externalExerciseMapper::toEntity)
+                    .map(this::upsertExternalExercise)
+                    .map(exerciseRepository::save);
+        } catch (NoSuchElementException | ExternalServiceException exception) {
+            return Optional.empty();
+        }
     }
 
     private void enrichExerciseIfAvailable(ExerciseEntity exercise) {
@@ -180,18 +189,40 @@ public class ExerciseCatalogService {
                 .orElse(externalExercise);
     }
 
+    private ExerciseEntity buildUnavailableExternalExercise(String externalId) {
+        ExerciseEntity exercise = new ExerciseEntity();
+        exercise.setExternalId(externalId);
+        exercise.setSource("ascend");
+        exercise.setName("Exercise unavailable");
+        return exercise;
+    }
+
     private ExerciseEntity merge(ExerciseEntity existingExercise, ExerciseEntity externalExercise) {
-        existingExercise.setName(externalExercise.getName());
-        existingExercise.setImageUrl(externalExercise.getImageUrl());
-        existingExercise.setVideoUrl(externalExercise.getVideoUrl());
-        existingExercise.setBodyPart(externalExercise.getBodyPart());
-        existingExercise.setTarget(externalExercise.getTarget());
-        existingExercise.setCategory(externalExercise.getCategory());
-        existingExercise.setTargetMuscle(externalExercise.getTargetMuscle());
-        existingExercise.setEquipment(externalExercise.getEquipment());
-        existingExercise.setGifUrl(externalExercise.getGifUrl());
-        existingExercise.setSecondaryMuscles(externalExercise.getSecondaryMuscles());
-        existingExercise.setInstructions(externalExercise.getInstructions());
+        existingExercise.setName(preferCleanText(externalExercise.getName(), existingExercise.getName()));
+        existingExercise.setImageUrl(preferCleanUrl(externalExercise.getImageUrl(), existingExercise.getImageUrl()));
+        existingExercise.setVideoUrl(preferCleanUrl(externalExercise.getVideoUrl(), existingExercise.getVideoUrl()));
+        existingExercise.setBodyPart(preferCleanText(externalExercise.getBodyPart(), existingExercise.getBodyPart()));
+        existingExercise.setTarget(preferCleanText(externalExercise.getTarget(), existingExercise.getTarget()));
+        existingExercise.setCategory(preferCleanText(externalExercise.getCategory(), existingExercise.getCategory()));
+        existingExercise.setTargetMuscle(preferCleanText(externalExercise.getTargetMuscle(), existingExercise.getTargetMuscle()));
+        existingExercise.setEquipment(preferCleanText(externalExercise.getEquipment(), existingExercise.getEquipment()));
+        existingExercise.setGifUrl(preferCleanUrl(externalExercise.getGifUrl(), existingExercise.getGifUrl()));
+        if (!externalExercise.getSecondaryMuscles().isEmpty()) {
+            existingExercise.setSecondaryMuscles(externalExercise.getSecondaryMuscles());
+        }
+        if (!externalExercise.getInstructions().isEmpty()) {
+            existingExercise.setInstructions(externalExercise.getInstructions());
+        }
         return existingExercise;
+    }
+
+    private String preferCleanText(String preferredValue, String fallbackValue) {
+        String preferred = ExerciseDataNormalizer.cleanText(preferredValue);
+        return preferred == null ? ExerciseDataNormalizer.cleanText(fallbackValue) : preferred;
+    }
+
+    private String preferCleanUrl(String preferredValue, String fallbackValue) {
+        String preferred = ExerciseDataNormalizer.cleanUrl(preferredValue);
+        return preferred == null ? ExerciseDataNormalizer.cleanUrl(fallbackValue) : preferred;
     }
 }

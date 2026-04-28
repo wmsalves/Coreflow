@@ -1,9 +1,16 @@
+export type ExerciseResolvedMedia = {
+  type: "gif" | "image" | "video";
+  url: string;
+};
+
 export type ExerciseSummary = {
   id: string;
   internalId: number | null;
   name: string;
   gifUrl: string | null;
   imageUrl: string | null;
+  mediaUrl?: string | null;
+  resolvedMedia?: ExerciseResolvedMedia | null;
   videoUrl: string | null;
   bodyPart: string | null;
   category?: string | null;

@@ -10,11 +10,15 @@ public record ExerciseResponse(
         String gifUrl,
         String imageUrl,
         String videoUrl,
+        String mediaUrl,
+        ExerciseMediaResponse resolvedMedia,
         String bodyPart,
         String target,
         String category,
         String targetMuscle,
         String equipment,
+        String difficulty,
+        List<String> muscles,
         List<String> secondaryMuscles,
         List<String> instructions
 ) {

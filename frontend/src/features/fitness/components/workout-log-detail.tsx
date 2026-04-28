@@ -35,16 +35,16 @@ function WorkoutLogMedia({
 }) {
   return (
     <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[1rem] border border-[var(--landing-border)] bg-[var(--landing-surface-alt)]">
-      {exercise.gifUrl || exercise.imageUrl ? (
+      {exercise.imageUrl ? (
         <Image
           alt={exercise.name}
           className="object-cover"
           fill
           sizes="80px"
-          src={exercise.gifUrl ?? exercise.imageUrl ?? ""}
+          src={exercise.imageUrl}
           unoptimized
         />
-      ) : exercise.videoUrl ? (
+      ) : exercise.gifUrl || exercise.videoUrl ? (
         <div className="flex h-full items-center justify-center text-[var(--landing-accent)]">
           <Play className="size-5" />
         </div>

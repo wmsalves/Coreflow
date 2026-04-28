@@ -41,6 +41,8 @@ public class InMemoryExerciseRepository implements ExerciseRepository {
 
         return exercises.values().stream()
                 .filter(exercise -> contains(exercise.getName(), normalizedQuery)
+                        || contains(exercise.getBodyPart(), normalizedQuery)
+                        || contains(exercise.getTarget(), normalizedQuery)
                         || contains(exercise.getCategory(), normalizedQuery)
                         || contains(exercise.getTargetMuscle(), normalizedQuery)
                         || contains(exercise.getEquipment(), normalizedQuery))

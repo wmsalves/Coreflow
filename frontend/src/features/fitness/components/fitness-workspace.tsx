@@ -40,6 +40,7 @@ import {
 import type {
   ExerciseConfig,
   ExerciseDetail,
+  ExerciseResolvedMedia,
   ExerciseSummary,
   WorkoutLog,
   WorkoutPlan,
@@ -913,6 +914,7 @@ function ExerciseResultCard({
       <ExerciseMedia
         className="h-24 w-24 shrink-0 sm:h-auto sm:w-auto sm:shrink sm:aspect-[4/3]"
         exercise={exercise}
+        mode="thumbnail"
       />
       <div className="flex flex-1 flex-col justify-between gap-3 sm:mt-4 sm:gap-4">
         <div className="space-y-3">
@@ -920,7 +922,7 @@ function ExerciseResultCard({
             <h3 className="text-base font-semibold leading-tight tracking-tight sm:text-lg">
               {exercise.name}
             </h3>
-            {!exercise.gifUrl && !exercise.imageUrl && exercise.videoUrl ? (
+            {!exercise.imageUrl && (exercise.gifUrl || exercise.videoUrl) ? (
               <Play className="mt-1 size-4 shrink-0 text-[var(--landing-accent)]" />
             ) : null}
           </div>
@@ -1017,6 +1019,7 @@ function ExerciseInspector({
             className="aspect-[4/3]"
             exercise={exercise}
             large
+            mode="detail"
           />
 
           <div className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-4 shadow-[var(--landing-chip-inset-shadow)]">
@@ -1572,6 +1575,7 @@ function WorkoutBuilder({
                         <ExerciseMedia
                           className="h-20 w-20 shrink-0 rounded-[1rem]"
                           exercise={item.exercise}
+                          mode="thumbnail"
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-3">
@@ -1756,11 +1760,24 @@ function ExerciseMedia({
   className,
   exercise,
   large = false,
+  mode = "thumbnail",
 }: {
   className?: string;
-  exercise: Pick<ExerciseSummary, "gifUrl" | "imageUrl" | "name" | "videoUrl">;
+  exercise: {
+    gifUrl?: string | null;
+    imageUrl?: string | null;
+    name: string;
+    resolvedMedia?: ExerciseResolvedMedia | null;
+    videoUrl?: string | null;
+  };
   large?: boolean;
+  mode?: "detail" | "thumbnail";
 }) {
+  const media =
+    mode === "detail"
+      ? resolveExerciseDetailMedia(exercise)
+      : resolveExerciseThumbnailMedia(exercise);
+
   return (
     <div
       className={cn(
@@ -1768,23 +1785,31 @@ function ExerciseMedia({
         className,
       )}
     >
-      {exercise.gifUrl || exercise.imageUrl ? (
+      {media?.type === "image" || media?.type === "gif" ? (
         <Image
           alt={exercise.name}
           className="object-cover"
           fill
           sizes="(max-width: 768px) 100vw, 420px"
-          src={exercise.gifUrl ?? exercise.imageUrl ?? ""}
+          src={media.url}
           unoptimized
         />
-      ) : exercise.videoUrl ? (
+      ) : media?.type === "video" ? (
         <video
+          autoPlay={mode === "detail"}
           className="h-full w-full object-cover"
           controls={large}
+          loop
           muted
           playsInline
-          src={exercise.videoUrl}
+          poster={exercise.imageUrl ?? undefined}
+          preload={mode === "detail" ? "metadata" : "none"}
+          src={media.url}
         />
+      ) : exercise.gifUrl || exercise.videoUrl ? (
+        <div className="flex h-full min-h-44 items-center justify-center text-[var(--landing-accent)]">
+          <Play className="size-6" />
+        </div>
       ) : (
         <div className="flex h-full min-h-44 items-center justify-center text-[var(--landing-text-muted)]">
           <Dumbbell className="size-8" />
@@ -1792,6 +1817,38 @@ function ExerciseMedia({
       )}
     </div>
   );
+}
+
+function resolveExerciseThumbnailMedia(exercise: {
+  imageUrl?: string | null;
+}): ExerciseResolvedMedia | null {
+  return exercise.imageUrl ? { type: "image", url: exercise.imageUrl } : null;
+}
+
+function resolveExerciseDetailMedia(exercise: {
+  gifUrl?: string | null;
+  imageUrl?: string | null;
+  resolvedMedia?: ExerciseResolvedMedia | null;
+  videoUrl?: string | null;
+}): ExerciseResolvedMedia | null {
+  if (exercise.resolvedMedia?.url) {
+    return exercise.resolvedMedia;
+  }
+
+  if (exercise.videoUrl && exercise.gifUrl) {
+    return { type: "video", url: exercise.videoUrl };
+  }
+  if (exercise.gifUrl) {
+    return { type: "gif", url: exercise.gifUrl };
+  }
+  if (exercise.videoUrl) {
+    return { type: "video", url: exercise.videoUrl };
+  }
+  if (exercise.imageUrl) {
+    return { type: "image", url: exercise.imageUrl };
+  }
+
+  return null;
 }
 
 function NumberField({
