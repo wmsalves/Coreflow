@@ -32,6 +32,14 @@ export async function getDashboardSnapshot(userId: string) {
       : habitsOverview.summary.completedTodayCount / habitsOverview.summary.activeCount;
   const hasActiveFocusSession = Boolean(focusSnapshot.activeSession);
   const hasActiveWorkout = Boolean(fitnessSnapshot.activeWorkoutProgress);
+  const isFirstRun =
+    habitsOverview.summary.activeCount === 0 &&
+    focusSnapshot.completedSessions === 0 &&
+    focusSnapshot.pendingSessions === 0 &&
+    !hasActiveFocusSession &&
+    fitnessSnapshot.planCount === 0 &&
+    fitnessSnapshot.logCount === 0 &&
+    !hasActiveWorkout;
 
   return {
     metrics: [
@@ -55,6 +63,7 @@ export async function getDashboardSnapshot(userId: string) {
     recentHabits: habitsOverview.habits.slice(0, 3),
     todayView: {
       focusTimeTodaySeconds: focusSnapshot.todayFocusSeconds,
+      isFirstRun,
       modulesInProgressCount: modulesInProgress,
       overallProgress,
       habits: {

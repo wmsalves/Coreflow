@@ -1,7 +1,6 @@
-const STATIC_CACHE = "coreflow-static-v1";
+const STATIC_CACHE = "coreflow-static-v2";
 const OFFLINE_URL = "/offline";
 const STATIC_ASSETS = [
-  "/",
   OFFLINE_URL,
   "/manifest.webmanifest",
   "/icon-192.png",
@@ -64,8 +63,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (shouldUseNetworkFirst(request, url)) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
   event.respondWith(cacheFirst(request));
 });
+
+function shouldUseNetworkFirst(request, url) {
+  if (url.pathname.startsWith("/_next/static/")) {
+    return true;
+  }
+
+  return request.destination === "script" || request.destination === "style";
+}
 
 function shouldHandleStaticAsset(request, url) {
   if (url.pathname.startsWith("/_next/image")) {
@@ -88,6 +100,28 @@ function shouldHandleStaticAsset(request, url) {
   }
 
   return ["font", "image", "script", "style"].includes(request.destination);
+}
+
+async function networkFirst(request) {
+  const cache = await caches.open(STATIC_CACHE);
+
+  try {
+    const networkResponse = await fetch(request);
+
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await cache.match(request);
+
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+
+    throw error;
+  }
 }
 
 async function cacheFirst(request) {

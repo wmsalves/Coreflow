@@ -192,11 +192,11 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
       },
     },
     finalCta: {
-      body: "Build a system that makes disciplined execution easier to see, easier to repeat, and harder to fragment.",
-      eyebrow: "Final CTA",
-      primaryCta: "Start with Coreflow",
+      body: "Coreflow gives disciplined people one calm place to decide, execute, and review.",
+      eyebrow: "Start the system",
+      primaryCta: "Start your system",
       secondaryCta: "Sign in",
-      title: "Bring your habits, focus, and training into one flow.",
+      title: "Stop tracking pieces. Start running the whole day.",
     },
     footer: {
       copyright: "Copyright 2026 Coreflow. All rights reserved.",
@@ -246,7 +246,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         title: "Stay updated",
       },
       principle: "Consistency > intensity. Clarity > complexity.",
-      statement: "A personal operating system for habits, focus, and training momentum.",
+      statement: "A personal execution system for disciplined people.",
     },
     header: {
       cta: "Start free",
@@ -257,17 +257,17 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         { href: "#pricing", label: "Pricing" },
       ],
       signIn: "Sign in",
-      tagline: "Personal operating system for self-improvement",
+      tagline: "Personal execution system",
     },
     hero: {
-      badge: "Personal operating system for self-improvement",
-      ctaPrimary: "Build your system",
-      ctaSecondary: "View product preview",
-      headline: "One disciplined system for habits, focus, and training.",
+      badge: "Personal execution system",
+      ctaPrimary: "Start your system",
+      ctaSecondary: "See the command center",
+      headline: "Run the day with discipline.",
       preview: {
         aligned: "82% aligned",
         consistencyBody:
-          "One surface for habits, focus, and fitness removes friction from the day.",
+          "One surface for habits, focus, and fitness removes friction from execution.",
         consistencyLabel: "Consistency score",
         consistencyPeriod: "Week 18",
         dailyFlow: "Daily flow",
@@ -297,7 +297,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
             title: "Training plan",
           },
         ],
-        title: "Execution dashboard",
+        title: "Execution command center",
         today: "Today",
       },
       principles: [
@@ -306,45 +306,45 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         "Systems > motivation",
       ],
       subheadline:
-        "Coreflow gives you one place to run the day, one workflow for execution, and one source of truth for consistency.",
+        "Coreflow turns habits, deep work, and training into one execution rhythm: decide, act, review, repeat.",
     },
     pillars: {
       cards: [
         {
           description:
-            "Track the daily actions that matter, see streaks, and keep consistency visible.",
+            "Keep the small commitments visible until they become automatic.",
           key: "habits",
-          kicker: "Habits",
+          kicker: "Rituals",
           stat: "Streak clarity",
-          value: "Daily actions",
+          value: "Daily baseline",
         },
         {
           description:
-            "Run focused sessions, track deep work time, and measure effort without extra tools.",
+            "Protect deep work, measure real effort, and close the loop when the block is done.",
           key: "focus",
-          kicker: "Focus",
+          kicker: "Deep work",
           stat: "Measured effort",
           value: "Session blocks",
         },
         {
           description:
-            "Manage workouts, log training, and keep physical momentum inside the same system.",
+            "Run workouts, preserve the record, and keep physical momentum inside the same system.",
           key: "fitness",
-          kicker: "Fitness",
+          kicker: "Training",
           stat: "Training momentum",
           value: "Workout logs",
         },
       ],
       description:
-        "The product is built around the three systems that define daily execution.",
-      eyebrow: "Product pillars",
+        "The product is built around the systems that make a disciplined day visible.",
+      eyebrow: "Execution system",
       footerLabel: "Designed for",
-      title: "Three pillars. One operating system.",
+      title: "One system for the work that has to get done.",
     },
     pricing: {
       description:
-        "A simple model that makes the product feel legitimate without overcomplicating the decision.",
-      eyebrow: "Pricing preview",
+        "Start with the daily system. Upgrade only when the record becomes essential.",
+      eyebrow: "Plans",
       plans: [
         {
           cta: "Start free",
@@ -365,7 +365,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
     },
     problem: {
       description:
-        "Most people trying to improve their lives are forced into separate tools for separate intentions.",
+        "Disciplined people lose momentum when execution is split across disconnected tools.",
       eyebrow: "The problem",
       panels: [
         {
@@ -377,11 +377,11 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
           title: "Small friction. Large cost.",
         },
       ],
-      title: "Progress gets weaker when the system is fragmented.",
+      title: "Execution gets weaker when the system is fragmented.",
     },
     showcase: {
-      description: "A product surface built to feel credible, quiet, and precise.",
-      eyebrow: "Product showcase",
+      description: "A command surface built to feel credible, quiet, and precise.",
+      eyebrow: "Product experience",
       highlightCards: [
         {
           body: "The interface is designed to feel like a serious product, not a motivational toy.",
@@ -417,7 +417,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         ],
         title: "System health",
       },
-      title: "A dashboard that treats self-improvement like a real operating system.",
+      title: "A command center for daily execution.",
       weeklySummary: "Weekly summary",
     },
     solution: {
@@ -426,7 +426,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
       eyebrow: "Solution",
       points: [
         {
-          body: "Habits, focus blocks, and training live in one operating layer.",
+          body: "Habits, focus blocks, and training live in one execution layer.",
           kicker: "One place",
           title: "See the day clearly",
         },
@@ -442,7 +442,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         },
       ],
       title:
-        "One workflow across the parts of self-improvement that actually need to work together.",
+        "One workflow for the parts of life that actually need disciplined execution.",
     },
     workflow: {
       description:
@@ -505,11 +505,11 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
       },
     },
     finalCta: {
-      body: "Construa um sistema que torne a execução disciplinada mais visível, mais repetível e menos sujeita à fragmentação.",
-      eyebrow: "CTA final",
-      primaryCta: "Começar com Coreflow",
+      body: "Coreflow dá a pessoas disciplinadas um lugar calmo para decidir, executar e revisar.",
+      eyebrow: "Comece o sistema",
+      primaryCta: "Começar meu sistema",
       secondaryCta: "Entrar",
-      title: "Traga hábitos, foco e treino para um único fluxo.",
+      title: "Pare de rastrear partes. Comece a conduzir o dia inteiro.",
     },
     footer: {
       copyright: "Copyright 2026 Coreflow. Todos os direitos reservados.",
@@ -559,7 +559,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         title: "Receba novidades",
       },
       principle: "Consistencia > intensidade. Clareza > complexidade.",
-      statement: "Um sistema operacional pessoal para habitos, foco e ritmo de treino.",
+      statement: "Um sistema pessoal de execução para pessoas disciplinadas.",
     },
     header: {
       cta: "Começar grátis",
@@ -570,17 +570,17 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         { href: "#pricing", label: "Planos" },
       ],
       signIn: "Entrar",
-      tagline: "Sistema operacional pessoal para evolução consistente",
+      tagline: "Sistema pessoal de execução",
     },
     hero: {
-      badge: "Sistema operacional pessoal para evolução consistente",
-      ctaPrimary: "Construir meu sistema",
-      ctaSecondary: "Ver visão do produto",
-      headline: "Um sistema disciplinado para hábitos, foco e treino.",
+      badge: "Sistema pessoal de execução",
+      ctaPrimary: "Começar meu sistema",
+      ctaSecondary: "Ver centro de comando",
+      headline: "Conduza o dia com disciplina.",
       preview: {
         aligned: "82% alinhado",
         consistencyBody:
-          "Uma única superfície para hábitos, foco e treino reduz o atrito do dia.",
+          "Uma única superfície para hábitos, foco e treino reduz o atrito da execução.",
         consistencyLabel: "Pontuação de consistência",
         consistencyPeriod: "Semana 18",
         dailyFlow: "Fluxo diário",
@@ -610,7 +610,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
             title: "Plano de treino",
           },
         ],
-        title: "Painel de execução",
+        title: "Centro de comando",
         today: "Hoje",
       },
       principles: [
@@ -619,29 +619,29 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         "Sistemas > motivação",
       ],
       subheadline:
-        "Coreflow dá a você um lugar para conduzir o dia, um fluxo para executar e uma fonte única de verdade para consistência.",
+        "Coreflow transforma hábitos, trabalho profundo e treino em um ritmo único de execução: decidir, agir, revisar e repetir.",
     },
     pillars: {
       cards: [
         {
           description:
-            "Acompanhe as ações diárias que importam, veja sequências e mantenha a consistência visível.",
+            "Mantenha os pequenos compromissos visíveis até que eles virem rotina.",
           key: "habits",
-          kicker: "Hábitos",
+          kicker: "Rituais",
           stat: "Clareza de sequência",
-          value: "Ações diárias",
+          value: "Base diária",
         },
         {
           description:
-            "Execute sessões de foco, acompanhe tempo de trabalho profundo e meça esforço sem ferramentas extras.",
+            "Proteja trabalho profundo, meça esforço real e feche o ciclo quando o bloco terminar.",
           key: "focus",
-          kicker: "Foco",
+          kicker: "Trabalho profundo",
           stat: "Esforço medido",
-          value: "Blocos de sessão",
+          value: "Blocos de foco",
         },
         {
           description:
-            "Gerencie treinos, registre execuções e mantenha o ritmo físico dentro do mesmo sistema.",
+            "Execute treinos, preserve o registro e mantenha o ritmo físico dentro do mesmo sistema.",
           key: "fitness",
           kicker: "Treino",
           stat: "Ritmo de treino",
@@ -649,15 +649,15 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         },
       ],
       description:
-        "O produto foi construído em torno dos três sistemas que definem a execução diária.",
-      eyebrow: "Pilares do produto",
+        "O produto foi construído em torno dos sistemas que tornam um dia disciplinado visível.",
+      eyebrow: "Sistema de execução",
       footerLabel: "Pensado para",
-      title: "Três pilares. Um sistema operacional.",
+      title: "Um sistema para o trabalho que precisa acontecer.",
     },
     pricing: {
       description:
-        "Um modelo simples que transmite legitimidade ao produto sem complicar a decisão.",
-      eyebrow: "Prévia de planos",
+        "Comece com o sistema diario. Evolua apenas quando o registro se tornar essencial.",
+      eyebrow: "Planos",
       plans: [
         {
           cta: "Começar grátis",
@@ -678,7 +678,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
     },
     problem: {
       description:
-        "A maioria das pessoas que tenta evoluir precisa dividir intenções em ferramentas separadas.",
+        "Pessoas disciplinadas perdem ritmo quando a execução fica dividida em ferramentas desconectadas.",
       eyebrow: "O problema",
       panels: [
         {
@@ -690,11 +690,11 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
           title: "Pequeno atrito. Custo alto.",
         },
       ],
-      title: "O progresso enfraquece quando o sistema é fragmentado.",
+      title: "A execução enfraquece quando o sistema é fragmentado.",
     },
     showcase: {
-      description: "Uma superfície de produto criada para parecer crível, silenciosa e precisa.",
-      eyebrow: "Visão do produto",
+      description: "Uma superfície de comando criada para parecer crível, silenciosa e precisa.",
+      eyebrow: "Experiência do produto",
       highlightCards: [
         {
           body: "A interface foi desenhada para parecer um produto sério, não um brinquedo motivacional.",
@@ -730,7 +730,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         ],
         title: "Saúde do sistema",
       },
-      title: "Um dashboard que trata evolução pessoal como um sistema operacional real.",
+      title: "Um centro de comando para a execução diária.",
       weeklySummary: "Resumo semanal",
     },
     solution: {
@@ -739,7 +739,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
       eyebrow: "Solução",
       points: [
         {
-          body: "Hábitos, blocos de foco e treino vivem na mesma camada operacional.",
+          body: "Hábitos, blocos de foco e treino vivem na mesma camada de execução.",
           kicker: "Um lugar",
           title: "Veja o dia com clareza",
         },
@@ -755,7 +755,7 @@ export const landingCopy: Record<LandingLocale, LandingCopy> = {
         },
       ],
       title:
-        "Um fluxo único para as partes da evolução pessoal que realmente precisam funcionar juntas.",
+        "Um fluxo único para as partes da vida que realmente exigem execução disciplinada.",
     },
     workflow: {
       description:

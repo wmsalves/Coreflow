@@ -6,6 +6,8 @@ export type ExerciseSummary = {
   imageUrl: string | null;
   videoUrl: string | null;
   bodyPart: string | null;
+  category?: string | null;
+  difficulty?: string | null;
   target: string | null;
   equipment: string | null;
 };

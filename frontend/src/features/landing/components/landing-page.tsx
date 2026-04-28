@@ -73,7 +73,7 @@ export function LandingPage({ userEmail }: LandingPageProps) {
 
   const copy = landingCopy[locale];
   const heroHeadlineStyle = {
-    maxWidth: locale === "pt-BR" ? "11.5ch" : "10ch",
+    maxWidth: locale === "pt-BR" ? "12.5ch" : "12ch",
   } satisfies CSSProperties;
 
   return (

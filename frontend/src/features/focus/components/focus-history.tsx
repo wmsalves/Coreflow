@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { CheckCircle2, Clock3, TimerReset } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Disclosure } from "@/components/ui/disclosure";
 import type { FocusCopy } from "@/features/focus/content/focus-copy";
@@ -22,6 +24,10 @@ export function FocusHistory({ completedSessions, copy, history }: FocusHistoryP
           <div className="rounded-[1.35rem] border border-dashed border-[var(--landing-border)] bg-[var(--landing-surface)] p-6 text-sm leading-6 text-[var(--landing-text-muted)]">
             <p className="font-medium text-[var(--landing-text)]">{copy.list.historyEmptyTitle}</p>
             <p className="mt-1">{copy.list.historyEmptyDescription}</p>
+            <p className="mt-2 text-[var(--landing-text-soft)]">{copy.list.historyEmptyHint}</p>
+            <Button asChild className="mt-4" variant="secondary">
+              <Link href="#plan-focus">{copy.list.historyEmptyAction}</Link>
+            </Button>
           </div>
         ) : (
           completedSessions.map((session) => {

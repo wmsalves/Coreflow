@@ -68,6 +68,7 @@ type DashboardOverviewProps = {
         pendingNames: string[];
         totalCount: number;
       };
+      isFirstRun: boolean;
       modulesInProgressCount: number;
       overallProgress: number;
       quickActions: Array<{
@@ -99,10 +100,63 @@ function clampProgress(value: number) {
   return Math.max(0, Math.min(100, Math.round(value * 100)));
 }
 
+function FirstRunStarter({
+  copy,
+}: {
+  copy: (typeof dashboardCopy)["en"]["dashboard"];
+}) {
+  return (
+    <div className="rounded-[1.35rem] border border-[var(--landing-border-strong)] bg-[linear-gradient(180deg,var(--landing-surface),var(--landing-bg-elevated))] p-4 shadow-[var(--landing-chip-inset-shadow)] sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <Badge variant="success">{copy.ftue.badge}</Badge>
+          <div>
+            <h2 className="text-lg font-semibold tracking-[-0.03em] text-[var(--landing-text)]">
+              {copy.ftue.title}
+            </h2>
+            <p className="mt-1 max-w-xl text-sm leading-6 text-[var(--landing-text-muted)]">
+              {copy.ftue.description}
+            </p>
+          </div>
+        </div>
+        <Badge variant="muted">{copy.ftue.progress}</Badge>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        {copy.ftue.starterRows.map((row) => (
+          <Link
+            className="group rounded-[1.1rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-4 transition hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-surface-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--landing-border-strong)]"
+            href={row.href}
+            key={row.title}
+          >
+            <p className="text-sm font-semibold text-[var(--landing-text)]">
+              {row.title}
+            </p>
+            <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
+              {row.description}
+            </p>
+            <span className="mt-3 inline-flex text-sm font-medium text-[var(--landing-accent)]">
+              {row.action}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function getRecommendedAction(
   snapshot: DashboardOverviewProps["snapshot"],
   copy: (typeof dashboardCopy)["en"]["dashboard"],
 ): RecommendedAction {
+  if (snapshot.todayView.isFirstRun) {
+    return {
+      href: "/dashboard/habits",
+      key: "createHabit",
+      reason: copy.nextAction.reasons.firstRun,
+    };
+  }
+
   if (snapshot.todayView.focus.hasActiveSession) {
     return {
       href: "/dashboard/focus",
@@ -182,94 +236,100 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
               <CardDescription>{copy.summary.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-[1.2rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4 shadow-[var(--landing-chip-inset-shadow)]">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-1">
-                    <p className="text-base font-medium text-[var(--landing-text)]">
-                      {copy.summary.habitsProgress(
-                        snapshot.todayView.habits.completedCount,
-                        snapshot.todayView.habits.totalCount,
-                      )}
-                    </p>
-                    <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
-                      {copy.summary.focusProgress(
-                        snapshot.todayView.focusTimeTodaySeconds,
-                        snapshot.todayView.focus.weekFocusSeconds,
-                      )}
-                    </p>
+              {snapshot.todayView.isFirstRun ? (
+                <FirstRunStarter copy={copy} />
+              ) : (
+                <>
+                  <div className="rounded-[1.2rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4 shadow-[var(--landing-chip-inset-shadow)]">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="space-y-1">
+                        <p className="text-base font-medium text-[var(--landing-text)]">
+                          {copy.summary.habitsProgress(
+                            snapshot.todayView.habits.completedCount,
+                            snapshot.todayView.habits.totalCount,
+                          )}
+                        </p>
+                        <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
+                          {copy.summary.focusProgress(
+                            snapshot.todayView.focusTimeTodaySeconds,
+                            snapshot.todayView.focus.weekFocusSeconds,
+                          )}
+                        </p>
+                      </div>
+
+                      <Badge variant={snapshot.todayView.modulesInProgressCount > 0 ? "success" : "muted"}>
+                        {copy.summary.modulesInMotion(snapshot.todayView.modulesInProgressCount)}
+                      </Badge>
+                    </div>
+
+                    <div className="mt-4 h-2.5 rounded-full bg-[var(--landing-border)]">
+                      <div
+                        className="h-full rounded-full bg-[var(--landing-accent)] transition-[width]"
+                        style={{ width: `${overallProgress}%` }}
+                      />
+                    </div>
                   </div>
 
-                  <Badge variant={snapshot.todayView.modulesInProgressCount > 0 ? "success" : "muted"}>
-                    {copy.summary.modulesInMotion(snapshot.todayView.modulesInProgressCount)}
-                  </Badge>
-                </div>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-[1.15rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-muted)]">
+                        {copy.moduleCards.habits.eyebrow}
+                      </p>
+                      <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[var(--landing-text)]">
+                        {snapshot.todayView.habits.pendingCount}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
+                        {copy.moduleCards.habits.pending(snapshot.todayView.habits.pendingCount)}
+                      </p>
+                    </div>
 
-                <div className="mt-4 h-2.5 rounded-full bg-[var(--landing-border)]">
-                  <div
-                    className="h-full rounded-full bg-[var(--landing-accent)] transition-[width]"
-                    style={{ width: `${overallProgress}%` }}
-                  />
-                </div>
-              </div>
+                    <div className="rounded-[1.15rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-muted)]">
+                        {copy.moduleCards.focus.eyebrow}
+                      </p>
+                      <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[var(--landing-text)]">
+                        {snapshot.todayView.focus.pendingSessions}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
+                        {snapshot.todayView.focus.hasActiveSession && snapshot.todayView.focus.activeSessionTitle
+                          ? copy.moduleCards.focus.active(snapshot.todayView.focus.activeSessionTitle)
+                          : copy.moduleCards.focus.summary(
+                              snapshot.todayView.focus.completedSessions,
+                              snapshot.todayView.focus.pendingSessions,
+                            )}
+                      </p>
+                    </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[1.15rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-muted)]">
-                    {copy.moduleCards.habits.eyebrow}
-                  </p>
-                  <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[var(--landing-text)]">
-                    {snapshot.todayView.habits.pendingCount}
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
-                    {copy.moduleCards.habits.pending(snapshot.todayView.habits.pendingCount)}
-                  </p>
-                </div>
-
-                <div className="rounded-[1.15rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-muted)]">
-                    {copy.moduleCards.focus.eyebrow}
-                  </p>
-                  <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[var(--landing-text)]">
-                    {snapshot.todayView.focus.pendingSessions}
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
-                    {snapshot.todayView.focus.hasActiveSession && snapshot.todayView.focus.activeSessionTitle
-                      ? copy.moduleCards.focus.active(snapshot.todayView.focus.activeSessionTitle)
-                      : copy.moduleCards.focus.summary(
-                          snapshot.todayView.focus.completedSessions,
-                          snapshot.todayView.focus.pendingSessions,
-                        )}
-                  </p>
-                </div>
-
-                <div className="rounded-[1.15rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-muted)]">
-                    {copy.moduleCards.fitness.eyebrow}
-                  </p>
-                  <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[var(--landing-text)]">
-                    {snapshot.todayView.fitness.activeWorkoutProgress
-                      ? `${snapshot.todayView.fitness.activeWorkoutProgress.completedCount}/${snapshot.todayView.fitness.activeWorkoutProgress.totalCount}`
-                      : snapshot.todayView.fitness.latestWorkoutProgress
-                        ? `${snapshot.todayView.fitness.latestWorkoutProgress.completedCount}/${snapshot.todayView.fitness.latestWorkoutProgress.totalCount}`
-                        : snapshot.todayView.fitness.planCount}
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
-                    {snapshot.todayView.fitness.activeWorkoutProgress
-                      ? copy.moduleCards.fitness.progress(
-                          snapshot.todayView.fitness.activeWorkoutProgress.completedCount,
-                          snapshot.todayView.fitness.activeWorkoutProgress.totalCount,
-                          snapshot.todayView.fitness.activeWorkoutProgress.remainingCount,
-                        )
-                      : snapshot.todayView.fitness.latestWorkoutProgress
-                        ? copy.moduleCards.fitness.progress(
-                            snapshot.todayView.fitness.latestWorkoutProgress.completedCount,
-                            snapshot.todayView.fitness.latestWorkoutProgress.totalCount,
-                            snapshot.todayView.fitness.latestWorkoutProgress.remainingCount,
-                          )
-                        : copy.moduleCards.fitness.readyPlans(snapshot.todayView.fitness.planCount)}
-                  </p>
-                </div>
-              </div>
+                    <div className="rounded-[1.15rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-4 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-muted)]">
+                        {copy.moduleCards.fitness.eyebrow}
+                      </p>
+                      <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[var(--landing-text)]">
+                        {snapshot.todayView.fitness.activeWorkoutProgress
+                          ? `${snapshot.todayView.fitness.activeWorkoutProgress.completedCount}/${snapshot.todayView.fitness.activeWorkoutProgress.totalCount}`
+                          : snapshot.todayView.fitness.latestWorkoutProgress
+                            ? `${snapshot.todayView.fitness.latestWorkoutProgress.completedCount}/${snapshot.todayView.fitness.latestWorkoutProgress.totalCount}`
+                            : snapshot.todayView.fitness.planCount}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-[var(--landing-text-muted)]">
+                        {snapshot.todayView.fitness.activeWorkoutProgress
+                          ? copy.moduleCards.fitness.progress(
+                              snapshot.todayView.fitness.activeWorkoutProgress.completedCount,
+                              snapshot.todayView.fitness.activeWorkoutProgress.totalCount,
+                              snapshot.todayView.fitness.activeWorkoutProgress.remainingCount,
+                            )
+                          : snapshot.todayView.fitness.latestWorkoutProgress
+                            ? copy.moduleCards.fitness.progress(
+                                snapshot.todayView.fitness.latestWorkoutProgress.completedCount,
+                                snapshot.todayView.fitness.latestWorkoutProgress.totalCount,
+                                snapshot.todayView.fitness.latestWorkoutProgress.remainingCount,
+                              )
+                            : copy.moduleCards.fitness.readyPlans(snapshot.todayView.fitness.planCount)}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 

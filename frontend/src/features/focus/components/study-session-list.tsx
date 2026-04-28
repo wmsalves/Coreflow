@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { FocusCopy } from "@/features/focus/content/focus-copy";
 import { StudySessionCard } from "@/features/focus/components/study-session-card";
@@ -102,6 +104,10 @@ export function StudySessionList({
           <div className="rounded-[1.35rem] border border-dashed border-[var(--landing-border)] bg-[var(--landing-surface)] p-6 text-sm leading-6 text-[var(--landing-text-muted)]">
             <p className="font-medium text-[var(--landing-text)]">{copy.list.emptyTitle}</p>
             <p className="mt-1">{copy.list.emptyDescription}</p>
+            <p className="mt-2 text-[var(--landing-text-soft)]">{copy.list.emptyHint}</p>
+            <Button asChild className="mt-4" variant="secondary">
+              <Link href="#plan-focus">{copy.list.emptyAction}</Link>
+            </Button>
           </div>
         ) : (
           <>

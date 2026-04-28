@@ -27,6 +27,7 @@ type HabitOverviewItem = {
 type HabitListCopy = {
   title: string;
   description: string;
+  emptyAction: string;
   emptyTitle: string;
   emptyDescription: string;
   doneToday: string;
@@ -58,6 +59,10 @@ export function HabitList({ copy, habits }: HabitListProps) {
         title={copy.emptyTitle}
         description={copy.emptyDescription}
         hint={copy.emptyHint}
+        action={{
+          href: "#create-habit",
+          label: copy.emptyAction,
+        }}
       />
     );
   }

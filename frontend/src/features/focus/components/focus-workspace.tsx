@@ -460,7 +460,7 @@ export function FocusWorkspace({
       ) : null}
 
       <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
-        <div className="order-2 h-full space-y-5 sm:space-y-6 xl:order-1">
+        <div className="order-2 h-full space-y-5 sm:space-y-6 xl:order-1" id="plan-focus">
           <div className="sm:hidden">
             <MobileSheet
               description={plannerDescription}

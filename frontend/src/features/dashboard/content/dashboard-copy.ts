@@ -22,44 +22,71 @@ export const dashboardCopy = {
     },
     dashboard: {
       badge: "Today view",
-      title: "What should you execute today?",
+      title: "Your day, in command.",
       description:
-        "Use the dashboard as a single daily command surface across habits, focus sessions, and workout execution.",
+        "See what needs action, resume what is already moving, and close the day with one record of execution.",
       summary: {
-        title: "Today's execution",
+        title: "Execution control",
         description:
-          "Start from the actions that still need attention, then use the module blocks below to continue the day.",
+          "Start with open loops. Keep the day moving from one surface.",
         habitsProgress: (completed: number, total: number) =>
           `${completed}/${total} habits checked`,
         focusProgress: (today: number, week: number) =>
           `${formatDuration(today)} focused today · ${formatDuration(week)} this week`,
         modulesInMotion: (value: number) => `${value}/3 systems moving`,
       },
+      ftue: {
+        badge: "Starter day",
+        title: "Coreflow is ready before your data is.",
+        description:
+          "Use this starting state to feel the loop: set one baseline, run one focused block, then add training when you are ready.",
+        progress: "0/3 started",
+        starterRows: [
+          {
+            action: "Create the first habit",
+            description: "Pick one small action you can check off today.",
+            href: "/dashboard/habits",
+            title: "Set the daily baseline",
+          },
+          {
+            action: "Plan a focus block",
+            description: "Give the timer a clear target before you start.",
+            href: "/dashboard/focus",
+            title: "Protect one work block",
+          },
+          {
+            action: "Open training",
+            description: "Create a plan when physical execution belongs in the day.",
+            href: "/dashboard/fitness",
+            title: "Prepare training",
+          },
+        ],
+      },
       moduleCards: {
         habits: {
-          eyebrow: "Habits",
-          title: "Daily habits",
+          eyebrow: "Rituals",
+          title: "Daily baseline",
           ready: "Daily routine is on track.",
-          empty: "No habits yet. Create the first one to start today's loop.",
+          empty: "No daily baseline yet. Create the first habit to give the day structure.",
           pending: (count: number) => `${count} habits still need a check-in`,
           completed: (completed: number, total: number) =>
             `${completed}/${total} completed today`,
           openAction: "Open habits",
         },
         focus: {
-          eyebrow: "Focus",
-          title: "Study sessions",
+          eyebrow: "Deep work",
+          title: "Focus queue",
           active: (title: string) => `Active session: ${title}`,
           next: (title: string) => `Next up: ${title}`,
-          empty: "No focus session is planned yet.",
+          empty: "No deep work block is planned yet.",
           summary: (completed: number, pending: number) =>
             `${completed} completed · ${pending} pending`,
           resumeAction: "Resume focus",
           planAction: "Open focus",
         },
         fitness: {
-          eyebrow: "Fitness",
-          title: "Workout execution",
+          eyebrow: "Training",
+          title: "Training execution",
           active: (name: string) => `Workout in progress: ${name}`,
           activeFallback: "Workout in progress",
           latest: (name: string) => `Latest workout: ${name}`,
@@ -73,17 +100,18 @@ export const dashboardCopy = {
         },
       },
       quickActions: {
-        title: "Quick actions",
+        title: "Move now",
         description:
-          "Jump straight into the next useful move, or use a shortcut if you already know where you want to go.",
+          "Choose the smallest useful action that moves the day forward.",
         createHabit: "Create habit",
         planFocusSession: "Plan focus session",
         startFocus: "Start focus",
         openWorkoutBuilder: "Open workout builder",
       },
       nextAction: {
-        title: "Best next step",
+        title: "Recommended move",
         reasons: {
+          firstRun: "Start with one habit. It gives the dashboard a real signal and lets you feel the execution loop immediately.",
           resumeFocus: "You already have a focus session in motion. Pick it back up before context drifts.",
           resumeWorkout: "Your workout is already open. Finishing it now keeps the execution history clean.",
           habitsPending: (count: number) => `${count} habits still need a check-in. Clear those first so the day starts with visible progress.`,
@@ -134,9 +162,9 @@ export const dashboardCopy = {
     },
     habits: {
       badge: "Habits",
-      title: "Build consistency with simple daily loops.",
+      title: "Install the daily baseline.",
       description:
-        "This module handles the full MVP flow: create habits, mark today as complete, track streaks, and keep the dashboard updated automatically.",
+        "Create repeatable commitments, check them off today, and keep the system honest.",
       summary: {
         active: "Active habits",
         doneToday: "Done today",
@@ -153,23 +181,24 @@ export const dashboardCopy = {
         targetDays: "Target days per week",
         pending: "Creating habit...",
         submit: "Save habit",
-        success: "Habit saved.",
-        successHint: "It is ready for today's check-in as soon as you want to start the streak.",
+        success: "Daily baseline added.",
+        successHint: "Mark it complete today to give the dashboard its first real signal.",
       },
       list: {
         title: "Habit list",
         description:
           "Daily completions stay separate from the habit itself, so checking in today never distorts the long-term pattern.",
-        emptyTitle: "Your habits will show up here",
+        emptyTitle: "Start your day with one action",
         emptyDescription:
-          "Create one habit, check it off today, and the dashboard starts carrying the progress forward for you.",
-        emptyHint: "A good first habit is small, daily, and easy to confirm in under a minute.",
+          "Create a small baseline habit, mark it complete, and Coreflow starts showing real daily progress.",
+        emptyAction: "Create first habit",
+        emptyHint: "A good first habit is daily, visible, and easy to confirm in under a minute.",
         doneToday: "Done today",
         needsCheckIn: "Needs check-in",
         details: "Details",
         undoToday: "Undo today",
         markComplete: "Mark complete",
-        toggleSuccess: "Saved for today.",
+        toggleSuccess: "Saved for today. The dashboard is already carrying it forward.",
         deleteSuccess: "Habit removed.",
         deleteLabel: (name: string) => `Delete ${name}`,
         habitStats: (
@@ -185,9 +214,9 @@ export const dashboardCopy = {
     },
     fitness: {
       badge: "Fitness",
-      title: "Build a workout from real exercises.",
+      title: "Run training without losing the record.",
       description:
-        "Search the catalog, inspect the movement, then assemble a focused plan with sets, reps, rest, and notes.",
+        "Search the catalog, build a plan, execute it, and keep the completed work traceable.",
       initialLoadError:
         "Fitness data could not be loaded yet. Check the backend connection, then search again.",
       fallbackError: "Something went wrong.",
@@ -220,17 +249,32 @@ export const dashboardCopy = {
         searchAria: "Search exercises",
         searchPlaceholder: "chest press, squat, shoulder press",
         searchButton: "Search",
+        showMore: "Show more",
+        showing: (visible: number, total: number) =>
+          `Showing ${visible} of ${total}`,
         loading: "Loading exercises...",
         noResults:
           "No exercises yet. Try a broader search like squat or press.",
         equipment: (value: string) => `Equipment: ${value}`,
       },
       inspector: {
+        category: "Category",
+        categoryFallback: "Catalog movement",
+        contextDescription: (bodyPart: string, target: string, equipment: string) =>
+          `A ${bodyPart.toLowerCase()} movement focused on ${target.toLowerCase()}, configured here with ${equipment.toLowerCase()} in mind.`,
+        contextTitle: "Movement context",
+        difficulty: "Difficulty",
+        difficultyFallback: "Provider not specified",
         emptyTitle: "Select an exercise",
         emptyDescription:
           "Pick a catalog result to inspect media, details, and workout settings.",
+        equipment: "Equipment",
+        executionTitle: "Execution steps",
+        metadataTitle: "Exercise metadata",
         selected: "Selected",
         loadingDetails: "Loading details",
+        muscleGroupsTitle: "Muscle groups",
+        setupTitle: "Workout setup",
         formNotes: "Form notes",
         sets: "Sets",
         reps: "Reps",
@@ -247,9 +291,9 @@ export const dashboardCopy = {
         savePlan: "Save workout plan",
         noWorkout: "No workout yet",
         noWorkoutDescription:
-          "Create a plan to start collecting selected exercises.",
+          "Create a starter plan, add one exercise, and the workout can become an active session.",
         emptyPlan:
-          "Exercises you add will appear here in order with sets, reps, rest, and notes.",
+          "Search the catalog and add the first exercise. Sets, reps, rest, and notes will stay attached to the plan.",
         progressCompleted: (completed: number, total: number) =>
           `${completed}/${total} completed`,
         progressRemaining: (remaining: number) => `${remaining} remaining`,
@@ -290,6 +334,8 @@ export const dashboardCopy = {
           "Record completed plans without changing the plan template.",
         detailCta: "View details",
         empty: "Completed workouts will appear here.",
+        emptyHint:
+          "Start a workout, mark at least one exercise complete, and finish it to create the first training record.",
         completedAt: (value: string) => `Completed: ${value}`,
         completedStatus: "Completed",
         exerciseCount: (value: number) => `${value} exercises logged`,
@@ -342,26 +388,53 @@ export const dashboardCopy = {
     },
     dashboard: {
       badge: "Hoje",
-      title: "O que voce precisa executar hoje?",
+      title: "Seu dia sob comando.",
       description:
-        "Use o dashboard como uma superficie diaria unica para habitos, sessoes de foco e execucao de treino.",
+        "Veja o que precisa de acao, retome o que ja esta em movimento e feche o dia com um unico registro de execucao.",
       summary: {
-        title: "Execucao de hoje",
+        title: "Controle de execucao",
         description:
-          "Comece pelas acoes que ainda precisam de atencao e depois siga pelos blocos de modulo abaixo.",
+          "Comece pelos ciclos abertos. Mantenha o dia em movimento em uma unica superficie.",
         habitsProgress: (completed: number, total: number) =>
           `${completed}/${total} habitos marcados`,
         focusProgress: (today: number, week: number) =>
           `${formatDuration(today)} de foco hoje · ${formatDuration(week)} nesta semana`,
         modulesInMotion: (value: number) => `${value}/3 sistemas em movimento`,
       },
+      ftue: {
+        badge: "Dia inicial",
+        title: "Coreflow ja esta pronto antes dos seus dados.",
+        description:
+          "Use este estado inicial para sentir o ciclo: defina uma base, execute um bloco de foco e adicione treino quando fizer sentido.",
+        progress: "0/3 iniciados",
+        starterRows: [
+          {
+            action: "Criar o primeiro habito",
+            description: "Escolha uma acao pequena para marcar ainda hoje.",
+            href: "/dashboard/habits",
+            title: "Definir a base diaria",
+          },
+          {
+            action: "Planejar foco",
+            description: "De ao timer um alvo claro antes de comecar.",
+            href: "/dashboard/focus",
+            title: "Proteger um bloco",
+          },
+          {
+            action: "Abrir treino",
+            description: "Crie um plano quando a execucao fisica entrar no dia.",
+            href: "/dashboard/fitness",
+            title: "Preparar treino",
+          },
+        ],
+      },
       moduleCards: {
         habits: {
-          eyebrow: "Habitos",
-          title: "Habitos diarios",
+          eyebrow: "Rituais",
+          title: "Base diaria",
           ready: "A rotina diaria esta em dia.",
           empty:
-            "Nenhum habito ainda. Crie o primeiro para iniciar o ciclo de hoje.",
+            "Nenhuma base diaria ainda. Crie o primeiro habito para dar estrutura ao dia.",
           pending: (count: number) =>
             `${count} habitos ainda precisam de check-in`,
           completed: (completed: number, total: number) =>
@@ -369,11 +442,11 @@ export const dashboardCopy = {
           openAction: "Abrir habitos",
         },
         focus: {
-          eyebrow: "Foco",
-          title: "Sessoes de estudo",
+          eyebrow: "Trabalho profundo",
+          title: "Fila de foco",
           active: (title: string) => `Sessao ativa: ${title}`,
           next: (title: string) => `Proxima: ${title}`,
-          empty: "Nenhuma sessao de foco planejada ainda.",
+          empty: "Nenhum bloco de trabalho profundo planejado ainda.",
           summary: (completed: number, pending: number) =>
             `${completed} concluidas · ${pending} pendentes`,
           resumeAction: "Retomar foco",
@@ -381,7 +454,7 @@ export const dashboardCopy = {
         },
         fitness: {
           eyebrow: "Treino",
-          title: "Execucao de treino",
+          title: "Execucao fisica",
           active: (name: string) => `Treino em andamento: ${name}`,
           activeFallback: "Treino em andamento",
           latest: (name: string) => `Ultimo treino: ${name}`,
@@ -395,17 +468,18 @@ export const dashboardCopy = {
         },
       },
       quickActions: {
-        title: "Acoes rapidas",
+        title: "Mover agora",
         description:
-          "Entre direto na proxima acao util ou use um atalho se voce ja sabe para onde quer ir.",
+          "Escolha a menor acao util que faz o dia avancar.",
         createHabit: "Criar habito",
         planFocusSession: "Planejar foco",
         startFocus: "Iniciar foco",
         openWorkoutBuilder: "Abrir treino",
       },
       nextAction: {
-        title: "Proximo melhor passo",
+        title: "Movimento recomendado",
         reasons: {
+          firstRun: "Comece por um habito. Ele da ao dashboard um sinal real e mostra o ciclo de execucao imediatamente.",
           resumeFocus: "Voce ja tem uma sessao de foco em andamento. Retome antes que o contexto esfrie.",
           resumeWorkout: "Seu treino ja esta aberto. Finalizar agora mantem o historico de execucao limpo.",
           habitsPending: (count: number) => `${count} habitos ainda precisam de check-in. Resolva isso primeiro para o dia ganhar progresso visivel.`,
@@ -457,9 +531,9 @@ export const dashboardCopy = {
     },
     habits: {
       badge: "Habitos",
-      title: "Construa consistencia com ciclos diarios simples.",
+      title: "Instale a base diaria.",
       description:
-        "Este modulo cobre o fluxo MVP completo: criar habitos, marcar hoje como concluido, acompanhar sequencias e atualizar o dashboard automaticamente.",
+        "Crie compromissos repetiveis, marque o que foi feito hoje e mantenha o sistema honesto.",
       summary: {
         active: "Habitos ativos",
         doneToday: "Feitos hoje",
@@ -476,23 +550,24 @@ export const dashboardCopy = {
         targetDays: "Dias alvo por semana",
         pending: "Criando habito...",
         submit: "Salvar habito",
-        success: "Habito salvo.",
-        successHint: "Ele ja esta pronto para o check-in de hoje quando voce quiser iniciar a sequencia.",
+        success: "Base diaria adicionada.",
+        successHint: "Marque como concluida hoje para dar ao dashboard o primeiro sinal real.",
       },
       list: {
         title: "Lista de habitos",
         description:
           "As conclusoes diarias ficam separadas do habito em si, entao marcar hoje nunca distorce o padrao de longo prazo.",
-        emptyTitle: "Seus habitos vao aparecer aqui",
+        emptyTitle: "Comece o dia com uma acao",
         emptyDescription:
-          "Crie um habito, marque hoje e o dashboard passa a carregar esse progresso para voce.",
-        emptyHint: "Um bom primeiro habito e pequeno, diario e facil de confirmar em menos de um minuto.",
+          "Crie uma pequena base diaria, marque como concluida e o Coreflow passa a mostrar progresso real.",
+        emptyAction: "Criar primeiro habito",
+        emptyHint: "Um bom primeiro habito e diario, visivel e facil de confirmar em menos de um minuto.",
         doneToday: "Feito hoje",
         needsCheckIn: "Precisa check-in",
         details: "Detalhes",
         undoToday: "Desfazer hoje",
         markComplete: "Marcar concluido",
-        toggleSuccess: "Salvo para hoje.",
+        toggleSuccess: "Salvo para hoje. O dashboard ja leva isso adiante.",
         deleteSuccess: "Habito removido.",
         deleteLabel: (name: string) => `Excluir ${name}`,
         habitStats: (
@@ -508,9 +583,9 @@ export const dashboardCopy = {
     },
     fitness: {
       badge: "Treino",
-      title: "Monte um treino com exercicios reais.",
+      title: "Execute treino sem perder o registro.",
       description:
-        "Pesquise o catalogo, veja o movimento e monte um plano focado com series, repeticoes, descanso e notas.",
+        "Pesquise o catalogo, monte um plano, execute e mantenha o trabalho concluido rastreavel.",
       initialLoadError:
         "Os dados de treino ainda nao puderam ser carregados. Verifique a conexao com o backend e tente pesquisar novamente.",
       fallbackError: "Algo deu errado.",
@@ -545,17 +620,32 @@ export const dashboardCopy = {
         searchAria: "Pesquisar exercicios",
         searchPlaceholder: "chest press, squat, shoulder press",
         searchButton: "Pesquisar",
+        showMore: "Mostrar mais",
+        showing: (visible: number, total: number) =>
+          `Mostrando ${visible} de ${total}`,
         loading: "Carregando exercicios...",
         noResults:
           "Nenhum exercicio ainda. Tente uma busca mais ampla como squat ou press.",
         equipment: (value: string) => `Equipamento: ${value}`,
       },
       inspector: {
+        category: "Categoria",
+        categoryFallback: "Movimento do catalogo",
+        contextDescription: (bodyPart: string, target: string, equipment: string) =>
+          `Movimento de ${bodyPart.toLowerCase()} com foco em ${target.toLowerCase()}, configurado aqui considerando ${equipment.toLowerCase()}.`,
+        contextTitle: "Contexto do movimento",
+        difficulty: "Dificuldade",
+        difficultyFallback: "Nao informado pelo provedor",
         emptyTitle: "Selecione um exercicio",
         emptyDescription:
           "Escolha um resultado do catalogo para ver midia, detalhes e ajustes do treino.",
+        equipment: "Equipamento",
+        executionTitle: "Passos de execucao",
+        metadataTitle: "Metadados do exercicio",
         selected: "Selecionado",
         loadingDetails: "Carregando detalhes",
+        muscleGroupsTitle: "Grupos musculares",
+        setupTitle: "Ajustes do treino",
         formNotes: "Notas de execucao",
         sets: "Series",
         reps: "Reps",
@@ -572,9 +662,9 @@ export const dashboardCopy = {
         savePlan: "Salvar plano de treino",
         noWorkout: "Nenhum treino ainda",
         noWorkoutDescription:
-          "Crie um plano para comecar a reunir exercicios selecionados.",
+          "Crie um plano inicial, adicione um exercicio e o treino podera virar uma sessao ativa.",
         emptyPlan:
-          "Os exercicios adicionados aparecem aqui em ordem com series, reps, descanso e notas.",
+          "Pesquise o catalogo e adicione o primeiro exercicio. Series, reps, descanso e notas ficam ligados ao plano.",
         progressCompleted: (completed: number, total: number) =>
           `${completed}/${total} concluidos`,
         progressRemaining: (remaining: number) => `${remaining} restantes`,
@@ -617,6 +707,8 @@ export const dashboardCopy = {
           "Registre planos concluidos sem alterar o modelo do treino.",
         detailCta: "Ver detalhes",
         empty: "Treinos concluidos aparecerao aqui.",
+        emptyHint:
+          "Inicie um treino, marque pelo menos um exercicio como concluido e finalize para criar o primeiro registro.",
         completedAt: (value: string) => `Concluido: ${value}`,
         completedStatus: "Concluido",
         exerciseCount: (value: number) => `${value} exercicios registrados`,

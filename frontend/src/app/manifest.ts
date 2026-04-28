@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "Coreflow",
     short_name: "Coreflow",
-    description: "Daily execution for habits, focus sessions, and workout momentum.",
+    description: "A personal execution system for disciplined people.",
     scope: "/",
     start_url: "/",
     display: "standalone",

@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
-export const alt = "Coreflow - One disciplined system for habits, focus, and training.";
+export const alt = "Coreflow - Personal execution system for disciplined people.";
 export const size = {
   height: 630,
   width: 1200,
@@ -108,7 +108,7 @@ export default async function Image() {
                 lineHeight: 0.98,
               }}
             >
-              One disciplined system for habits, focus, and training.
+              Run the day with discipline.
             </div>
             <div
               style={{
@@ -118,7 +118,7 @@ export default async function Image() {
                 maxWidth: 690,
               }}
             >
-              A personal operating system for consistent execution.
+              A personal execution system for disciplined people.
             </div>
           </div>
 

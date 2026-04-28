@@ -1,9 +1,9 @@
 export const focusCopy = {
   en: {
     badge: "Focus",
-    title: "Plan the work, then enter the session.",
+    title: "Protect the block. Finish the work.",
     description:
-      "A structured study system for choosing what matters, protecting time, and closing the loop when the work is done.",
+      "Choose the target, run the timer, and close the session with a clean record of effort.",
     actions: {
       create: "Create session",
       edit: "Edit",
@@ -56,8 +56,8 @@ export const focusCopy = {
       ratio: (active: number, pending: number) => `${active} / ${pending}`,
     },
     planner: {
-      title: "Plan next study block",
-      description: "Capture the next unit of work before starting the timer.",
+      title: "Plan the next block",
+      description: "Define one clear target before the timer starts.",
       editTitle: "Update study block",
       editDescription: "Adjust the plan, dates, or priority without losing saved focus time.",
       titleLabel: "Title",
@@ -80,10 +80,14 @@ export const focusCopy = {
       archivedTitle: "Canceled and archived",
       historyTitle: "Focus history",
       historyDescription: "Review completed study blocks and saved focus work.",
-      emptyTitle: "No sessions match this view",
-      emptyDescription: "Adjust the filters or create a study block to give the timer a clear target.",
-      historyEmptyTitle: "No completed focus work yet",
-      historyEmptyDescription: "Finish a study block or save a focus run and it will appear here for review.",
+      emptyTitle: "Give the timer one clear target",
+      emptyDescription: "Plan a single focus block, then start the timer from the same screen.",
+      emptyAction: "Plan first block",
+      emptyHint: "A useful first block is specific enough to finish in one Pomodoro.",
+      historyEmptyTitle: "Your completed focus will collect here",
+      historyEmptyDescription: "Finish a study block or save focus time to build a visible record of effort.",
+      historyEmptyAction: "Plan a focus block",
+      historyEmptyHint: "The first saved run turns Focus from a timer into a progress record.",
       details: "Details",
       filters: {
         status: "Status",
@@ -100,8 +104,8 @@ export const focusCopy = {
       runCount: (count: number) => `${count} runs saved`,
     },
     pomodoro: {
-      title: "Pomodoro execution",
-      description: "Run the timer independently or link it to a selected study session.",
+      title: "Execution timer",
+      description: "Run a clean focus cycle, linked to a session when the target is known.",
       noSession: "Free focus mode",
       noSessionDescription: "Time will be saved as standalone focus history.",
       selected: "Linked study session",
@@ -141,9 +145,9 @@ export const focusCopy = {
   },
   "pt-BR": {
     badge: "Foco",
-    title: "Planeje o estudo, depois entre na sessao.",
+    title: "Proteja o bloco. Conclua o trabalho.",
     description:
-      "Um sistema de estudo estruturado para escolher o que importa, proteger tempo e fechar o ciclo quando o trabalho termina.",
+      "Escolha o alvo, rode o timer e feche a sessao com um registro limpo de esforco.",
     actions: {
       create: "Criar sessao",
       edit: "Editar",
@@ -196,8 +200,8 @@ export const focusCopy = {
       ratio: (active: number, pending: number) => `${active} / ${pending}`,
     },
     planner: {
-      title: "Planejar proximo bloco",
-      description: "Registre a proxima unidade de estudo antes de iniciar o timer.",
+      title: "Planejar o proximo bloco",
+      description: "Defina um alvo claro antes de iniciar o timer.",
       editTitle: "Atualizar bloco de estudo",
       editDescription: "Ajuste o plano, as datas ou a prioridade sem perder o foco ja salvo.",
       titleLabel: "Titulo",
@@ -220,10 +224,14 @@ export const focusCopy = {
       archivedTitle: "Canceladas e arquivadas",
       historyTitle: "Historico de foco",
       historyDescription: "Revise blocos de estudo concluidos e foco salvo.",
-      emptyTitle: "Nenhuma sessao nesta visao",
-      emptyDescription: "Ajuste os filtros ou crie um bloco de estudo para dar um alvo claro ao timer.",
-      historyEmptyTitle: "Nenhum foco concluido ainda",
-      historyEmptyDescription: "Conclua um bloco de estudo ou salve um foco e ele aparece aqui para revisao.",
+      emptyTitle: "De ao timer um alvo claro",
+      emptyDescription: "Planeje um unico bloco de foco e inicie o timer na mesma tela.",
+      emptyAction: "Planejar primeiro bloco",
+      emptyHint: "Um bom primeiro bloco e especifico o bastante para terminar em um Pomodoro.",
+      historyEmptyTitle: "Seu foco concluido vai se acumular aqui",
+      historyEmptyDescription: "Conclua um bloco de estudo ou salve tempo focado para criar um registro visivel de esforco.",
+      historyEmptyAction: "Planejar bloco de foco",
+      historyEmptyHint: "A primeira execucao salva transforma o timer em registro de progresso.",
       details: "Detalhes",
       filters: {
         status: "Status",
@@ -240,8 +248,8 @@ export const focusCopy = {
       runCount: (count: number) => `${count} execucoes salvas`,
     },
     pomodoro: {
-      title: "Execucao Pomodoro",
-      description: "Use o timer livremente ou conecte a uma sessao de estudo selecionada.",
+      title: "Timer de execucao",
+      description: "Rode um ciclo limpo de foco, conectado a uma sessao quando o alvo estiver claro.",
       noSession: "Modo foco livre",
       noSessionDescription: "O tempo sera salvo como historico de foco avulso.",
       selected: "Sessao de estudo conectada",

@@ -75,6 +75,7 @@ const defaultConfig: ExerciseConfig = {
   restSeconds: 90,
   sets: 3,
 };
+const CATALOG_VISIBLE_BATCH_SIZE = 6;
 
 function getMetaValue(value: string | null | undefined, fallback: string) {
   return value && value.trim().length > 0 ? value : fallback;
@@ -133,6 +134,9 @@ export function FitnessWorkspace({
   const commonCopy = dashboardCopy[locale].common;
   const [query, setQuery] = useState(copy.defaults.searchQuery);
   const [results, setResults] = useState<ExerciseSummary[]>(initialExercises);
+  const [visibleResultsCount, setVisibleResultsCount] = useState(
+    CATALOG_VISIBLE_BATCH_SIZE,
+  );
   const [plans, setPlans] = useState<WorkoutPlan[]>(initialPlans);
   const [logs, setLogs] = useState<WorkoutLog[]>(initialLogs);
   const [activeSession, setActiveSession] = useState<WorkoutSession | null>(
@@ -173,10 +177,13 @@ export function FitnessWorkspace({
   );
   const isMutating = pendingMutation !== null;
   const selectedInternalId = selectedExercise?.internalId;
+  const visibleResults = results.slice(0, visibleResultsCount);
+  const hasMoreResults = visibleResultsCount < results.length;
 
   async function runSearch(searchQuery: string) {
     setCatalogState("loading");
     setNotice(null);
+    setVisibleResultsCount(CATALOG_VISIBLE_BATCH_SIZE);
 
     try {
       const loadedExercises = searchQuery.trim()
@@ -184,6 +191,7 @@ export function FitnessWorkspace({
         : await listExerciseCatalogAction();
 
       setResults(loadedExercises);
+      setVisibleResultsCount(CATALOG_VISIBLE_BATCH_SIZE);
       setCatalogState("idle");
     } catch (error) {
       setCatalogState("error");
@@ -767,17 +775,42 @@ export function FitnessWorkspace({
                   {copy.catalog.loading}
                 </div>
               ) : (
-                <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-                  {results.map((exercise) => (
-                    <ExerciseResultCard
-                      active={selectedExercise?.id === exercise.id}
-                      commonCopy={commonCopy}
-                      copy={copy}
-                      exercise={exercise}
-                      key={exercise.id}
-                      onSelect={handleSelectExercise}
-                    />
-                  ))}
+                <div className="space-y-4 p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm font-medium text-[var(--landing-text-muted)]">
+                      {copy.catalog.showing(visibleResults.length, results.length)}
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {visibleResults.map((exercise) => (
+                      <ExerciseResultCard
+                        active={selectedExercise?.id === exercise.id}
+                        commonCopy={commonCopy}
+                        copy={copy}
+                        exercise={exercise}
+                        key={exercise.id}
+                        onSelect={handleSelectExercise}
+                      />
+                    ))}
+                  </div>
+
+                  {hasMoreResults ? (
+                    <div className="border-t border-[var(--landing-border)] pt-4">
+                      <Button
+                        className="w-full sm:w-auto"
+                        onClick={() =>
+                          setVisibleResultsCount((current) =>
+                            Math.min(current + CATALOG_VISIBLE_BATCH_SIZE, results.length),
+                          )
+                        }
+                        type="button"
+                        variant="secondary"
+                      >
+                        {copy.catalog.showMore}
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               )}
             </CardContent>
@@ -951,17 +984,79 @@ function ExerciseInspector({
     );
   }
 
+  const bodyPart = getMetaValue(exercise.bodyPart, commonCopy.notSpecified);
+  const target = getMetaValue(exercise.target, commonCopy.notSpecified);
+  const equipment = getMetaValue(exercise.equipment, commonCopy.notSpecified);
+  const muscleGroups = Array.from(
+    new Set(
+      [exercise.bodyPart, exercise.target, ...exercise.secondaryMuscles]
+        .map((item) => item?.trim())
+        .filter((item): item is string => Boolean(item)),
+    ),
+  );
+  const metadata = [
+    {
+      label: copy.inspector.difficulty,
+      value: getMetaValue(exercise.difficulty, copy.inspector.difficultyFallback),
+    },
+    {
+      label: copy.inspector.category,
+      value: getMetaValue(exercise.category, copy.inspector.categoryFallback),
+    },
+    {
+      label: copy.inspector.equipment,
+      value: equipment,
+    },
+  ];
+
   return (
     <Card className="overflow-hidden">
-      <div className="grid gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,0.8fr)]">
-        <div className="bg-[var(--landing-surface-alt)] p-4">
+      <div className="grid gap-0 lg:grid-cols-[minmax(280px,0.9fr)_minmax(0,1.1fr)]">
+        <div className="space-y-4 border-b border-[var(--landing-border)] bg-[var(--landing-surface-alt)] p-4 sm:p-5 lg:border-b-0 lg:border-r">
           <ExerciseMedia
-            className="aspect-[4/3] sm:aspect-video"
+            className="aspect-[4/3]"
             exercise={exercise}
             large
           />
+
+          <div className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-4 shadow-[var(--landing-chip-inset-shadow)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-faint)]">
+              {copy.inspector.contextTitle}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--landing-text-muted)]">
+              {copy.inspector.contextDescription(bodyPart, target, equipment)}
+            </p>
+          </div>
+
+          <div className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-4 shadow-[var(--landing-chip-inset-shadow)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-faint)]">
+              {copy.inspector.muscleGroupsTitle}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(muscleGroups.length > 0 ? muscleGroups : [commonCopy.notSpecified]).map((muscle) => (
+                <Badge key={muscle} variant="muted" className="normal-case tracking-normal">
+                  {muscle}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-4 shadow-[var(--landing-chip-inset-shadow)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-faint)]">
+              {copy.inspector.metadataTitle}
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
+              {metadata.map((item) => (
+                <DetailMetaBlock
+                  key={item.label}
+                  label={item.label}
+                  value={item.value}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="space-y-5 p-4 sm:space-y-6 sm:p-6">
+        <div className="space-y-4 p-4 sm:space-y-5 sm:p-6">
           <div className="space-y-3">
             <Badge>{copy.inspector.selected}</Badge>
             <div className="space-y-2">
@@ -969,90 +1064,108 @@ function ExerciseInspector({
                 {exercise.name}
               </h2>
               <p className="text-sm leading-6 text-[var(--landing-text-muted)]">
-                {[
-                  getMetaValue(exercise.bodyPart, commonCopy.notSpecified),
-                  getMetaValue(exercise.target, commonCopy.notSpecified),
-                  getMetaValue(exercise.equipment, commonCopy.notSpecified),
-                ].join(commonCopy.slashSeparator)}
+                {[bodyPart, target, equipment].join(commonCopy.slashSeparator)}
               </p>
             </div>
           </div>
 
-          {detailState === "loading" ? (
-            <div className="flex items-center gap-2 text-sm text-[var(--landing-text-muted)]">
-              <Loader2 className="size-4 animate-spin" />{" "}
-              {copy.inspector.loadingDetails}
+          <section className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 shadow-[var(--landing-chip-inset-shadow)]">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-[var(--landing-text)]">
+                {copy.inspector.executionTitle}
+              </p>
+              {detailState === "loading" ? (
+                <span className="flex items-center gap-2 text-xs font-medium text-[var(--landing-text-muted)]">
+                  <Loader2 className="size-3.5 animate-spin" />
+                  {copy.inspector.loadingDetails}
+                </span>
+              ) : null}
             </div>
-          ) : null}
 
-          {exercise.instructions.length > 0 ? (
-            <>
-              <Disclosure
-                className="sm:hidden"
-                summary={copy.inspector.formNotes}
-              >
-                <InstructionList exercise={exercise} />
-              </Disclosure>
-              <div className="hidden space-y-2 sm:block">
-                <p className="text-sm font-semibold">
-                  {copy.inspector.formNotes}
-                </p>
-                <InstructionList exercise={exercise} />
+            {exercise.instructions.length > 0 ? (
+              <div className="mt-3">
+                <Disclosure
+                  className="sm:hidden"
+                  summary={copy.inspector.formNotes}
+                >
+                  <InstructionList exercise={exercise} />
+                </Disclosure>
+                <div className="hidden sm:block">
+                  <InstructionList exercise={exercise} />
+                </div>
               </div>
-            </>
-          ) : null}
+            ) : null}
+          </section>
 
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <NumberField
-              label={copy.inspector.sets}
-              min={1}
-              onChange={(sets) => onConfigChange({ ...config, sets })}
-              value={config.sets}
-            />
-            <NumberField
-              label={copy.inspector.reps}
-              min={1}
-              onChange={(reps) => onConfigChange({ ...config, reps })}
-              value={config.reps}
-            />
-            <NumberField
-              label={copy.inspector.restSeconds}
-              min={0}
-              onChange={(restSeconds) =>
-                onConfigChange({ ...config, restSeconds })
-              }
-              value={config.restSeconds}
-            />
-          </div>
+          <section className="space-y-4 rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 shadow-[var(--landing-chip-inset-shadow)]">
+            <p className="text-sm font-semibold text-[var(--landing-text)]">
+              {copy.inspector.setupTitle}
+            </p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <NumberField
+                label={copy.inspector.sets}
+                min={1}
+                onChange={(sets) => onConfigChange({ ...config, sets })}
+                value={config.sets}
+              />
+              <NumberField
+                label={copy.inspector.reps}
+                min={1}
+                onChange={(reps) => onConfigChange({ ...config, reps })}
+                value={config.reps}
+              />
+              <NumberField
+                label={copy.inspector.restSeconds}
+                min={0}
+                onChange={(restSeconds) =>
+                  onConfigChange({ ...config, restSeconds })
+                }
+                value={config.restSeconds}
+              />
+            </div>
 
-          <label className="block space-y-2 text-sm font-medium">
-            <span>{copy.inspector.notes}</span>
-            <textarea
-              className="min-h-20 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)] sm:min-h-24"
-              onChange={(event) =>
-                onConfigChange({ ...config, notes: event.target.value })
-              }
-              placeholder={copy.inspector.notesPlaceholder}
-              value={config.notes}
-            />
-          </label>
+            <label className="block space-y-2 text-sm font-medium">
+              <span>{copy.inspector.notes}</span>
+              <textarea
+                className="min-h-20 w-full resize-none rounded-2xl border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 text-sm outline-none placeholder:text-[var(--landing-text-faint)] focus:border-[var(--landing-accent-strong)] focus:ring-4 focus:ring-[var(--landing-accent-soft)] sm:min-h-24"
+                onChange={(event) =>
+                  onConfigChange({ ...config, notes: event.target.value })
+                }
+                placeholder={copy.inspector.notesPlaceholder}
+                value={config.notes}
+              />
+            </label>
 
-          <Button
-            className="w-full sm:w-auto"
-            disabled={!planReady || !exercise.internalId || mutationPending}
-            onClick={onAddExercise}
-            size="lg"
-          >
-            {saving ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Plus className="size-4" />
-            )}
-            {copy.inspector.addToWorkout}
-          </Button>
+            <Button
+              className="w-full sm:w-auto"
+              disabled={!planReady || !exercise.internalId || mutationPending}
+              onClick={onAddExercise}
+              size="lg"
+            >
+              {saving ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
+              {copy.inspector.addToWorkout}
+            </Button>
+          </section>
         </div>
       </div>
     </Card>
+  );
+}
+
+function DetailMetaBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[1rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-3 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-faint)]">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium text-[var(--landing-text)]">
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -1542,7 +1655,12 @@ function WorkoutBuilder({
         <CardContent className="space-y-3 p-4">
           {logs.length === 0 ? (
             <div className="rounded-[24px] border border-dashed border-[var(--landing-border)] bg-[var(--landing-surface)] p-5 text-sm leading-6 text-[var(--landing-text-muted)]">
-              {copy.logs.empty}
+              <p className="font-medium text-[var(--landing-text)]">
+                {copy.logs.empty}
+              </p>
+              <p className="mt-1 text-[var(--landing-text-soft)]">
+                {copy.logs.emptyHint}
+              </p>
             </div>
           ) : (
             logs.slice(0, 5).map((log) => (

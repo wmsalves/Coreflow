@@ -49,7 +49,7 @@ export function CreateHabitForm({ copy }: CreateHabitFormProps) {
   }, [state.success]);
 
   return (
-    <>
+    <div className="contents" id="create-habit">
       <div className="sm:hidden">
         <MobileSheet
           description={copy.description}
@@ -87,7 +87,7 @@ export function CreateHabitForm({ copy }: CreateHabitFormProps) {
           />
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }
 

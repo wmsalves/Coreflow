@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { LandingLocale, LandingTheme } from "@/features/landing/types";
 
 const THEME_STORAGE_KEY = "coreflow:landing-theme";
 const LOCALE_STORAGE_KEY = "coreflow:landing-locale";
 const LANDING_PREFERENCES_EVENT = "coreflow:landing-preferences";
+const DEFAULT_THEME: LandingTheme = "dark";
+const DEFAULT_LOCALE: LandingLocale = "en";
 
 function subscribeLandingPreferences(callback: () => void) {
   if (typeof window === "undefined") {
@@ -23,7 +25,7 @@ function subscribeLandingPreferences(callback: () => void) {
 
 function resolveThemePreference(): LandingTheme {
   if (typeof window === "undefined") {
-    return "dark";
+    return DEFAULT_THEME;
   }
 
   const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
@@ -32,7 +34,7 @@ function resolveThemePreference(): LandingTheme {
 
 function resolveLocalePreference(): LandingLocale {
   if (typeof window === "undefined") {
-    return "en";
+    return DEFAULT_LOCALE;
   }
 
   const savedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
@@ -57,16 +59,30 @@ function updateLocalePreference(locale: LandingLocale) {
 }
 
 export function useLandingPreferences() {
-  const theme = useSyncExternalStore<LandingTheme>(
-    subscribeLandingPreferences,
-    resolveThemePreference,
-    () => "dark",
-  );
-  const locale = useSyncExternalStore<LandingLocale>(
-    subscribeLandingPreferences,
-    resolveLocalePreference,
-    () => "en",
-  );
+  const [theme, setThemeState] = useState<LandingTheme>(DEFAULT_THEME);
+  const [locale, setLocaleState] = useState<LandingLocale>(DEFAULT_LOCALE);
+
+  const syncPreferences = useCallback(() => {
+    setThemeState(resolveThemePreference());
+    setLocaleState(resolveLocalePreference());
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const hydratePreferences = () => {
+      if (active) {
+        syncPreferences();
+      }
+    };
+    const timeoutId = window.setTimeout(hydratePreferences, 0);
+    const unsubscribe = subscribeLandingPreferences(hydratePreferences);
+
+    return () => {
+      active = false;
+      window.clearTimeout(timeoutId);
+      unsubscribe();
+    };
+  }, [syncPreferences]);
 
   useEffect(() => {
     document.documentElement.style.colorScheme = theme;

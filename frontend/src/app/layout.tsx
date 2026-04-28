@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   metadataBase: siteUrl,
   applicationName: "Coreflow",
   title: "Coreflow",
-  description: "A unified system for habits, study sessions, and fitness momentum.",
+  description: "A personal execution system for disciplined people.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Coreflow",
-    description: "One disciplined system for habits, focus, and training.",
+    description: "Run habits, deep work, and training from one execution system.",
     url: "/",
     siteName: "Coreflow",
     type: "website",
@@ -76,18 +76,18 @@ export const metadata: Metadata = {
         url: brandAssets.openGraph,
         width: 1200,
         height: 630,
-        alt: "Coreflow - Habits, focus, and training in one system.",
+        alt: "Coreflow - Personal execution system for disciplined people.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Coreflow",
-    description: "One disciplined system for habits, focus, and training.",
+    description: "Run habits, deep work, and training from one execution system.",
     images: [
       {
         url: brandAssets.openGraph,
-        alt: "Coreflow - Habits, focus, and training in one system.",
+        alt: "Coreflow - Personal execution system for disciplined people.",
       },
     ],
   },
