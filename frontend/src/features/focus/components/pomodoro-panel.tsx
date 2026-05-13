@@ -209,9 +209,10 @@ export function PomodoroPanel({
         </div>
 
         <div className={cn(
-          "rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-6 text-center shadow-[var(--landing-chip-inset-shadow)] sm:rounded-[2rem] sm:p-12",
+          "focus-immersive rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-6 text-center shadow-[var(--landing-chip-inset-shadow)] sm:rounded-[2rem] sm:p-12",
           timer.isRunning ? "operational-active" : timerHasProgress ? "operational-surface-quiet" : "",
-        )}>
+        )}
+        data-focus-state={timer.isRunning ? "live" : timerHasProgress ? "settled" : "idle"}>
           <div className="flex items-center justify-center gap-2">
             {timer.isRunning ? <span className="operational-dot" data-live="true" /> : null}
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--landing-accent)]">
