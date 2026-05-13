@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { captureServerError } from "@/lib/monitoring/server";
 import { requireUser } from "@/lib/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getOptionalString, getRequiredString } from "@/lib/utils";
@@ -23,6 +24,7 @@ function actionSuccess(): HabitActionState {
 }
 
 function actionError(error: unknown): HabitActionState {
+  captureServerError(error, { action: "habit_action", module: "habits" });
   return {
     error: error instanceof Error ? error.message : "Something went wrong.",
     success: false,

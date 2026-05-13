@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { captureClientError } from "@/lib/monitoring/client";
 
 export function PwaRegister() {
   useEffect(() => {
@@ -45,9 +46,11 @@ export function PwaRegister() {
           updateViaCache: "none",
         });
       } catch (error) {
-        if (process.env.NODE_ENV !== "production") {
-          console.error("Failed to register service worker.", error);
-        }
+        captureClientError(error, {
+          action: "register_service_worker",
+          module: "pwa",
+          route: window.location.pathname,
+        });
       }
     };
 

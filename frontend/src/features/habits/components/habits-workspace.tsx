@@ -47,7 +47,7 @@ export function HabitsWorkspace({ overview }: HabitsWorkspaceProps) {
       </section>
 
       <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <CreateHabitForm copy={copy.form} />
+        <CreateHabitForm copy={copy.form} initialHabitCount={overview.habits.length} />
 
         <div className="space-y-5 sm:space-y-6">
           <div className="grid grid-cols-3 gap-2 sm:gap-4">

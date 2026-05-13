@@ -37,6 +37,9 @@ import type {
   StudySessionInput,
 } from "@/features/focus/types/focus-types";
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
+import { analyticsEvents } from "@/lib/analytics/events";
+import { trackEvent, trackEventOnce, trackOnboardingCompletion } from "@/lib/analytics/client";
+import { captureClientError } from "@/lib/monitoring/client";
 
 const defaultFilters: FocusFilters = {
   difficulty: "all",
@@ -230,6 +233,11 @@ export function FocusWorkspace({
         text: editingSessionId ? copy.notices.sessionUpdated : copy.notices.sessionCreated,
       });
     } catch (error) {
+      captureClientError(error, {
+        action: editingSessionId ? "update_study_session" : "create_study_session",
+        module: "focus",
+        route: "/dashboard/focus",
+      });
       setNotice({
         kind: "error",
         text: error instanceof Error ? error.message : copy.fallbackError,
@@ -264,6 +272,11 @@ export function FocusWorkspace({
       );
       return updatedSession;
     } catch (error) {
+      captureClientError(error, {
+        action: `update_status_${status}`,
+        module: "focus",
+        route: "/dashboard/focus",
+      });
       setNotice({
         kind: "error",
         text: error instanceof Error ? error.message : copy.fallbackError,
@@ -277,8 +290,20 @@ export function FocusWorkspace({
   async function startSession(id: string) {
     setSelectedSessionId(id);
     const session = sessions.find((item) => item.id === id);
+    const isFirstFocusStart =
+      history.length === 0 &&
+      !sessions.some((item) => item.status === "completed" || item.status === "in_progress");
     if (session && session.status === "pending") {
-      return persistStatus(id, "in_progress");
+      const startedSession = await persistStatus(id, "in_progress");
+
+      if (startedSession && isFirstFocusStart) {
+        trackEventOnce("first_focus_session_started", analyticsEvents.firstFocusSessionStarted, {
+          module: "focus",
+        });
+        trackOnboardingCompletion("focus");
+      }
+
+      return startedSession;
     }
 
     return session ?? null;
@@ -340,6 +365,11 @@ export function FocusWorkspace({
       setWeekFocusSeconds((current) => current + focusSeconds);
       setNotice({ kind: "success", text: copy.notices.focusSaved });
     } catch (error) {
+      captureClientError(error, {
+        action: "log_focus_run",
+        module: "focus",
+        route: "/dashboard/focus",
+      });
       setNotice({
         kind: "error",
         text: error instanceof Error ? error.message : copy.fallbackError,
@@ -351,6 +381,10 @@ export function FocusWorkspace({
   async function completeSession(id: string) {
     const updatedSession = await persistStatus(id, "completed");
     if (updatedSession) {
+      trackEvent(analyticsEvents.focusSessionCompleted, {
+        completed_focus_seconds: updatedSession.completedFocusSeconds,
+        total_cycles_completed: updatedSession.totalCyclesCompleted,
+      });
       if (selectedSessionId === id) {
         setSelectedSessionId(null);
       }
@@ -412,6 +446,11 @@ export function FocusWorkspace({
       setSessionPendingDeleteId(null);
       setNotice({ kind: "success", text: copy.notices.sessionDeleted });
     } catch (error) {
+      captureClientError(error, {
+        action: "delete_study_session",
+        module: "focus",
+        route: "/dashboard/focus",
+      });
       setNotice({
         kind: "error",
         text: error instanceof Error ? error.message : copy.fallbackError,

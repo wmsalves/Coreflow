@@ -3,6 +3,8 @@
 import type { RefObject } from "react";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
+import { analyticsEvents } from "@/lib/analytics/events";
+import { trackEventOnce, trackOnboardingCompletion } from "@/lib/analytics/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,6 +29,7 @@ type CreateHabitFormCopy = {
 
 type CreateHabitFormProps = {
   copy: CreateHabitFormCopy;
+  initialHabitCount: number;
 };
 
 const initialState: HabitActionState = {
@@ -34,19 +37,32 @@ const initialState: HabitActionState = {
   success: false,
 };
 
-export function CreateHabitForm({ copy }: CreateHabitFormProps) {
+export function CreateHabitForm({ copy, initialHabitCount }: CreateHabitFormProps) {
   const desktopFormRef = useRef<HTMLFormElement>(null);
   const mobileFormRef = useRef<HTMLFormElement>(null);
+  const handledSuccessRef = useRef(false);
   const [state, formAction] = useActionState(createHabitAction, initialState);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
   useEffect(() => {
-    if (state.success) {
+    if (state.success && !handledSuccessRef.current) {
+      handledSuccessRef.current = true;
       desktopFormRef.current?.reset();
       mobileFormRef.current?.reset();
       window.setTimeout(() => setMobileSheetOpen(false), 0);
+
+      if (initialHabitCount === 0) {
+        trackEventOnce("first_habit_created", analyticsEvents.firstHabitCreated, {
+          module: "habits",
+        });
+        trackOnboardingCompletion("habits");
+      }
     }
-  }, [state.success]);
+
+    if (!state.success) {
+      handledSuccessRef.current = false;
+    }
+  }, [initialHabitCount, state.success]);
 
   return (
     <div className="contents" id="create-habit">

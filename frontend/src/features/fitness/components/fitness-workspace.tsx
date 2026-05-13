@@ -47,6 +47,9 @@ import type {
   WorkoutSession,
 } from "@/features/fitness/types";
 import { useLandingPreferences } from "@/features/landing/hooks/use-landing-preferences";
+import { analyticsEvents } from "@/lib/analytics/events";
+import { trackEvent, trackEventOnce, trackOnboardingCompletion } from "@/lib/analytics/client";
+import { captureClientError } from "@/lib/monitoring/client";
 import { cn } from "@/lib/utils";
 
 type LoadState = "idle" | "loading" | "error";
@@ -195,6 +198,11 @@ export function FitnessWorkspace({
       setVisibleResultsCount(CATALOG_VISIBLE_BATCH_SIZE);
       setCatalogState("idle");
     } catch (error) {
+      captureClientError(error, {
+        action: "search_exercise_catalog",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       setCatalogState("error");
       setNotice({
         kind: "error",
@@ -268,6 +276,11 @@ export function FitnessWorkspace({
       setExerciseConfig(defaultConfig);
       setDetailState("idle");
     } catch (error) {
+      captureClientError(error, {
+        action: "get_exercise_detail",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       setDetailState("error");
       setNotice({
         kind: "error",
@@ -298,6 +311,11 @@ export function FitnessWorkspace({
       setCreatePlanSheetOpen(false);
       setNotice({ kind: "success", text: copy.planCreated });
     } catch (error) {
+      captureClientError(error, {
+        action: "create_workout_plan",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       setNotice({
         kind: "error",
         text: getErrorMessage(error, copy.fallbackError),
@@ -341,6 +359,11 @@ export function FitnessWorkspace({
       );
       setNotice({ kind: "success", text: copy.exerciseAdded });
     } catch (error) {
+      captureClientError(error, {
+        action: "add_exercise_to_plan",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       setNotice({
         kind: "error",
         text: getErrorMessage(error, copy.fallbackError),
@@ -397,6 +420,11 @@ export function FitnessWorkspace({
       );
       setNotice({ kind: "success", text: copy.exerciseRemoved });
     } catch (error) {
+      captureClientError(error, {
+        action: "remove_exercise_from_plan",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       setActivePlan(previousActivePlan);
       setPlans(previousPlans);
       setNotice({
@@ -432,6 +460,7 @@ export function FitnessWorkspace({
     setNotice(null);
 
     try {
+      const isFirstWorkoutStart = logs.length === 0;
       const session = await startWorkoutSessionAction(activePlan.id);
       setActiveSession(session);
       setActivePlan((currentPlan) =>
@@ -440,7 +469,19 @@ export function FitnessWorkspace({
           : plans.find((plan) => plan.id === session.workoutPlanId) ?? currentPlan,
       );
       setNotice({ kind: "success", text: copy.session.started });
+
+      if (isFirstWorkoutStart) {
+        trackEventOnce("first_workout_started", analyticsEvents.firstWorkoutStarted, {
+          exercise_count: session.exercises.length,
+        });
+        trackOnboardingCompletion("fitness");
+      }
     } catch (error) {
+      captureClientError(error, {
+        action: "start_workout_session",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       setNotice({
         kind: "error",
         text: getErrorMessage(error, copy.fallbackError),
@@ -505,6 +546,11 @@ export function FitnessWorkspace({
           : copy.session.exerciseReset,
       });
     } catch (error) {
+      captureClientError(error, {
+        action: "update_workout_session_exercise_completion",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       setActiveSession(previousSession);
       setNotice({
         kind: "error",
@@ -541,6 +587,11 @@ export function FitnessWorkspace({
       setActiveSession(session);
       setNotice({ kind: "success", text: copy.session.exerciseUpdated });
     } catch (error) {
+      captureClientError(error, {
+        action: "update_workout_session_exercise_details",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       const rollbackExercise = rollbackSnapshotRef.current[sessionExerciseId];
 
       if (rollbackExercise) {
@@ -659,10 +710,20 @@ export function FitnessWorkspace({
 
     try {
       const workoutLog = await finishWorkoutSessionAction(activeSession.id);
+      const completedExercises = workoutLog.exercises.filter((exercise) => exercise.completed).length;
       setLogs((currentLogs) => [workoutLog, ...currentLogs]);
       setActiveSession(null);
       setNotice({ kind: "success", text: copy.session.finished });
+      trackEvent(analyticsEvents.workoutCompleted, {
+        completed_exercises: completedExercises,
+        total_exercises: workoutLog.exercises.length,
+      });
     } catch (error) {
+      captureClientError(error, {
+        action: "finish_workout_session",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       setNotice({
         kind: "error",
         text: getErrorMessage(error, copy.fallbackError),
@@ -691,6 +752,11 @@ export function FitnessWorkspace({
       setActiveSession(null);
       setNotice({ kind: "success", text: copy.session.cancelled });
     } catch (error) {
+      captureClientError(error, {
+        action: "cancel_workout_session",
+        module: "fitness",
+        route: "/dashboard/fitness",
+      });
       setNotice({
         kind: "error",
         text: getErrorMessage(error, copy.fallbackError),

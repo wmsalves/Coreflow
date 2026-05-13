@@ -1,3 +1,4 @@
+import { AuthEventTracker } from "@/components/analytics/auth-event-tracker";
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/features/auth/components/auth-form";
 import { AuthShell } from "@/features/auth/components/auth-shell";
@@ -19,6 +20,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <AuthShell mode="login">
+      <AuthEventTracker event={getQueryParam(params.event) === "signup_completed" ? "signup_completed" : null} />
       <AuthForm
         mode="login"
         feedback={{

@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { captureServerError } from "@/lib/monitoring/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { buildRedirectUrl, getRequiredString } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ export async function signInAction(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    captureServerError(error, { action: "sign_in", module: "auth" });
     redirect(buildRedirectUrl("/login", { error: invalidSignInMessage }));
   }
 
@@ -57,18 +59,20 @@ export async function signUpAction(formData: FormData) {
   });
 
   if (error) {
+    captureServerError(error, { action: "sign_up", module: "auth" });
     redirect(buildRedirectUrl("/signup", { error: invalidSignUpMessage }));
   }
 
   if (!data.session) {
     redirect(
       buildRedirectUrl("/login", {
+        event: "signup_completed",
         message: "Account created. Confirm your email in Supabase, then sign in.",
       }),
     );
   }
 
-  redirect("/dashboard");
+  redirect(buildRedirectUrl("/dashboard", { event: "signup_completed" }));
 }
 
 export async function signOutAction() {

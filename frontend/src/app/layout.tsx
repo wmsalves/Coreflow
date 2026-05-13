@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { PlausibleScript } from "@/components/analytics/plausible-script";
 import { PwaRegister } from "@/components/pwa/pwa-register";
 import "./globals.css";
 
@@ -120,6 +121,7 @@ export default function RootLayout({
         <link href="/apple-touch-icon.png" rel="apple-touch-icon" />
       </head>
       <body className="min-h-full bg-background text-foreground antialiased">
+        <PlausibleScript />
         <PwaRegister />
         {children}
       </body>
