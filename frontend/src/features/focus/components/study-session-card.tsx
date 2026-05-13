@@ -145,7 +145,7 @@ export function StudySessionCard({
 
       <div className="mt-4 space-y-2">
         <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-faint)]">
-          <span>Execution progress</span>
+          <span>{copy.list.executionProgress}</span>
           <span className="operational-number">{executionProgress}%</span>
         </div>
         <div className="operational-track h-2">

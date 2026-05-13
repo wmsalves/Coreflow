@@ -100,7 +100,7 @@ export const dashboardCopy = {
         },
       },
       quickActions: {
-        title: "Move now",
+        title: "Keep the day moving",
         description:
           "Choose the smallest useful action that moves the day forward.",
         createHabit: "Create habit",
@@ -182,7 +182,7 @@ export const dashboardCopy = {
         pending: "Creating habit...",
         submit: "Save habit",
         success: "Daily baseline added.",
-        successHint: "Mark it complete today to give the dashboard its first real signal.",
+        successHint: "Mark it once today and the dashboard starts carrying real momentum.",
       },
       list: {
         title: "Habit list",
@@ -196,9 +196,10 @@ export const dashboardCopy = {
         doneToday: "Done today",
         needsCheckIn: "Needs check-in",
         details: "Details",
+        continuityLabel: "Weekly continuity",
         undoToday: "Undo today",
         markComplete: "Mark complete",
-        toggleSuccess: "Saved for today. The dashboard is already carrying it forward.",
+        toggleSuccess: "Saved for today. The day is already carrying it forward.",
         deleteSuccess: "Habit removed.",
         deleteLabel: (name: string) => `Delete ${name}`,
         habitStats: (
@@ -220,11 +221,11 @@ export const dashboardCopy = {
       initialLoadError:
         "Fitness data could not be loaded yet. Check the backend connection, then search again.",
       fallbackError: "Something went wrong.",
-      planCreated: "Workout plan created.",
-      exerciseAdded: "Exercise added to the workout.",
+      planCreated: "Workout plan created. It is ready for real execution.",
+      exerciseAdded: "Exercise added. The plan is taking shape.",
       exerciseRemoving: "Removing exercise...",
       exerciseRemoved: "Exercise removed from the workout.",
-      workoutLogged: "Workout logged.",
+      workoutLogged: "Workout logged. The record is locked in.",
       addExerciseBeforeStarting:
         "Add at least one exercise before starting this workout.",
       createPlanFirst: "Create a workout plan and select an exercise first.",
@@ -311,18 +312,18 @@ export const dashboardCopy = {
       session: {
         activeTitle: (name: string) => `Active workout: ${name}`,
         inProgress: "In progress",
-        started: "Workout started. Progress now autosaves as you train.",
+        started: "Workout started. Progress now stays with you as you train.",
         startedAt: (value: string) => `Started: ${value}`,
         startAction: "Start workout",
         startFirst: "Start a workout to track progress exercise by exercise.",
         resumeHint:
           "Start the workout to save progress as you complete each exercise. You can leave and resume later.",
         resumeReady: "A workout is already in progress. Resume it below.",
-        exerciseCompleted: "Exercise marked complete.",
-        exerciseReset: "Exercise marked pending.",
+        exerciseCompleted: "Exercise closed cleanly.",
+        exerciseReset: "Exercise moved back into the active set.",
         exerciseUpdated: "Exercise settings saved.",
         finishAction: "Finish workout",
-        finished: "Workout finished and logged.",
+        finished: "Workout finished. The session is now part of your record.",
         cancelAction: "Cancel workout",
         cancelled: "Workout cancelled.",
         liveLabel: "Live session",
@@ -468,7 +469,7 @@ export const dashboardCopy = {
         },
       },
       quickActions: {
-        title: "Mover agora",
+        title: "Manter o dia em movimento",
         description:
           "Escolha a menor acao util que faz o dia avancar.",
         createHabit: "Criar habito",
@@ -551,7 +552,7 @@ export const dashboardCopy = {
         pending: "Criando habito...",
         submit: "Salvar habito",
         success: "Base diaria adicionada.",
-        successHint: "Marque como concluida hoje para dar ao dashboard o primeiro sinal real.",
+        successHint: "Marque uma vez hoje e o dashboard comeca a carregar ritmo real.",
       },
       list: {
         title: "Lista de habitos",
@@ -565,9 +566,10 @@ export const dashboardCopy = {
         doneToday: "Feito hoje",
         needsCheckIn: "Precisa check-in",
         details: "Detalhes",
+        continuityLabel: "Continuidade semanal",
         undoToday: "Desfazer hoje",
         markComplete: "Marcar concluido",
-        toggleSuccess: "Salvo para hoje. O dashboard ja leva isso adiante.",
+        toggleSuccess: "Salvo para hoje. O dia ja leva isso adiante.",
         deleteSuccess: "Habito removido.",
         deleteLabel: (name: string) => `Excluir ${name}`,
         habitStats: (
@@ -589,11 +591,11 @@ export const dashboardCopy = {
       initialLoadError:
         "Os dados de treino ainda nao puderam ser carregados. Verifique a conexao com o backend e tente pesquisar novamente.",
       fallbackError: "Algo deu errado.",
-      planCreated: "Plano de treino criado.",
-      exerciseAdded: "Exercicio adicionado ao treino.",
+      planCreated: "Plano de treino criado. Ele ja esta pronto para execucao real.",
+      exerciseAdded: "Exercicio adicionado. O plano esta ganhando forma.",
       exerciseRemoving: "Removendo exercicio...",
       exerciseRemoved: "Exercicio removido do treino.",
-      workoutLogged: "Treino registrado.",
+      workoutLogged: "Treino registrado. O registro ficou fechado.",
       addExerciseBeforeStarting:
         "Adicione pelo menos um exercicio antes de iniciar este treino.",
       createPlanFirst:
@@ -683,7 +685,7 @@ export const dashboardCopy = {
         activeTitle: (name: string) => `Treino ativo: ${name}`,
         inProgress: "Em andamento",
         started:
-          "Treino iniciado. O progresso agora e salvo automaticamente durante a execucao.",
+          "Treino iniciado. O progresso agora fica com voce durante a execucao.",
         startedAt: (value: string) => `Iniciado: ${value}`,
         startAction: "Iniciar treino",
         startFirst:
@@ -691,11 +693,11 @@ export const dashboardCopy = {
         resumeHint:
           "Inicie o treino para salvar o progresso conforme conclui cada exercicio. Voce pode sair e retomar depois.",
         resumeReady: "Ja existe um treino em andamento. Retome abaixo.",
-        exerciseCompleted: "Exercicio marcado como concluido.",
-        exerciseReset: "Exercicio marcado como pendente.",
+        exerciseCompleted: "Exercicio fechado com clareza.",
+        exerciseReset: "Exercicio voltou para o conjunto ativo.",
         exerciseUpdated: "Ajustes do exercicio salvos.",
         finishAction: "Finalizar treino",
-        finished: "Treino finalizado e registrado.",
+        finished: "Treino finalizado. A sessao agora faz parte do seu registro.",
         cancelAction: "Cancelar treino",
         cancelled: "Treino cancelado.",
         liveLabel: "Sessao ativa",

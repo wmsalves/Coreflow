@@ -36,6 +36,7 @@ type HabitListCopy = {
   undoToday: string;
   markComplete: string;
   details: string;
+  continuityLabel: string;
   emptyHint: string;
   toggleSuccess: string;
   deleteSuccess: string;
@@ -118,7 +119,7 @@ export function HabitList({ copy, habits }: HabitListProps) {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-faint)]">
-                  <span>Weekly continuity</span>
+                  <span>{copy.continuityLabel}</span>
                   <span className="operational-number">
                     {habit.completionsThisWeek}/{habit.frequencyPerWeek}
                   </span>

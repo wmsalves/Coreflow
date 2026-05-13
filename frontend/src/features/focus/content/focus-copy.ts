@@ -34,13 +34,13 @@ export const focusCopy = {
     },
     fallbackError: "Study session could not be saved.",
     notices: {
-      sessionCreated: "Study session created. You can start it as soon as you are ready to focus.",
+      sessionCreated: "Study session created. It is ready to become the next clean block.",
       sessionUpdated: "Study session updated.",
-      sessionCompleted: "Study session completed. It is now part of your focus history.",
+      sessionCompleted: "Study session completed. One open loop is now closed.",
       sessionCanceled: "Study session canceled. You can plan a cleaner block when you are ready.",
       sessionArchived: "Study session archived. It is out of the active queue now.",
       sessionDeleted: "Study session deleted.",
-      focusSaved: "Focus time saved. The dashboard totals are up to date.",
+      focusSaved: "Focus time saved. The record is clean and the day keeps moving.",
       focusRunCanceled: "Focus run discarded.",
       editingSession: "Editing session. Adjust the plan, then jump back into execution.",
     },
@@ -89,6 +89,7 @@ export const focusCopy = {
       historyEmptyAction: "Plan a focus block",
       historyEmptyHint: "The first saved run turns Focus from a timer into a progress record.",
       details: "Details",
+      executionProgress: "Execution progress",
       filters: {
         status: "Status",
         difficulty: "Difficulty",
@@ -116,6 +117,7 @@ export const focusCopy = {
       cyclesSaved: (cycles: number) => `${cycles} completed cycles saved`,
       status: "Status",
       readyToResume: "Session is active and ready to resume.",
+      currentState: "Current state",
       phase: {
         focus: "Focus",
         short_break: "Short break",
@@ -180,11 +182,11 @@ export const focusCopy = {
     notices: {
       sessionCreated: "Sessao de estudo criada. Ela ja pode virar seu proximo bloco de foco.",
       sessionUpdated: "Sessao de estudo atualizada.",
-      sessionCompleted: "Sessao de estudo concluida. Ela agora faz parte do seu historico de foco.",
+      sessionCompleted: "Sessao de estudo concluida. Um ciclo aberto acabou de ser fechado.",
       sessionCanceled: "Sessao de estudo cancelada. Voce pode planejar um bloco mais limpo quando quiser.",
       sessionArchived: "Sessao de estudo arquivada. Ela saiu da fila ativa.",
       sessionDeleted: "Sessao de estudo excluida.",
-      focusSaved: "Tempo de foco salvo. Os totais do dashboard ja foram atualizados.",
+      focusSaved: "Tempo de foco salvo. O registro ficou limpo e o dia segue em movimento.",
       focusRunCanceled: "Execucao de foco descartada.",
       editingSession: "Editando sessao. Ajuste o plano e volte para a execucao.",
     },
@@ -233,6 +235,7 @@ export const focusCopy = {
       historyEmptyAction: "Planejar bloco de foco",
       historyEmptyHint: "A primeira execucao salva transforma o timer em registro de progresso.",
       details: "Detalhes",
+      executionProgress: "Progresso de execucao",
       filters: {
         status: "Status",
         difficulty: "Dificuldade",
@@ -260,6 +263,7 @@ export const focusCopy = {
       cyclesSaved: (cycles: number) => `${cycles} ciclos concluidos salvos`,
       status: "Status",
       readyToResume: "A sessao esta ativa e pronta para retomar.",
+      currentState: "Estado atual",
       phase: {
         focus: "Foco",
         short_break: "Pausa curta",

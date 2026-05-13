@@ -162,7 +162,7 @@ export function PomodoroPanel({
                 {selectedSession.subject}
               </p>
               <p className="mt-2 text-sm text-[var(--landing-text-muted)]">
-                {copy.pomodoro.status}: {copy.status[selectedSession.status]}
+                {copy.pomodoro.currentState}: {copy.status[selectedSession.status]}
               </p>
               <p className="mt-1 text-sm font-medium text-[var(--landing-text)]">
                 {copy.pomodoro.savedSessionTotal(selectedSession.completedFocusSeconds)}
