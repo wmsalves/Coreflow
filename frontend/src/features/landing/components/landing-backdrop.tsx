@@ -21,19 +21,19 @@ export function LandingBackdrop({
       <div
         className={
           theme === "dark"
-            ? "absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.022),transparent_18%,transparent_74%,rgba(255,255,255,0.015))]"
+            ? "absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.012),transparent_16%,transparent_78%,rgba(255,255,255,0.008))]"
             : "absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.34),rgba(255,255,255,0.08)_22%,transparent_68%,rgba(255,248,239,0.38))]"
         }
       />
       {theme === "dark" ? (
         <>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-18%,rgba(112,120,255,0.16),transparent_34%),radial-gradient(circle_at_78%_8%,rgba(255,170,112,0.12),transparent_26%),radial-gradient(circle_at_18%_18%,rgba(92,108,255,0.11),transparent_28%),radial-gradient(circle_at_68%_28%,rgba(255,208,180,0.06),transparent_18%)]" />
-          <div className="absolute left-[-12rem] top-[-6rem] h-[28rem] w-[28rem] rounded-full bg-[rgba(94,108,255,0.08)] blur-[140px] sm:left-[-15rem] sm:top-[-7rem] sm:h-[36rem] sm:w-[36rem] sm:blur-[180px] lg:left-[-18rem] lg:top-[-8rem] lg:h-[44rem] lg:w-[44rem] lg:blur-[210px]" />
-          <div className="absolute right-[-10rem] top-[-2rem] h-[24rem] w-[24rem] rounded-full bg-[rgba(255,166,103,0.08)] blur-[130px] sm:right-[-14rem] sm:top-[-3rem] sm:h-[32rem] sm:w-[32rem] sm:blur-[170px] lg:right-[-18rem] lg:top-[-4rem] lg:h-[42rem] lg:w-[42rem] lg:blur-[220px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-18%,rgba(112,120,255,0.08),transparent_32%),radial-gradient(circle_at_78%_8%,rgba(255,170,112,0.05),transparent_24%),radial-gradient(circle_at_18%_18%,rgba(92,108,255,0.05),transparent_26%),radial-gradient(circle_at_68%_28%,rgba(255,208,180,0.025),transparent_16%)]" />
+          <div className="absolute left-[-12rem] top-[-6rem] h-[28rem] w-[28rem] rounded-full bg-[rgba(94,108,255,0.04)] blur-[140px] sm:left-[-15rem] sm:top-[-7rem] sm:h-[36rem] sm:w-[36rem] sm:blur-[180px] lg:left-[-18rem] lg:top-[-8rem] lg:h-[44rem] lg:w-[44rem] lg:blur-[210px]" />
+          <div className="absolute right-[-10rem] top-[-2rem] h-[24rem] w-[24rem] rounded-full bg-[rgba(255,166,103,0.035)] blur-[130px] sm:right-[-14rem] sm:top-[-3rem] sm:h-[32rem] sm:w-[32rem] sm:blur-[170px] lg:right-[-18rem] lg:top-[-4rem] lg:h-[42rem] lg:w-[42rem] lg:blur-[220px]" />
           {fullBackdrop ? (
             <>
-              <div className="absolute right-[8%] top-[18rem] hidden h-[30rem] w-[30rem] rounded-full bg-[rgba(255,219,196,0.07)] blur-[170px] lg:block" />
-              <div className="absolute inset-x-0 top-[46rem] hidden h-[24rem] bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.022),transparent)] opacity-75 lg:block" />
+              <div className="absolute right-[8%] top-[18rem] hidden h-[30rem] w-[30rem] rounded-full bg-[rgba(255,219,196,0.03)] blur-[170px] lg:block" />
+              <div className="absolute inset-x-0 top-[46rem] hidden h-[24rem] bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.012),transparent)] opacity-60 lg:block" />
             </>
           ) : null}
         </>

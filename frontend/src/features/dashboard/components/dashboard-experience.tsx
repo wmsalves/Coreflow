@@ -26,13 +26,13 @@ export function DashboardExperience({ children, dayPhase, userEmail }: Dashboard
       <div
         className="pointer-events-none fixed inset-x-0 top-0 z-0 h-[24rem] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--landing-accent-soft)_20%,transparent),transparent_72%)] transition-opacity duration-300"
         style={{
-          opacity: dayPhase === "morning" ? 0.9 : dayPhase === "midday" ? 0.76 : 0.62,
+          opacity: dayPhase === "morning" ? 0.42 : dayPhase === "midday" ? 0.3 : 0.22,
         }}
       />
       <div
         className="pointer-events-none fixed inset-x-0 bottom-0 z-0 h-[18rem] bg-[linear-gradient(180deg,transparent,color-mix(in_srgb,var(--landing-bg-elevated)_82%,transparent))] transition-opacity duration-300"
         style={{
-          opacity: dayPhase === "evening" ? 0.92 : dayPhase === "midday" ? 0.8 : 0.68,
+          opacity: dayPhase === "evening" ? 0.5 : dayPhase === "midday" ? 0.38 : 0.28,
         }}
       />
       <DashboardHeader userEmail={userEmail} />

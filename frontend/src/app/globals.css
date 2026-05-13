@@ -197,27 +197,27 @@ select {
 }
 
 [data-day-phase="morning"] .operational-shell::before {
-  opacity: 1;
+  opacity: 0.42;
 }
 
 [data-day-phase="morning"] .operational-region[data-state="active"] {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 28px 60px rgba(30, 41, 59, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 56px rgba(0, 0, 0, 0.2);
 }
 
 [data-day-phase="midday"] .operational-shell::before {
-  opacity: 0.9;
+  opacity: 0.3;
 }
 
 [data-day-phase="midday"] .operational-region[data-state="active"] {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 22px 48px rgba(30, 41, 59, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 22px 48px rgba(0, 0, 0, 0.18);
 }
 
 [data-day-phase="evening"] .operational-shell::before {
-  opacity: 0.78;
+  opacity: 0.22;
 }
 
 [data-day-phase="evening"] .operational-region[data-state="active"] {
@@ -227,8 +227,8 @@ select {
 [data-day-phase="evening"] .operational-region[data-state="resolved"],
 [data-day-phase="evening"] .operational-surface-quiet {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface) 96%, white 6%), color-mix(in srgb, var(--landing-bg-elevated) 98%, transparent)),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--landing-accent-soft) 10%, transparent), transparent 50%);
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface) 98%, white 2%), color-mix(in srgb, var(--landing-bg-elevated) 99%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--landing-accent-soft) 5%, transparent), transparent 52%);
 }
 
 .operational-surface-quiet {
@@ -344,6 +344,89 @@ select {
 
 .focus-immersive[data-focus-state="live"]::before {
   opacity: 1;
+}
+
+[data-theme="dark"] .operational-panel {
+  border-color: color-mix(in srgb, var(--landing-border-strong) 74%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface-strong) 88%, transparent), color-mix(in srgb, var(--landing-surface) 96%, black 4%)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 24%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 36px rgba(0, 0, 0, 0.18),
+    0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="dark"] .operational-shell::before {
+  background:
+    radial-gradient(circle at top center, color-mix(in srgb, var(--landing-accent-soft) 12%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), transparent 18%, transparent 84%, rgba(255, 255, 255, 0.01));
+}
+
+[data-theme="dark"] .operational-region {
+  border-color: color-mix(in srgb, var(--landing-border) 88%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface) 78%, transparent), color-mix(in srgb, var(--landing-bg-elevated) 94%, black 6%)),
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.03), transparent 30%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    0 24px 54px rgba(0, 0, 0, 0.16);
+}
+
+[data-theme="dark"] .operational-region[data-state="active"] {
+  border-color: color-mix(in srgb, var(--landing-accent-strong) 38%, var(--landing-border-strong));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface-strong) 62%, transparent), color-mix(in srgb, var(--landing-surface) 92%, black 8%)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--landing-accent-soft) 12%, transparent), transparent 38%);
+}
+
+[data-theme="dark"] .operational-region[data-state="resolved"] {
+  border-color: color-mix(in srgb, var(--landing-border-strong) 44%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface) 82%, transparent), color-mix(in srgb, var(--landing-bg-elevated) 96%, black 4%)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--landing-accent-soft) 5%, transparent), transparent 42%);
+}
+
+[data-theme="dark"] .operational-surface-quiet {
+  border-color: color-mix(in srgb, var(--landing-border) 78%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface) 72%, transparent), color-mix(in srgb, var(--landing-bg-elevated) 94%, black 6%));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.02),
+    0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="dark"] .operational-active::before {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-accent-soft) 10%, transparent), transparent 28%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--landing-accent-soft) 14%, transparent), transparent 40%);
+}
+
+[data-theme="dark"] .operational-active::after {
+  background: linear-gradient(
+    102deg,
+    transparent 0%,
+    color-mix(in srgb, var(--landing-accent-soft) 22%, white 3%) 48%,
+    transparent 100%
+  );
+}
+
+[data-theme="dark"] .operational-dot {
+  box-shadow: 0 0 0 0.14rem color-mix(in srgb, var(--landing-accent-soft) 24%, transparent);
+}
+
+[data-theme="dark"] .operational-track {
+  background: color-mix(in srgb, var(--landing-border) 90%, black 10%);
+}
+
+[data-theme="dark"] .operational-fill::after {
+  opacity: 0.28;
+}
+
+[data-theme="dark"] .focus-immersive::before {
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--landing-accent-soft) 14%, transparent), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 34%);
 }
 
 .operational-number {
