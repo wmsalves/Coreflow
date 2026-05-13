@@ -60,6 +60,7 @@ export function PomodoroPanel({
   const hasFocusTimeToSave = timer.focusSecondsLogged > 0;
   const controlsBusy = isSavingFocusRun || isStartingSession;
   const currentCyclesCompleted = timer.completedFocusCycles;
+  const timerHasProgress = timer.focusSecondsLogged > 0 || currentCyclesCompleted > 0;
   const primaryLabel = timer.isRunning
     ? copy.actions.pause
     : timer.remainingSeconds < timer.settings.focusMinutes * 60
@@ -130,7 +131,7 @@ export function PomodoroPanel({
   }
 
   return (
-    <Card className={timer.isRunning || selectedSession?.status === "in_progress" ? "operational-panel operational-active" : "operational-panel"}>
+    <Card className={timer.isRunning || selectedSession?.status === "in_progress" ? "operational-panel operational-active" : timerHasProgress ? "operational-panel operational-surface-quiet" : "operational-panel"}>
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -192,9 +193,24 @@ export function PomodoroPanel({
           )}
         </div>
 
+        <div className="grid grid-cols-3 gap-2 rounded-[1.3rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-2 shadow-[var(--landing-chip-inset-shadow)]">
+          <MomentumStat
+            label={copy.pomodoro.phase[timer.phase]}
+            value={copy.pomodoro.currentRun(timer.focusSecondsLogged)}
+          />
+          <MomentumStat
+            label={copy.pomodoro.status}
+            value={copy.list.cyclesLogged(currentCyclesCompleted)}
+          />
+          <MomentumStat
+            label={selectedSession ? copy.pomodoro.selected : copy.pomodoro.noSession}
+            value={selectedSession ? copy.status[selectedSession.status] : copy.pomodoro.standaloneTotal(standaloneFocusSeconds)}
+          />
+        </div>
+
         <div className={cn(
           "rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-6 text-center shadow-[var(--landing-chip-inset-shadow)] sm:rounded-[2rem] sm:p-12",
-          timer.isRunning && "operational-active",
+          timer.isRunning ? "operational-active" : timerHasProgress ? "operational-surface-quiet" : "",
         )}>
           <div className="flex items-center justify-center gap-2">
             {timer.isRunning ? <span className="operational-dot" data-live="true" /> : null}
@@ -217,6 +233,7 @@ export function PomodoroPanel({
           <div className="operational-track mt-5 h-2">
             <div
               className="operational-fill"
+              data-state={timer.progress >= 100 ? "resolved" : undefined}
               style={{ width: `${timer.progress}%` }}
             />
           </div>
@@ -278,5 +295,18 @@ export function PomodoroPanel({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function MomentumStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 rounded-[1rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] px-3 py-2">
+      <p className="truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--landing-text-faint)]">
+        {label}
+      </p>
+      <p className="mt-1 truncate text-sm font-medium text-[var(--landing-text)]">
+        {value}
+      </p>
+    </div>
   );
 }

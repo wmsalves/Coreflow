@@ -49,29 +49,32 @@ export function HabitsWorkspace({ overview }: HabitsWorkspaceProps) {
       <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
         <CreateHabitForm copy={copy.form} initialHabitCount={overview.habits.length} />
 
-        <div className="space-y-5 sm:space-y-6">
+        <div
+          className="operational-region space-y-5 rounded-[1.9rem] p-3 sm:space-y-6 sm:p-4"
+          data-state={overview.summary.completedTodayCount > 0 ? "resolved" : overview.summary.activeCount > 0 ? "active" : undefined}
+        >
           <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            <Card>
+            <Card className={overview.summary.activeCount > 0 ? "operational-panel" : "operational-surface-quiet"}>
               <CardHeader className="pb-2 sm:pb-3">
                 <CardTitle className="text-sm leading-5 sm:text-lg">{copy.summary.active}</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0 text-2xl font-semibold tracking-[-0.05em] sm:text-3xl">
+              <CardContent className="operational-number pt-0 text-2xl font-semibold tracking-[-0.05em] sm:text-3xl">
                 {overview.summary.activeCount}
               </CardContent>
             </Card>
-            <Card>
+            <Card className={overview.summary.completedTodayCount > 0 ? "operational-panel operational-surface-quiet" : "operational-panel"}>
               <CardHeader className="pb-2 sm:pb-3">
                 <CardTitle className="text-sm leading-5 sm:text-lg">{copy.summary.doneToday}</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0 text-2xl font-semibold tracking-[-0.05em] sm:text-3xl">
+              <CardContent className="operational-number pt-0 text-2xl font-semibold tracking-[-0.05em] sm:text-3xl">
                 {overview.summary.completedTodayCount}
               </CardContent>
             </Card>
-            <Card>
+            <Card className={overview.summary.bestStreak > 0 ? "operational-panel" : "operational-surface-quiet"}>
               <CardHeader className="pb-2 sm:pb-3">
                 <CardTitle className="text-sm leading-5 sm:text-lg">{copy.summary.bestStreak}</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0 text-2xl font-semibold tracking-[-0.05em] sm:text-3xl">
+              <CardContent className="operational-number pt-0 text-2xl font-semibold tracking-[-0.05em] sm:text-3xl">
                 {overview.summary.bestStreak}
               </CardContent>
             </Card>

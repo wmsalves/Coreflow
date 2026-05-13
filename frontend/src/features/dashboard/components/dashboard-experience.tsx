@@ -21,6 +21,8 @@ export function DashboardExperience({ children, userEmail }: DashboardExperience
       style={landingThemeStyles[theme] as CSSProperties}
     >
       <LandingBackdrop theme={theme} />
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-0 h-[24rem] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--landing-accent-soft)_20%,transparent),transparent_72%)] opacity-80" />
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-0 h-[18rem] bg-[linear-gradient(180deg,transparent,color-mix(in_srgb,var(--landing-bg-elevated)_82%,transparent))] opacity-80" />
       <DashboardHeader userEmail={userEmail} />
       {children}
     </div>

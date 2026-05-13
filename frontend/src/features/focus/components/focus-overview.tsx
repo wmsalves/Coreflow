@@ -58,7 +58,13 @@ export function FocusOverview({
         return (
           <Card
             key={metric.label}
-            className={progress && progress > 0 && progress < 100 ? "operational-panel operational-active overflow-hidden" : "operational-panel overflow-hidden"}
+            className={
+              progress && progress > 0 && progress < 100
+                ? "operational-panel operational-active overflow-hidden"
+                : progress === 100
+                  ? "operational-panel operational-surface-quiet overflow-hidden"
+                  : "operational-panel overflow-hidden"
+            }
           >
             <CardHeader className="pb-3 max-sm:space-y-1">
               <div className="flex items-start justify-between gap-4">
@@ -70,7 +76,11 @@ export function FocusOverview({
               <CardTitle className="operational-number text-2xl tracking-[-0.05em] sm:text-3xl">{metric.value}</CardTitle>
               {progress !== null ? (
                 <div className="operational-track mt-3 h-2">
-                  <div className="operational-fill" style={{ width: `${progress}%` }} />
+                  <div
+                    className="operational-fill"
+                    data-state={progress === 100 ? "resolved" : undefined}
+                    style={{ width: `${progress}%` }}
+                  />
                 </div>
               ) : null}
             </CardHeader>

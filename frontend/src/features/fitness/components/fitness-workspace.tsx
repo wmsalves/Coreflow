@@ -797,7 +797,10 @@ export function FitnessWorkspace({
         </StatusNotice>
       ) : null}
 
-      <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
+      <section
+        className="operational-region mt-5 grid gap-5 rounded-[2rem] p-3 sm:mt-6 sm:gap-6 sm:p-4 2xl:grid-cols-[minmax(0,1.05fr)_420px]"
+        data-state={activeSession ? "active" : logs.length > 0 ? "resolved" : plans.length > 0 ? "active" : undefined}
+      >
         <div className="space-y-5 sm:space-y-6">
           <Card className="operational-panel overflow-hidden">
             <CardHeader className="border-b border-[var(--landing-border)] bg-[var(--landing-surface)]">
@@ -1340,7 +1343,7 @@ function WorkoutBuilder({
         </MobileSheet>
       </div>
 
-      <Card className="hidden sm:block">
+      <Card className="operational-panel hidden sm:block">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-2xl bg-[var(--landing-accent-soft)] text-[var(--landing-accent)]">
@@ -1392,7 +1395,7 @@ function WorkoutBuilder({
         </div>
       ) : null}
 
-      <Card className="operational-panel overflow-hidden">
+      <Card className={cn("operational-panel overflow-hidden", !activeSession && logs.length > 0 && "operational-surface-quiet")}>
         <CardHeader className="border-b border-[var(--landing-border)] bg-[var(--landing-surface)]">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -1444,6 +1447,7 @@ function WorkoutBuilder({
                 <div className="operational-track mt-3 h-2">
                   <div
                     className="operational-fill"
+                    data-state={completedExerciseCount > 0 && remainingExerciseCount === 0 ? "resolved" : undefined}
                     style={{
                       width: `${Math.max(
                         (((activeSessionExercises.length || sortedPlanExercises.length) === 0
@@ -1714,7 +1718,7 @@ function WorkoutBuilder({
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden">
+      <Card className={cn("operational-panel overflow-hidden", logs.length > 0 && !activeSession && "operational-surface-quiet")}>
         <CardHeader className="border-b border-[var(--landing-border)] bg-[var(--landing-surface)]">
           <div className="flex items-start justify-between gap-4">
             <div>

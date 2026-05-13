@@ -177,6 +177,7 @@ export function FocusWorkspace({
       : Math.round((completedCount / visibleSessionCount) * 100);
   const plannerTitle = editingSession ? copy.planner.editTitle : copy.planner.title;
   const plannerDescription = editingSession ? copy.planner.editDescription : copy.planner.description;
+  const hasLiveExecution = selectedSession?.status === "in_progress";
 
   function clearEditingSession() {
     setEditingSessionId(null);
@@ -482,7 +483,10 @@ export function FocusWorkspace({
         </div>
       </section>
 
-      <section className="mt-5 sm:mt-6">
+      <section
+        className="operational-region mt-5 rounded-[1.9rem] p-3 sm:mt-6 sm:p-4"
+        data-state={todayFocusSeconds > 0 || hasLiveExecution ? "active" : completedCount > 0 ? "resolved" : undefined}
+      >
         <FocusOverview
           completedCount={completedCount}
           completionRate={completionRate}
@@ -498,7 +502,10 @@ export function FocusWorkspace({
         </StatusNotice>
       ) : null}
 
-      <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
+      <section
+        className="operational-region mt-5 grid gap-5 rounded-[2rem] p-3 sm:mt-6 sm:gap-6 sm:p-4 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]"
+        data-state={hasLiveExecution ? "active" : completedCount > 0 ? "resolved" : undefined}
+      >
         <div className="order-2 h-full space-y-5 sm:space-y-6 xl:order-1" id="plan-focus">
           <div className="sm:hidden">
             <MobileSheet
@@ -526,7 +533,7 @@ export function FocusWorkspace({
             </MobileSheet>
           </div>
 
-          <Card className="hidden h-full flex-col sm:flex">
+          <Card className="operational-panel hidden h-full flex-col sm:flex">
             <CardHeader className="gap-4 sm:flex sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
               <div>
                 <CardTitle>{plannerTitle}</CardTitle>
@@ -564,7 +571,10 @@ export function FocusWorkspace({
         </aside>
       </section>
 
-      <section className="mt-6">
+      <section
+        className="operational-region mt-6 rounded-[1.9rem] p-3 sm:p-4"
+        data-state={hasLiveExecution ? "active" : undefined}
+      >
         <StudySessionList
           activeSessionId={selectedSessionId}
           copy={copy}
@@ -582,7 +592,10 @@ export function FocusWorkspace({
         />
       </section>
 
-      <section className="mt-6">
+      <section
+        className="operational-region mt-6 rounded-[1.9rem] p-3 sm:p-4"
+        data-state={completedCount > 0 || history.length > 0 ? "resolved" : undefined}
+      >
         <FocusHistory
           completedSessions={completedSessions}
           copy={copy}

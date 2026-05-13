@@ -150,6 +150,72 @@ select {
     0 8px 18px rgba(30, 41, 59, 0.04);
 }
 
+.operational-shell {
+  position: relative;
+}
+
+.operational-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top center, color-mix(in srgb, var(--landing-accent-soft) 30%, transparent), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 18%, transparent 84%, rgba(255, 255, 255, 0.03));
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.operational-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.operational-region {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--landing-border) 82%, white 12%);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface) 80%, white 10%), color-mix(in srgb, var(--landing-bg-elevated) 90%, transparent)),
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 34%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 26px 56px rgba(30, 41, 59, 0.05);
+}
+
+.operational-region[data-state="active"] {
+  border-color: color-mix(in srgb, var(--landing-accent-strong) 54%, var(--landing-border-strong));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface-strong) 94%, white 6%), color-mix(in srgb, var(--landing-surface) 84%, white 8%)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--landing-accent-soft) 26%, transparent), transparent 42%);
+}
+
+.operational-region[data-state="resolved"] {
+  border-color: color-mix(in srgb, var(--landing-accent-soft) 60%, var(--landing-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface) 88%, white 12%), color-mix(in srgb, var(--landing-bg-elevated) 94%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--landing-accent-soft) 16%, transparent), transparent 46%);
+}
+
+.operational-surface-quiet {
+  border-color: color-mix(in srgb, var(--landing-border) 70%, white 12%);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--landing-surface) 94%, white 10%), color-mix(in srgb, var(--landing-bg-elevated) 94%, transparent));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    0 14px 28px rgba(30, 41, 59, 0.035);
+}
+
+.operational-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--landing-border-strong) 82%, white 10%) 18%,
+    color-mix(in srgb, var(--landing-border-strong) 82%, white 10%) 82%,
+    transparent 100%
+  );
+  opacity: 0.75;
+}
+
 .operational-active {
   position: relative;
   overflow: hidden;
@@ -216,6 +282,11 @@ select {
   inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   opacity: 0.55;
+}
+
+.operational-fill[data-state="resolved"] {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--landing-accent) 58%, white 18%), color-mix(in srgb, var(--landing-accent) 44%, white 24%));
 }
 
 .operational-number {

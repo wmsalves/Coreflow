@@ -321,8 +321,18 @@ function ModuleCard({
   progress: number | null;
   title: string;
 }) {
+  const state =
+    progress === null ? undefined : progress >= 100 ? "resolved" : progress > 0 ? "active" : undefined;
+
   return (
-    <Card className={cn("operational-panel", progress !== null && progress > 0 && progress < 100 && "operational-active")}>
+    <Card
+      className={cn(
+        "operational-panel",
+        progress !== null && progress > 0 && progress < 100 && "operational-active",
+        progress !== null && progress >= 100 && "operational-surface-quiet",
+      )}
+      data-state={state}
+    >
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-2">
@@ -336,7 +346,11 @@ function ModuleCard({
         {children}
         {progress !== null ? (
           <div className="operational-track h-2">
-            <div className="operational-fill" style={{ width: `${progress}%` }} />
+            <div
+              className="operational-fill"
+              data-state={progress >= 100 ? "resolved" : undefined}
+              style={{ width: `${progress}%` }}
+            />
           </div>
         ) : null}
         <Button asChild className="w-full">
@@ -391,7 +405,10 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
           </div>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+        <div
+          className="operational-region grid gap-4 rounded-[1.9rem] p-3 sm:p-4 xl:grid-cols-[1.25fr_0.75fr]"
+          data-state={overallProgress >= 100 ? "resolved" : "active"}
+        >
           <div className="operational-panel operational-active rounded-[1.6rem] p-4 sm:p-5">
             {snapshot.todayView.isFirstRun ? (
               <FirstRunStarter copy={copy} />
@@ -427,7 +444,11 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
                 </div>
 
                 <div className="operational-track h-2.5">
-                  <div className="operational-fill" style={{ width: `${overallProgress}%` }} />
+                  <div
+                    className="operational-fill"
+                    data-state={overallProgress >= 100 ? "resolved" : undefined}
+                    style={{ width: `${overallProgress}%` }}
+                  />
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
@@ -477,7 +498,7 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
             )}
           </div>
 
-          <Card className="operational-panel">
+          <Card className={cn("operational-panel", overallProgress >= 100 && "operational-surface-quiet")}>
             <CardHeader>
               <CardTitle>{copy.summary.title}</CardTitle>
               <CardDescription>{copy.summary.description}</CardDescription>
@@ -497,7 +518,11 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
                   )}
                 </p>
                 <div className="operational-track mt-4 h-2">
-                  <div className="operational-fill" style={{ width: `${overallProgress}%` }} />
+                  <div
+                    className="operational-fill"
+                    data-state={overallProgress >= 100 ? "resolved" : undefined}
+                    style={{ width: `${overallProgress}%` }}
+                  />
                 </div>
               </div>
 
@@ -564,7 +589,10 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
         </div>
       </section>
 
-      <section className="mt-6 grid gap-4 xl:grid-cols-3">
+      <section
+        className="operational-region mt-6 grid gap-4 rounded-[1.9rem] p-3 sm:p-4 xl:grid-cols-3"
+        data-state={overallProgress >= 100 ? "resolved" : snapshot.todayView.modulesInProgressCount > 0 ? "active" : undefined}
+      >
         <ModuleCard
           accent={
             <Badge variant={snapshot.todayView.habits.pendingCount === 0 ? "success" : "muted"}>
@@ -705,8 +733,11 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
         </ModuleCard>
       </section>
 
-      <section className="mt-6 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="operational-panel">
+      <section
+        className="operational-region mt-6 grid gap-4 rounded-[1.9rem] p-3 sm:p-4 xl:grid-cols-[1.1fr_0.9fr]"
+        data-state={overallProgress >= 100 ? "resolved" : undefined}
+      >
+        <Card className={cn("operational-panel", overallProgress >= 100 && "operational-surface-quiet")}>
           <CardHeader>
             <CardTitle>{copy.habitMomentum.title}</CardTitle>
             <CardDescription>{copy.habitMomentum.description}</CardDescription>
@@ -746,6 +777,7 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
                   <div className="operational-track mt-4 h-2">
                     <div
                       className="operational-fill"
+                      data-state={habit.completedToday ? "resolved" : undefined}
                       style={{
                         width: `${progressPercentage(habit.completionsThisWeek, Math.max(habit.currentStreak, 1) + habit.completionsThisWeek)}%`,
                       }}
@@ -757,7 +789,7 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-[var(--landing-border)] bg-[color-mix(in_srgb,var(--landing-surface)_88%,white_8%)] shadow-[var(--landing-shadow-soft)]">
+        <Card className={cn("border-[var(--landing-border)] bg-[color-mix(in_srgb,var(--landing-surface)_88%,white_8%)] shadow-[var(--landing-shadow-soft)]", overallProgress >= 100 && "operational-surface-quiet")}>
           <CardHeader>
             <CardTitle>{copy.secondaryMetrics.title}</CardTitle>
             <CardDescription>{copy.secondaryMetrics.description}</CardDescription>
