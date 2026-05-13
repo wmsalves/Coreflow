@@ -42,9 +42,24 @@ export function FocusOverview({
     <section className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
       {metrics.map((metric, index) => {
         const Icon = metricIcons[index];
+        const progress =
+          index === 0
+            ? weekFocusSeconds > 0
+              ? Math.max(0, Math.min(100, Math.round((todayFocusSeconds / weekFocusSeconds) * 100)))
+              : todayFocusSeconds > 0
+                ? 100
+                : 0
+            : index === 2
+              ? Math.max(0, Math.min(100, completionRate))
+              : index === 3
+                ? Math.max(0, Math.min(100, completionRate))
+                : null;
 
         return (
-          <Card key={metric.label} className="overflow-hidden">
+          <Card
+            key={metric.label}
+            className={progress && progress > 0 && progress < 100 ? "operational-panel operational-active overflow-hidden" : "operational-panel overflow-hidden"}
+          >
             <CardHeader className="pb-3 max-sm:space-y-1">
               <div className="flex items-start justify-between gap-4">
                 <CardDescription className="max-sm:text-xs max-sm:leading-5">{metric.label}</CardDescription>
@@ -52,7 +67,12 @@ export function FocusOverview({
                   <Icon className="size-4" />
                 </span>
               </div>
-              <CardTitle className="text-2xl tracking-[-0.05em] sm:text-3xl">{metric.value}</CardTitle>
+              <CardTitle className="operational-number text-2xl tracking-[-0.05em] sm:text-3xl">{metric.value}</CardTitle>
+              {progress !== null ? (
+                <div className="operational-track mt-3 h-2">
+                  <div className="operational-fill" style={{ width: `${progress}%` }} />
+                </div>
+              ) : null}
             </CardHeader>
           </Card>
         );

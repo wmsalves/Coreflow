@@ -15,6 +15,7 @@ import type {
   PomodoroSettings,
   StudySession,
 } from "@/features/focus/types/focus-types";
+import { cn } from "@/lib/utils";
 
 const settingKeys: Array<keyof PomodoroSettings> = [
   "focusMinutes",
@@ -129,7 +130,7 @@ export function PomodoroPanel({
   }
 
   return (
-    <Card>
+    <Card className={timer.isRunning || selectedSession?.status === "in_progress" ? "operational-panel operational-active" : "operational-panel"}>
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -142,7 +143,10 @@ export function PomodoroPanel({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-4">
+        <div className={cn(
+          "rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] p-4",
+          selectedSession?.status === "in_progress" && "operational-active",
+        )}>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--landing-text-faint)]">
             {selectedSession ? copy.pomodoro.selected : copy.pomodoro.noSession}
           </p>
@@ -167,9 +171,10 @@ export function PomodoroPanel({
                 {copy.pomodoro.cyclesSaved(selectedSession.totalCyclesCompleted)}
               </p>
               {selectedSession.status === "in_progress" ? (
-                <p className="mt-1 text-xs font-medium text-[var(--landing-text-faint)]">
+                <div className="mt-2 inline-flex items-center gap-2 text-xs font-medium text-[var(--landing-text-faint)]">
+                  <span className="operational-dot" data-live={timer.isRunning || selectedSession.status === "in_progress"} />
                   {copy.pomodoro.readyToResume}
-                </p>
+                </div>
               ) : null}
               <Button className="mt-3" onClick={onClearSession} size="sm" variant="secondary">
                 {copy.actions.useStandalone}
@@ -187,11 +192,17 @@ export function PomodoroPanel({
           )}
         </div>
 
-        <div className="rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-6 text-center shadow-[var(--landing-chip-inset-shadow)] sm:rounded-[2rem] sm:p-12">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--landing-accent)]">
+        <div className={cn(
+          "rounded-[1.5rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-6 text-center shadow-[var(--landing-chip-inset-shadow)] sm:rounded-[2rem] sm:p-12",
+          timer.isRunning && "operational-active",
+        )}>
+          <div className="flex items-center justify-center gap-2">
+            {timer.isRunning ? <span className="operational-dot" data-live="true" /> : null}
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--landing-accent)]">
             {copy.pomodoro.phase[timer.phase]}
-          </p>
-          <p className="mt-3 text-5xl font-semibold tracking-[-0.08em] text-[var(--landing-text)] sm:text-7xl">
+            </p>
+          </div>
+          <p className="operational-number mt-3 text-5xl font-semibold tracking-[-0.08em] text-[var(--landing-text)] sm:text-7xl">
             {formatTimer(timer.remainingSeconds)}
           </p>
           <p className="mt-3 text-sm text-[var(--landing-text-muted)]">
@@ -203,9 +214,9 @@ export function PomodoroPanel({
           <p className="mt-1 text-xs font-medium text-[var(--landing-text-faint)]">
             {copy.list.cyclesLogged(currentCyclesCompleted)}
           </p>
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-[var(--landing-surface-alt)]">
+          <div className="operational-track mt-5 h-2">
             <div
-              className="h-full rounded-full bg-[var(--landing-accent)] transition-all duration-500"
+              className="operational-fill"
               style={{ width: `${timer.progress}%` }}
             />
           </div>

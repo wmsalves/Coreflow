@@ -13,6 +13,7 @@ import {
   toggleHabitCompletionAction,
   type HabitActionState,
 } from "@/features/habits/actions";
+import { cn } from "@/lib/utils";
 
 type HabitOverviewItem = {
   completedToday: boolean;
@@ -77,9 +78,14 @@ export function HabitList({ copy, habits }: HabitListProps) {
         {habits.map((habit) => (
           <div
             key={habit.id}
-            className="flex flex-col gap-4 rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] p-4 shadow-[var(--landing-chip-inset-shadow)] sm:rounded-[26px] sm:p-5 lg:flex-row lg:items-center lg:justify-between"
+            className={cn(
+              "flex flex-col gap-4 rounded-[1.25rem] border p-4 shadow-[var(--landing-chip-inset-shadow)] transition-[border-color,background-color,box-shadow] sm:rounded-[26px] sm:p-5 lg:flex-row lg:items-center lg:justify-between",
+              habit.completedToday
+                ? "border-[var(--landing-accent-strong)] bg-[color-mix(in_srgb,var(--landing-accent-soft)_40%,white_20%)]"
+                : "border-[var(--landing-border)] bg-[var(--landing-surface)]",
+            )}
           >
-            <div className="space-y-2">
+            <div className="min-w-0 flex-1 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-lg font-semibold">{habit.name}</p>
                 <Badge variant={habit.completedToday ? "success" : "muted"}>
@@ -109,6 +115,29 @@ export function HabitList({ copy, habits }: HabitListProps) {
                   ))}
                 </div>
               </Disclosure>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-faint)]">
+                  <span>Weekly continuity</span>
+                  <span className="operational-number">
+                    {habit.completionsThisWeek}/{habit.frequencyPerWeek}
+                  </span>
+                </div>
+                <div className="operational-track h-2">
+                  <div
+                    className="operational-fill"
+                    style={{
+                      width: `${Math.max(
+                        0,
+                        Math.min(
+                          100,
+                          Math.round((habit.completionsThisWeek / Math.max(habit.frequencyPerWeek, 1)) * 100),
+                        ),
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 sm:flex sm:flex-wrap sm:gap-3">

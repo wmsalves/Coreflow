@@ -781,7 +781,7 @@ export function FitnessWorkspace({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--landing-border)] bg-[var(--landing-surface)] text-center shadow-[var(--landing-shadow-soft)] sm:min-w-[420px] sm:rounded-[28px]">
+        <div className="operational-panel grid grid-cols-3 overflow-hidden rounded-[1.35rem] text-center sm:min-w-[420px] sm:rounded-[28px]">
           <Metric label={copy.metrics.results} value={results.length} />
           <Metric label={copy.metrics.plans} value={plans.length} />
           <Metric
@@ -799,7 +799,7 @@ export function FitnessWorkspace({
 
       <section className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 2xl:grid-cols-[minmax(0,1.05fr)_420px]">
         <div className="space-y-5 sm:space-y-6">
-          <Card className="overflow-hidden">
+          <Card className="operational-panel overflow-hidden">
             <CardHeader className="border-b border-[var(--landing-border)] bg-[var(--landing-surface)]">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -944,7 +944,7 @@ export function FitnessWorkspace({
 function Metric({ label, value }: { label: string; value: number }) {
   return (
     <div className="border-r border-[var(--landing-border)] px-4 py-4 last:border-r-0">
-      <p className="text-xl font-semibold tracking-tight sm:text-2xl">
+      <p className="operational-number text-xl font-semibold tracking-tight sm:text-2xl">
         {value}
       </p>
       <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-muted)] sm:text-[11px] sm:tracking-[0.18em]">
@@ -1392,7 +1392,7 @@ function WorkoutBuilder({
         </div>
       ) : null}
 
-      <Card className="overflow-hidden">
+      <Card className="operational-panel overflow-hidden">
         <CardHeader className="border-b border-[var(--landing-border)] bg-[var(--landing-surface)]">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -1423,7 +1423,10 @@ function WorkoutBuilder({
             </div>
           ) : (
             <>
-              <div className="rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 sm:rounded-[1.5rem]">
+              <div className={cn(
+                "rounded-[1.25rem] border border-[var(--landing-border)] bg-[var(--landing-bg-elevated)] px-4 py-3 sm:rounded-[1.5rem]",
+                activeSession && "operational-active",
+              )}>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-[var(--landing-text)]">
                     {copy.builder.progressCompleted(
@@ -1432,14 +1435,15 @@ function WorkoutBuilder({
                     )}
                   </p>
                   {activeSession ? (
-                    <span className="text-xs font-medium text-[var(--landing-text-muted)]">
+                    <span className="inline-flex items-center gap-2 text-xs font-medium text-[var(--landing-text-muted)]">
+                      <span className="operational-dot" data-live="true" />
                       {copy.session.liveLabel}
                     </span>
                   ) : null}
                 </div>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--landing-surface)]">
+                <div className="operational-track mt-3 h-2">
                   <div
-                    className="h-full rounded-full bg-[var(--landing-accent)] transition-[width] duration-300"
+                    className="operational-fill"
                     style={{
                       width: `${Math.max(
                         (((activeSessionExercises.length || sortedPlanExercises.length) === 0
@@ -1508,14 +1512,14 @@ function WorkoutBuilder({
 
                     return (
                       <div
-                        className={cn(
-                          "rounded-[1.25rem] border bg-[var(--landing-surface)] p-4 transition-[border-color,background-color,box-shadow] duration-200 sm:rounded-[24px]",
-                          completed
-                            ? "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)]/40 shadow-[var(--landing-chip-inset-shadow)]"
-                            : "border-[var(--landing-border)]",
-                        )}
-                        key={item.id}
-                      >
+                      className={cn(
+                        "rounded-[1.25rem] border bg-[var(--landing-surface)] p-4 transition-[border-color,background-color,box-shadow] duration-200 sm:rounded-[24px]",
+                        completed
+                          ? "operational-active border-[var(--landing-accent-strong)] bg-[color-mix(in_srgb,var(--landing-accent-soft)_40%,white_20%)] shadow-[var(--landing-chip-inset-shadow)]"
+                          : "border-[var(--landing-border)]",
+                      )}
+                      key={item.id}
+                    >
                         <div className="flex items-start gap-3">
                           <ExerciseMedia
                             className="h-20 w-20 shrink-0 rounded-[1rem]"

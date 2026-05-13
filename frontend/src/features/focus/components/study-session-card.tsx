@@ -54,14 +54,26 @@ export function StudySessionCard({
         ? copy.actions.resume
         : copy.actions.select;
   const isPending = pendingAction?.id === session.id;
+  const executionProgress = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(
+        (session.completedFocusSeconds / Math.max(session.estimatedMinutes * 60, 1)) * 100,
+      ),
+    ),
+  );
 
   return (
     <article
       className={cn(
-        "group rounded-[1.25rem] border bg-[var(--landing-surface)] p-4 shadow-[var(--landing-chip-inset-shadow)] transition hover:-translate-y-0.5 hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-surface-strong)] sm:rounded-[1.45rem]",
+        "group rounded-[1.25rem] border p-4 shadow-[var(--landing-chip-inset-shadow)] transition hover:-translate-y-0.5 hover:border-[var(--landing-border-strong)] hover:bg-[var(--landing-surface-strong)] sm:rounded-[1.45rem]",
+        session.status === "in_progress" && "operational-active operational-panel",
         active
-          ? "border-[var(--landing-accent-strong)] bg-[var(--landing-accent-soft)]"
-          : "border-[var(--landing-border)]",
+          ? "border-[var(--landing-accent-strong)] bg-[color-mix(in_srgb,var(--landing-accent-soft)_42%,white_24%)]"
+          : session.status === "in_progress"
+            ? ""
+            : "border-[var(--landing-border)] bg-[var(--landing-surface)]",
       )}
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -72,6 +84,7 @@ export function StudySessionCard({
               {copy.status[session.status]}
             </span>
             <Badge variant="muted">{session.subject}</Badge>
+            {session.status === "in_progress" ? <span className="operational-dot" data-live="true" /> : null}
           </div>
 
           <div>
@@ -127,6 +140,16 @@ export function StudySessionCard({
             <Trash2 className="size-4" />
             {copy.actions.delete}
           </Button>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--landing-text-faint)]">
+          <span>Execution progress</span>
+          <span className="operational-number">{executionProgress}%</span>
+        </div>
+        <div className="operational-track h-2">
+          <div className="operational-fill" style={{ width: `${executionProgress}%` }} />
         </div>
       </div>
 
