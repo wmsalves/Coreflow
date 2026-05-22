@@ -325,6 +325,161 @@ select {
     linear-gradient(90deg, color-mix(in srgb, var(--landing-accent) 58%, white 18%), color-mix(in srgb, var(--landing-accent) 44%, white 24%));
 }
 
+.momentum-scope {
+  --momentum-region-opacity: 1;
+  --momentum-continuity-opacity: 0.9;
+  --momentum-surface-saturation: 1;
+  --momentum-primary-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 18px 40px rgba(108, 82, 54, 0.08),
+    0 8px 18px rgba(30, 41, 59, 0.04);
+}
+
+.momentum-scope[data-momentum-state="waiting"] {
+  --momentum-continuity-opacity: 0.62;
+  --momentum-surface-saturation: 0.92;
+  --momentum-primary-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 22px 48px rgba(30, 41, 59, 0.08),
+    0 0 0 1px color-mix(in srgb, var(--landing-accent-soft) 34%, transparent);
+}
+
+.momentum-scope[data-momentum-state="starting"] {
+  --momentum-continuity-opacity: 0.78;
+  --momentum-surface-saturation: 0.96;
+}
+
+.momentum-scope[data-momentum-state="building"] {
+  --momentum-continuity-opacity: 0.94;
+  --momentum-surface-saturation: 1;
+}
+
+.momentum-scope[data-momentum-state="resolved"] {
+  --momentum-continuity-opacity: 1;
+  --momentum-surface-saturation: 0.88;
+}
+
+.momentum-scope .operational-region,
+.momentum-scope .operational-panel,
+.momentum-scope .operational-surface-quiet,
+.momentum-continuity,
+.focus-secondary-region,
+.focus-continuity-region,
+.focus-primary-region {
+  transition:
+    opacity var(--motion-slow) var(--ease-standard),
+    filter var(--motion-slow) var(--ease-standard),
+    background-color var(--motion-slow) var(--ease-standard),
+    border-color var(--motion-slow) var(--ease-standard),
+    box-shadow var(--motion-slow) var(--ease-standard);
+}
+
+.momentum-scope .operational-region,
+.momentum-scope .operational-panel {
+  filter: saturate(var(--momentum-surface-saturation));
+}
+
+.momentum-primary-action {
+  box-shadow: var(--momentum-primary-shadow);
+}
+
+.momentum-continuity {
+  opacity: var(--momentum-continuity-opacity);
+}
+
+.momentum-scope[data-momentum-state="waiting"] .operational-region[data-state="active"] {
+  border-color: color-mix(in srgb, var(--landing-accent-strong) 62%, var(--landing-border-strong));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 28px 62px rgba(0, 0, 0, 0.12),
+    0 0 0 1px color-mix(in srgb, var(--landing-accent-soft) 18%, transparent);
+}
+
+.momentum-scope[data-momentum-state="building"] .operational-region[data-state="active"] {
+  border-color: color-mix(in srgb, var(--landing-accent-strong) 42%, var(--landing-border-strong));
+}
+
+.momentum-scope[data-momentum-state="resolved"] .operational-active::after {
+  animation-play-state: paused;
+  opacity: 0;
+}
+
+.momentum-scope[data-momentum-state="resolved"] .operational-dot[data-live="true"] {
+  animation-duration: 4.8s;
+}
+
+.dashboard-experience:has(.momentum-scope[data-momentum-state="waiting"]) .operational-top-atmosphere {
+  filter: saturate(0.9);
+  opacity: 0.46 !important;
+}
+
+.dashboard-experience:has(.momentum-scope[data-momentum-state="waiting"]) .operational-bottom-atmosphere {
+  opacity: 0.2 !important;
+}
+
+.dashboard-experience:has(.momentum-scope[data-momentum-state="waiting"]) .operational-shell::before {
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--landing-accent-soft) 24%, transparent), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 16%, transparent 88%);
+  opacity: 0.58;
+}
+
+.dashboard-experience:has(.momentum-scope[data-momentum-state="building"]) .operational-shell::before {
+  opacity: 0.38;
+}
+
+.dashboard-experience:has(.momentum-scope[data-momentum-state="resolved"]) .operational-top-atmosphere {
+  filter: saturate(0.72) brightness(0.86);
+  opacity: 0.18 !important;
+}
+
+.dashboard-experience:has(.momentum-scope[data-momentum-state="resolved"]) .operational-bottom-atmosphere {
+  filter: saturate(0.8) brightness(0.82);
+  opacity: 0.58 !important;
+}
+
+.dashboard-experience:has(.momentum-scope[data-momentum-state="resolved"]) .operational-shell::before {
+  opacity: 0.18;
+}
+
+.focus-execution-scope[data-focus-mode="active"] .focus-secondary-region {
+  opacity: 0.68;
+  filter: saturate(0.78) brightness(0.9);
+}
+
+.focus-execution-scope[data-focus-mode="active"] .focus-continuity-region {
+  opacity: 0.58;
+}
+
+.focus-execution-scope[data-focus-mode="active"] .focus-primary-region .operational-panel {
+  border-color: color-mix(in srgb, var(--landing-accent-strong) 50%, var(--landing-border-strong));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 30px 74px rgba(0, 0, 0, 0.24),
+    0 0 0 1px color-mix(in srgb, var(--landing-accent-soft) 16%, transparent);
+}
+
+.focus-execution-scope[data-focus-mode="settled"] .focus-continuity-region {
+  opacity: 0.94;
+}
+
+.dashboard-experience:has(.focus-execution-scope[data-focus-mode="active"]) .operational-top-atmosphere {
+  filter: saturate(0.66) brightness(0.72);
+  opacity: 0.2 !important;
+}
+
+.dashboard-experience:has(.focus-execution-scope[data-focus-mode="active"]) .operational-bottom-atmosphere {
+  filter: saturate(0.74) brightness(0.72);
+  opacity: 0.62 !important;
+}
+
+.dashboard-experience:has(.focus-execution-scope[data-focus-mode="active"]) .operational-shell::before {
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--landing-accent-soft) 8%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent 20%, transparent 88%);
+  opacity: 0.16;
+}
+
 .focus-immersive {
   position: relative;
 }

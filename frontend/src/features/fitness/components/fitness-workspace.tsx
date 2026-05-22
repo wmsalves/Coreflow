@@ -57,6 +57,7 @@ type Notice = {
   kind: "error" | "info" | "success";
   text: string;
 };
+type MomentumState = "building" | "resolved" | "starting" | "waiting";
 type PendingMutation =
   | { type: "add-exercise" }
   | { type: "cancel-workout" }
@@ -234,6 +235,15 @@ export function FitnessWorkspace({
       : sortedPlanExercises.length) - completedExerciseCount,
     0,
   );
+  const fitnessMomentumState: MomentumState = activeSession
+    ? completedExerciseCount > 0
+      ? "building"
+      : "starting"
+    : logs.length > 0
+      ? "resolved"
+      : plans.length > 0
+        ? "waiting"
+        : "waiting";
   useEffect(() => {
     if (!activeSession) {
       setSessionExerciseDrafts({});
@@ -767,7 +777,10 @@ export function FitnessWorkspace({
   }
 
   return (
-    <>
+    <div
+      className="momentum-scope fitness-execution-scope"
+      data-momentum-state={fitnessMomentumState}
+    >
       <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="max-w-3xl space-y-3">
           <Badge>{copy.badge}</Badge>
@@ -940,7 +953,7 @@ export function FitnessWorkspace({
           remainingExerciseCount={remainingExerciseCount}
         />
       </section>
-    </>
+    </div>
   );
 }
 

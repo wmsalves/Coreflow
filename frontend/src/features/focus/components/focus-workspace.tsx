@@ -55,6 +55,7 @@ type Notice = {
 type PendingSessionAction =
   | { id: string; type: "archive" | "cancel" | "complete" | "start" }
   | null;
+type MomentumState = "building" | "resolved" | "starting" | "waiting";
 
 type FocusWorkspaceProps = {
   initialActiveSession: StudySession | null;
@@ -178,6 +179,13 @@ export function FocusWorkspace({
   const plannerTitle = editingSession ? copy.planner.editTitle : copy.planner.title;
   const plannerDescription = editingSession ? copy.planner.editDescription : copy.planner.description;
   const hasLiveExecution = selectedSession?.status === "in_progress";
+  const focusMomentumState: MomentumState = hasLiveExecution
+    ? "building"
+    : todayFocusSeconds > 0 || history.length > 0 || completedCount > 0
+      ? sessions.some((session) => session.status === "pending" || session.status === "in_progress")
+        ? "starting"
+        : "resolved"
+      : "waiting";
 
   function clearEditingSession() {
     setEditingSessionId(null);
@@ -468,7 +476,11 @@ export function FocusWorkspace({
   }
 
   return (
-    <>
+    <div
+      className="momentum-scope focus-execution-scope"
+      data-focus-mode={hasLiveExecution ? "active" : todayFocusSeconds > 0 ? "settled" : "idle"}
+      data-momentum-state={focusMomentumState}
+    >
       <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl space-y-3">
           <Badge>{copy.badge}</Badge>
@@ -484,7 +496,7 @@ export function FocusWorkspace({
       </section>
 
       <section
-        className="operational-region mt-5 rounded-[1.9rem] p-3 sm:mt-6 sm:p-4"
+        className="operational-region focus-secondary-region mt-5 rounded-[1.9rem] p-3 sm:mt-6 sm:p-4"
         data-state={todayFocusSeconds > 0 || hasLiveExecution ? "active" : completedCount > 0 ? "resolved" : undefined}
       >
         <FocusOverview
@@ -506,7 +518,7 @@ export function FocusWorkspace({
         className="operational-region mt-5 grid gap-5 rounded-[2rem] p-3 sm:mt-6 sm:gap-6 sm:p-4 xl:grid-cols-[minmax(0,1.05fr)_390px] 2xl:grid-cols-[minmax(0,1.05fr)_420px]"
         data-state={hasLiveExecution ? "active" : completedCount > 0 ? "resolved" : undefined}
       >
-        <div className="order-2 h-full space-y-5 sm:space-y-6 xl:order-1" id="plan-focus">
+        <div className="focus-secondary-region order-2 h-full space-y-5 sm:space-y-6 xl:order-1" id="plan-focus">
           <div className="sm:hidden">
             <MobileSheet
               description={plannerDescription}
@@ -558,7 +570,7 @@ export function FocusWorkspace({
           </Card>
         </div>
 
-        <aside className="order-1 xl:order-2 xl:self-start">
+        <aside className="focus-primary-region order-1 xl:order-2 xl:self-start">
           <PomodoroPanel
             copy={copy}
             onClearSession={() => setSelectedSessionId(null)}
@@ -572,7 +584,7 @@ export function FocusWorkspace({
       </section>
 
       <section
-        className="operational-region mt-6 rounded-[1.9rem] p-3 sm:p-4"
+        className="operational-region focus-secondary-region mt-6 rounded-[1.9rem] p-3 sm:p-4"
         data-state={hasLiveExecution ? "active" : undefined}
       >
         <StudySessionList
@@ -593,7 +605,7 @@ export function FocusWorkspace({
       </section>
 
       <section
-        className="operational-region mt-6 rounded-[1.9rem] p-3 sm:p-4"
+        className="operational-region focus-continuity-region mt-6 rounded-[1.9rem] p-3 sm:p-4"
         data-state={completedCount > 0 || history.length > 0 ? "resolved" : undefined}
       >
         <FocusHistory
@@ -625,7 +637,7 @@ export function FocusWorkspace({
           </div>
         ) : null}
       </ConfirmationModal>
-    </>
+    </div>
   );
 }
 

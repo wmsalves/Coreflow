@@ -31,9 +31,19 @@ type HabitsWorkspaceProps = {
 export function HabitsWorkspace({ overview }: HabitsWorkspaceProps) {
   const { locale } = useLandingPreferences();
   const copy = dashboardCopy[locale].habits;
+  const hasHabits = overview.summary.activeCount > 0;
+  const allHabitsComplete =
+    hasHabits && overview.summary.completedTodayCount >= overview.summary.activeCount;
+  const momentumState = allHabitsComplete
+    ? "resolved"
+    : overview.summary.completedTodayCount > 0
+      ? "building"
+      : hasHabits
+        ? "waiting"
+        : "waiting";
 
   return (
-    <>
+    <div className="momentum-scope" data-momentum-state={momentumState}>
       <section className="space-y-3">
         <Badge>{copy.badge}</Badge>
         <div className="space-y-2">
@@ -70,7 +80,7 @@ export function HabitsWorkspace({ overview }: HabitsWorkspaceProps) {
                 {overview.summary.completedTodayCount}
               </CardContent>
             </Card>
-            <Card className={overview.summary.bestStreak > 0 ? "operational-panel" : "operational-surface-quiet"}>
+            <Card className={overview.summary.bestStreak > 0 ? "operational-panel momentum-continuity" : "operational-surface-quiet momentum-continuity"}>
               <CardHeader className="pb-2 sm:pb-3">
                 <CardTitle className="text-sm leading-5 sm:text-lg">{copy.summary.bestStreak}</CardTitle>
               </CardHeader>
@@ -83,6 +93,6 @@ export function HabitsWorkspace({ overview }: HabitsWorkspaceProps) {
           <HabitList copy={copy.list} habits={overview.habits} />
         </div>
       </section>
-    </>
+    </div>
   );
 }

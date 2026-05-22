@@ -97,6 +97,8 @@ type SystemSignal = {
   tone: SystemSignalTone;
 };
 
+type MomentumState = "building" | "resolved" | "starting" | "waiting";
+
 function formatDate(value: string | null | undefined, locale: string) {
   if (!value) {
     return null;
@@ -304,6 +306,39 @@ function signalToneClasses(tone: SystemSignalTone) {
   }
 }
 
+function getMomentumState(snapshot: DashboardOverviewProps["snapshot"]): MomentumState {
+  const hasOpenLoops =
+    snapshot.todayView.habits.pendingCount > 0 ||
+    snapshot.todayView.focus.hasActiveSession ||
+    snapshot.todayView.focus.pendingSessions > 0 ||
+    snapshot.todayView.fitness.hasActiveWorkout;
+  const hasProgress =
+    snapshot.todayView.habits.completedCount > 0 ||
+    snapshot.todayView.focus.todayFocusSeconds > 0 ||
+    snapshot.todayView.focus.completedSessions > 0 ||
+    Boolean(snapshot.todayView.fitness.latestWorkoutProgress);
+  const hasLiveExecution =
+    snapshot.todayView.focus.hasActiveSession || snapshot.todayView.fitness.hasActiveWorkout;
+
+  if (snapshot.todayView.isFirstRun || (!hasProgress && !hasLiveExecution)) {
+    return "waiting";
+  }
+
+  if (!hasOpenLoops && snapshot.todayView.overallProgress >= 0.85 && hasProgress) {
+    return "resolved";
+  }
+
+  if (
+    hasLiveExecution ||
+    snapshot.todayView.modulesInProgressCount > 1 ||
+    snapshot.todayView.overallProgress >= 0.45
+  ) {
+    return "building";
+  }
+
+  return "starting";
+}
+
 function ModuleCard({
   accent,
   actionHref,
@@ -389,9 +424,14 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
           Math.max(snapshot.todayView.focus.weekFocusSeconds, snapshot.todayView.focus.todayFocusSeconds),
         )
       : null;
+  const momentumState = getMomentumState(snapshot);
 
   return (
-    <>
+    <div
+      className="momentum-scope"
+      data-focus-mode={snapshot.todayView.focus.hasActiveSession ? "active" : undefined}
+      data-momentum-state={momentumState}
+    >
       <section className="space-y-4">
         <div className="space-y-3">
           <Badge>{copy.badge}</Badge>
@@ -409,7 +449,7 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
           className="operational-region grid gap-4 rounded-[1.9rem] p-3 sm:p-4 xl:grid-cols-[1.25fr_0.75fr]"
           data-state={overallProgress >= 100 ? "resolved" : "active"}
         >
-          <div className="operational-panel operational-active rounded-[1.6rem] p-4 sm:p-5">
+          <div className="operational-panel operational-active momentum-primary-action rounded-[1.6rem] p-4 sm:p-5">
             {snapshot.todayView.isFirstRun ? (
               <FirstRunStarter copy={copy} />
             ) : (
@@ -734,7 +774,7 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
       </section>
 
       <section
-        className="operational-region mt-6 grid gap-4 rounded-[1.9rem] p-3 sm:p-4 xl:grid-cols-[1.1fr_0.9fr]"
+        className="operational-region momentum-continuity mt-6 grid gap-4 rounded-[1.9rem] p-3 sm:p-4 xl:grid-cols-[1.1fr_0.9fr]"
         data-state={overallProgress >= 100 ? "resolved" : undefined}
       >
         <Card className={cn("operational-panel", overallProgress >= 100 && "operational-surface-quiet")}>
@@ -816,6 +856,6 @@ export function DashboardOverview({ snapshot }: DashboardOverviewProps) {
           </CardContent>
         </Card>
       </section>
-    </>
+    </div>
   );
 }
